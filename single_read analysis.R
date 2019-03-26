@@ -10,4 +10,7 @@ flnm <- '../AHL-GFP test_pSH001_23-3-19.xlsx'
 
 # File input and processing ----
 
-fl <- read_plateReader_file(flnm)
+fl <- read_plateReader_file(flnm) # load all non empty sheets of the excel file into fl - as a list 
+
+data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default the first non-empty sheet)
+# data_sheet1 %<>% filter(`..1` == Label|<>|A--H) # read up regex, stringr package and str_detect function
