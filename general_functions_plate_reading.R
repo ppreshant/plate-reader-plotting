@@ -16,3 +16,11 @@ read_plateReader_file <- function(flnm)
     map(read_excel, path = flnm, skip = 14, col_names = F) %>% 
     list.clean(fun = is_empty)
 }
+
+# plot formatting function : format as classic, colours = Set1
+format_classic <- function(plt)
+{
+  plt <- plt +
+    theme_classic() + scale_color_brewer(palette="Set1") + 
+    theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
+}
