@@ -9,7 +9,7 @@ library(readxl); library(magrittr); library(tidyverse); library(ggrepel); librar
 
 # read in the excel file (from row 14 onwards)
 read_plateReader_file <- function(flnm)
-{
+{ # reads excel file output by plate reader; outputs a list of non-empty sheets
   fl <- flnm %>%  
     excel_sheets() %>% 
     set_names(.,.) %>% 
@@ -19,7 +19,7 @@ read_plateReader_file <- function(flnm)
 
 # plot formatting function : format as classic, colours = Set1
 format_classic <- function(plt)
-{
+{ # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
     theme_classic() + scale_color_brewer(palette="Set1") + 
     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
