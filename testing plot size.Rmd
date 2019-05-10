@@ -1,0 +1,30 @@
+---
+title: "Testing plotting device"
+author: "Prashant Kalvapalle"
+date: "27 March 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist) 
+```
+
+## R Markdown
+
+s
+
+```{r data}
+a <- tibble('a' = 1:5, 'b' = (5:1)^2, 'c' = c('one','one','two','one','two'))
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r plots, echo=FALSE}
+ggplot(a, aes(a,b,colour = c)) + geom_point()
+ggsave('test1.png', device = png(), width = 4, height = 4)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

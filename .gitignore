@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 *.png
+*.html
+plots and data/
