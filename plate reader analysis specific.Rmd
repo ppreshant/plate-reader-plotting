@@ -1,0 +1,29 @@
+---
+title: "Plate reader analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('C:/Users/user/Box Sync/Stadler lab/Data/Plate reader/plate reader analysis/general_functions_plate_reading.R')
+```
+
+## Data input
+
+Input the data from the excel sheet
+
+```{r data entry}
+flnm <- '../AHL-GFP test_pSH001_23-3-19.xlsx'
+fl <- read_plateReader_file(flnm) # load all non empty sheets of the excel file into fl - as a list 
+```
+
+## Data extraction and processing
+
+Extract the plate read values from file
+
+```{r data extraction}
+data_sheet1 <- fl$Sheet2
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
