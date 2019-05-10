@@ -5,7 +5,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-source('C:/Users/user/Box Sync/Stadler lab/Data/Plate reader/plate reader analysis/general_functions_plate_reading.R')
+source('./general_functions_plate_reading.R')
 ```
 
 ## Data input
@@ -19,11 +19,18 @@ fl <- read_plateReader_file(flnm) # load all non empty sheets of the excel file 
 
 ## Data extraction and processing
 
-Extract the plate read values from file
+Identify the table of data and type (OD, GFP, RFP etc. by the Label)
 
-```{r data extraction}
-data_sheet1 <- fl$Sheet2
+```{r data extraction, echo = F}
+data_sheet1 <- fl$Sheet2 # extract the first sheet (everything after this should be vectorized for all sheets, with sheet name auto found)
+
+label_list <- map_in_sheet(data_sheet1,'Label*', 1) %>% separate(label,c('dummy','label'), sep = ': ') %>% select(label,index) # find the occurance and index of "Label" word in the sheet; retain the text after 'label: '
+
+data_starting <- map_in_sheet(data_sheet1,'<>', 1) # maps the index of where plate read values start by '<>'
+
+empty_cells <- data_sheet1 %>% is.na(.) %>% which(arr.ind = T) %>% as.tibble() # maps empty cells with row and column index
+
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Extract the plate read values from file
