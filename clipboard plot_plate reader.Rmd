@@ -19,8 +19,8 @@ s1 <- paste_plate_to_column()
 ui1 <- paste_plate_to_column()
 i1 <- paste_plate_to_column()
 
-merged_data <- bind_cols(s1,ui,i1) #%>% group_by(Samples)
-
+merged_data <- bind_cols(s1,ui1,i1) #%>% group_by(Samples)
+merged1 <- merged_data %>%   select(3,6,9) %>% rename(Uninduced = `GFP/RFP`, Induced = 'GFP/RFP1') %>% gather(Induction, `GFP/RFP`,-Samples)
 ```
 
 ## Data crunching
@@ -28,6 +28,15 @@ merged_data <- bind_cols(s1,ui,i1) #%>% group_by(Samples)
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
-
+# merged2 <- merged1 %>% filter_at(ends_with("2"))
 ```
 
+## Plotting
+
+Plotting
+
+```{r plotting, echo=FALSE}
+merged1 %>% ggplot(aes(Samples,`GFP/RFP`)) + geom_point(aes(color = Induction)) -> plt
+plt %<>% format_classic(.) %>% format_logscale()
+plt
+```
