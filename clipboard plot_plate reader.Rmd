@@ -14,8 +14,12 @@ source('./general_functions_plate_reading.R')
 
 Copy the tables of GFP, OD, Sample names etc. in excel and run the command below to get it into R
 
-```{input data}
-g_r <- paste_plate_to_column()
+```{r input data}
+s1 <- paste_plate_to_column()
+ui1 <- paste_plate_to_column()
+i1 <- paste_plate_to_column()
+
+merged_data <- bind_cols(s1,ui,i1) #%>% group_by(Samples)
 
 ```
 
