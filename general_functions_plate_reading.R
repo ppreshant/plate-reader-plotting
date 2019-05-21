@@ -56,10 +56,12 @@ format_classic <- function(plt)
     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 
-# # plot formatting function : format as logscale
-# format_logscale <- function(plt)
-# { # extra comments
-#   plt <- plt +
-#     theme_classic() + scale_color_brewer(palette="Set1") + 
-#     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
-# }
+# plot formatting function : format as logscale
+format_logscale <- function(plt)
+{ # extra comments
+  plt <- plt +
+    scale_y_log10(  # logscale for y axis with tick marks
+      breaks = scales::trans_breaks("log10", function(x) 10^x),
+      labels = scales::trans_format("log10", scales::math_format(10^.x) )
+    )
+}
