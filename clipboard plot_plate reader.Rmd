@@ -15,12 +15,12 @@ source('./general_functions_plate_reading.R')
 Copy the tables of GFP, OD, Sample names etc. in excel and run the command below to get it into R
 
 ```{r input data}
-s1 <- paste_plate_to_column()
-ui1 <- paste_plate_to_column()
-i1 <- paste_plate_to_column()
+s1 <- paste_plate_to_column() # input the sample names
+ui1 <- paste_plate_to_column() # input the uninduced values (GFP/RFP)
+i1 <- paste_plate_to_column() # input the induced values (GFP/RFP)
 
-merged_data <- bind_cols(s1,ui1,i1) #%>% group_by(Samples)
-merged1 <- merged_data %>%   select(3,6,9) %>% rename(Uninduced = `GFP/RFP`, Induced = 'GFP/RFP1') %>% gather(Induction, `GFP/RFP`,-Samples)
+merged_data <- bind_cols(s1,ui1,i1) # merging all three data into 1 table
+merged1 <- merged_data %>% gather(Induction, `GFP/RFP`,-Samples) # select only the data values
 ```
 
 ## Data crunching
@@ -28,15 +28,29 @@ merged1 <- merged_data %>%   select(3,6,9) %>% rename(Uninduced = `GFP/RFP`, Ind
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
-# merged2 <- merged1 %>% filter_at(ends_with("2"))
+merged2 <- merged1 %>% filter(!str_detect(Samples, "pHC|NA|^MG"))  # remove unneccesary samples
+merged3 <- merged2 %>% mutate(category  = fct_lump(Samples, 2, other_level = 'Controls')) %>% arrange(Samples) # make a new column for frequent categories
+merged3$Samples[1:96] <- rep(1:24) # name each colony with a number
+merged3 %<>% mutate(Samples = as_factor(Samples)) 
+merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'pPK04', 'pRV01', 'rGFP', 'fGFP', after = 96)) # change order of the samples - for easy plotting
 ```
+
+## Raw data tables
+
+Showing raw data and processed data here
+
+GFP/RFP values
+``` {r}
+merged3
+```
+
 
 ## Plotting
 
 Plotting
 
 ```{r plotting, echo=FALSE}
-merged1 %>% ggplot(aes(Samples,`GFP/RFP`)) + geom_point(aes(color = Induction)) -> plt
+merged3 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point() + facet_wrap(~category, scales = 'free_x') -> plt
 plt %<>% format_classic(.) %>% format_logscale()
-plt
+ggsave('plots and data/S011_faceted.png', height = 3.5, width = 14)
 ```
