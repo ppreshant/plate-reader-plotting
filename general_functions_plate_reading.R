@@ -36,6 +36,16 @@ find_plate_read_cells <- function(data_starting_index, empty_cells)
   # anti_join(plate_full_index,empty_cells)
 }
 
+paste_plate_to_column <- function(val_name = '0')
+{ # extracts table from clipboard and transforms it into a column (named after the top left cell, unless mentioned)
+  # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
+  
+  data_tibble <- read_tsv(clipboard(), col_names = F) # read table from clipboard
+  colnames(data_tibble) <- data_tibble[2,] # set column names as the second row
+  if(val_name == '0') val_name <- data_tibble[[1,1]] # returns the first column name (which is the sample type etc.) 
+  data_tibble[-(1:2),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`)
+}
+
 # formatting plots ----
 
 # plot formatting function : format as classic, colours = Set1
@@ -45,3 +55,11 @@ format_classic <- function(plt)
     theme_classic() + scale_color_brewer(palette="Set1") + 
     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
+
+# # plot formatting function : format as logscale
+# format_logscale <- function(plt)
+# { # extra comments
+#   plt <- plt +
+#     theme_classic() + scale_color_brewer(palette="Set1") + 
+#     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
+# }
