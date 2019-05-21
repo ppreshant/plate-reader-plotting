@@ -1,0 +1,29 @@
+---
+title: "Plotting from clipboard"
+author: "Prashant Kalvapalle"
+date: "20 May 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('./general_functions_plate_reading.R')
+```
+
+## Input data from clipboard
+
+Copy the tables of GFP, OD, Sample names etc. in excel and run the command below to get it into R
+
+```{input data}
+g_r <- paste_plate_to_column()
+
+```
+
+## Data crunching
+
+Doing calculations with the tables, relating sample names with the values
+
+```{r data analysis, echo=FALSE}
+
+```
+
