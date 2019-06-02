@@ -1,8 +1,10 @@
 # Read in the plate reader excel file - auto locate the plate rows and columns for each variable and do some plotting and normalization calculations
 # Author: Prashant Kalvapalle;  Started : March 24 2019
 
-# Source the general_functions file before running this
 # The last part of the script contains important codes from the console that were used for specific situations : These will be commented
+
+# Sourcing the file with all the functions
+source('./general_functions_plate_reading.R')
 
 # User inputs: choose file name, title for plots and experiment mode (file name starts in the previous directory of this Rproject) ----
 
