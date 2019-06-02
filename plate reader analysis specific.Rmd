@@ -2,6 +2,10 @@
 title: "Plate reader analysis"
 output: html_document
 ---
+Work in Progress : (Auto-identify data from spreadsheet)
+1. opens excel file of plate reader 
+2. extracts all sheets 
+3. identify the start of plate reader data by '<>'
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -24,7 +28,7 @@ Identify the table of data and type (OD, GFP, RFP etc. by the Label)
 ```{r data extraction, echo = F}
 data_sheet1 <- fl$Sheet2 # extract the first sheet (everything after this should be vectorized for all sheets, with sheet name auto found)
 
-label_list <- map_in_sheet(data_sheet1,'Label*', 1) %>% separate(label,c('dummy','label'), sep = ': ') %>% select(label,index) # find the occurance and index of "Label" word in the sheet; retain the text after 'label: '
+label_list <- map_in_sheet(data_sheet1,'^Label', 1) %>% separate(label,c('dummy','label'), sep = ': ') %>% select(label,index) # find the occurance and index of "Label" word in the sheet; retain the text after 'label: '
 
 data_starting <- map_in_sheet(data_sheet1,'<>', 1) # maps the index of where plate read values start by '<>'
 
