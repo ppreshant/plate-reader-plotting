@@ -1,0 +1,69 @@
+---
+title: "Plate reader plotting"
+author: "Prashant"
+date: "June 2, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source('./general_functions_plate_reading.R')
+```
+
+## Input data
+
+
+Copy the tables of GFP, OD, Sample names etc. in excel and run the command below to get it into R
+
+```{r input data, echo = F}
+# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
+
+flnm <- '../S010_Ara vs AHL_26-4-19.xlsx'
+fl <- read_plateReader_file(flnm) # load all non empty sheets of the excel file into fl - as a list 
+data_sheet1 <- fl$`6.75 hr optimal gain` # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+nRows <- 8; 
+nCols <- 12;
+
+# Context: 24 rows of lines before data is seen, 27 rows between data and fluorescence values, 27 more rows till RFP values
+table_OD <- data_sheet1[24: (24+nRows), 1: (1+nCols)] # exract the OD table
+table_Samples <- data_sheet1[24: (24+nRows), 15: (15+nCols)] # exract the Sample names table
+table_GFP <- data_sheet1[(51+nRows-1): (51+2*nRows-1), 1: (1+nCols)] # exract the GFP values
+table_RFP <- data_sheet1[(78+2*nRows-2): (78+3*nRows-2), 1: (1+nCols)] # exract the RFP values
+
+tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP)
+names_vector <- c('Samples','OD','GFP','RFP')
+
+merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
+```
+
+## Data crunching
+
+Doing calculations with the tables, relating sample names with the values
+
+```{r data analysis, echo=FALSE}
+merged2 <- merged1 %>% filter(!str_detect(Samples, "pHC|NA|^MG"))  # remove unneccesary samples
+merged3 <- merged2 %>% mutate(category  = fct_lump(Samples, 2, other_level = 'Controls')) %>% arrange(Samples) # make a new column for frequent categories
+merged3$Samples[1:96] <- rep(1:24) # name each colony with a number
+merged3 %<>% mutate(Samples = as_factor(Samples)) 
+merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'pPK04', 'pRV01', 'rGFP', 'fGFP', after = 96)) # change order of the samples - for easy plotting
+```
+
+## Raw data tables
+
+Showing raw data and processed data here
+
+GFP/RFP values
+``` {r}
+merged3
+```
+
+
+## Plotting
+
+Plotting
+
+```{r plotting, echo=FALSE}
+merged3 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point() + facet_wrap(~category, scales = 'free_x') -> plt
+plt %<>% format_classic(.) %>% format_logscale()
+ggsave('plots and data/S011_faceted.png', height = 3.5, width = 14)
+```
