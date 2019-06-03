@@ -13,7 +13,7 @@ read_plateReader_file <- function(flnm)
   fl <- flnm %>%  
     excel_sheets() %>% 
     set_names(.,.) %>% 
-    map(read_excel, path = flnm, skip = 14, col_names = F) %>% 
+    map(read_excel, path = flnm, col_names = F) %>% 
     list.clean(fun = is_empty)
 }
 
@@ -44,6 +44,15 @@ paste_plate_to_column <- function(val_name = '0')
   colnames(data_tibble) <- data_tibble[2,] # set column names as the second row
   if(val_name == '0') val_name <- data_tibble[[1,1]] # returns the first column name (which is the sample type etc.) 
   data_tibble[-(1:2),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
+}
+
+read_plate_to_column <- function(data_tibble, val_name)
+{ # transforms a plate reader table into a column (named after the top left cell, unless mentioned)
+  # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
+  
+  val_name <- enquo(val_name)
+  colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
+  data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
 # formatting plots ----
