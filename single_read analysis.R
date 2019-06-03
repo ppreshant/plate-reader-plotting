@@ -1,4 +1,4 @@
-# Read in the plate reader excel file - auto locate the plate rows and columns for each variable and do some plotting and normalization calculations
+# Read in the plate reader excel file - locate the plate rows and columns for each variable and do some plotting and normalization calculations
 # Author: Prashant Kalvapalle;  Started : March 24 2019
 
 # The last part of the script contains important codes from the console that were used for specific situations : These will be commented
@@ -38,3 +38,10 @@ n_GFP <- n_GFP[1:4,]; n_RFP <- n_RFP[1:4,]
 
 colnames(n_GFP) <- sample_names_row
 colnames(n_RFP) <- sample_names_row
+
+# custom codes and context ----
+
+# S010 plotting
+merged3 <- merged2 %>% filter(str_detect(Samples, "^pRV01")) # filtering custom samples
+merged3 <- merged2 %>% filter(str_detect(Inducer, "0$|none")) # filtering custom samples
+merged3 %>% ggplot(aes(Samples,GFP, color = Samples)) + geom_point() + geom_line() + facet_wrap(~Samples, scales = 'free_x') -> plta

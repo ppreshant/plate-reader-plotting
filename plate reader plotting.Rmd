@@ -35,6 +35,7 @@ tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
 names_vector <- c('Samples','OD','GFP','RFP','Inducer')
 
 merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
+merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric)  # convert the OD, GFP and RFP into numbers (they are loaded as characters)
 ```
 
 ## Data crunching
@@ -44,6 +45,8 @@ Doing calculations with the tables, relating sample names with the values
 ```{r data analysis, echo=FALSE}
 merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
 merged2 %<>% mutate(Samples = as_factor(Samples)) # freeze order of samples as in the plate - columnwise - for easy plotting
+
+merged3 %>% gather(Reading, Value, -Samples) # gather all the reading into 1 column
 ```
 
 ## Data tables
