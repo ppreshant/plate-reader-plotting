@@ -18,18 +18,20 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 ```{r input data, echo = F, message = F}
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
 
-flnm <- '../S010_Ara vs AHL_26-4-19.xlsx'
+flnm <- '../S013_pPK7.2 RBS lib sel triplicate_1-6-19_2.xlsx'
 fl <- read_plateReader_file(flnm) # load all non empty sheets of the excel file into fl - as a list 
-data_sheet1 <- fl$`6.75 hr optimal gain` # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
 nRows <- 8; 
 nCols <- 12;
 
-# Context: 24 rows of lines before data is seen, 27 rows between data and fluorescence values, 27 more rows till RFP values
-table_OD <- data_sheet1[24 + 0:nRows, 1 + 0:nCols] # exract the OD table
-table_Samples <- data_sheet1[24 + 0:nRows, 3 + nCols + 0:nCols] # exract the Sample names table
-table_Inducer <- data_sheet1[24 + 0:nRows, 5+2*nCols + 0:nCols] # exract the Inducer table
-table_GFP <- data_sheet1[(50+nRows) + 0:nRows, 1 + 0:nCols] # exract the GFP values
-table_RFP <- data_sheet1[(76+2*nRows) + 0:nRows,  1 + 0:nCols] # exract the RFP values
+# Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 27 more rows till RFP values (including the row with <>)
+b_gap = 23; a_gap <- 26
+
+table_OD <- data_sheet1[b_gap + 0:nRows, 1 + 0:nCols] # exract the OD table
+table_Samples <- data_sheet1[b_gap + 0:nRows, 3 + nCols + 0:nCols] # exract the Sample names table
+table_Inducer <- data_sheet1[b_gap + 0:nRows, 5+2*nCols + 0:nCols] # exract the Inducer table
+table_GFP <- data_sheet1[(b_gap + a_gap - 1 +nRows) + 0:nRows, 1 + 0:nCols] # exract the GFP values
+table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*nRows) + 0:nRows,  1 + 0:nCols] # exract the RFP values
 
 tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
 names_vector <- c('Samples','OD','GFP','RFP','Inducer')
@@ -46,7 +48,10 @@ Doing calculations with the tables, relating sample names with the values
 merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
 merged2 %<>% mutate(Samples = as_factor(Samples)) # freeze order of samples as in the plate - columnwise - for easy plotting
 
-merged3 %>% gather(Reading, Value, -Samples) # gather all the reading into 1 column
+merged2 %<>% mutate('GFP/RFP' = GFP/RFP)
+
+merged3 <- merged2 %>% group_by(Samples) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP
+# merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column
 ```
 
 ## Data tables
