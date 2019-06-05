@@ -36,8 +36,9 @@ merged3$Samples[seq(2,48,2)] <- rep(str_c('6.', 13:24)) # name each colony with 
 merged3$Samples[seq(49,96,2)] <- rep(str_c('7.', 1:12)) # name each colony with a number
 merged3$Samples[seq(50,96,2)] <- rep(str_c('7.', 13:24)) # name each colony with a number
 
-merged3 %<>% mutate(Samples = as_factor(Samples)) %>% mutate(Samples = fct_reorder(Samples, `GFP/RFP`))
-merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'rGFP', 'pRV01', 'fGFP', 'pPK04', after = 96))
+merged4 <- merged3 %>% arrange(category, desc(Induction), `GFP/RFP`) %>% mutate(Samples = as_factor(Samples)) # ordered in ascending order within each category
+merged5 <- merged3 %>% arrange(desc(Induction), `GFP/RFP`) %>% mutate(Samples = as_factor(Samples)) # ordered ascending order whole
+# merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'rGFP', 'pRV01', 'fGFP', 'pPK04', after = 96))
 
 # change order of the samples - for easy plotting
 # merged3 %>% mutate(Samples = as_factor(Samples)) %>% group_by(category) %>% mutate(Samples = fct_relevel(Samples, 'GFP/RFP')) -> m4
@@ -63,7 +64,7 @@ merged3
 Plotting
 
 ```{r plotting, echo=FALSE}
-merged3 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point()  + facet_wrap(~category, scales = 'free_x') -> plt
+merged4 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point()  + facet_wrap(~category, scales = 'free_x') -> plt
 plt %<>% format_classic(.) %>% format_logscale()
 ggsave('plots and data/S011_faceted.png', height = 3.5, width = 14)
 ```
