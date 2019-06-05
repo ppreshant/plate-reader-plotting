@@ -36,7 +36,7 @@ merged3$Samples[seq(2,48,2)] <- rep(str_c('6.', 13:24)) # name each colony with 
 merged3$Samples[seq(49,96,2)] <- rep(str_c('7.', 1:12)) # name each colony with a number
 merged3$Samples[seq(50,96,2)] <- rep(str_c('7.', 13:24)) # name each colony with a number
 
-merged3 %>% mutate(Samples = as_factor(Samples)) 
+merged3 %<>% mutate(Samples = as_factor(Samples)) %>% mutate(Samples = fct_reorder(Samples, `GFP/RFP`))
 merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'rGFP', 'pRV01', 'fGFP', 'pPK04', after = 96))
 
 # change order of the samples - for easy plotting
