@@ -20,6 +20,7 @@ ui1 <- paste_plate_to_column() # input the uninduced values (GFP/RFP)
 i1 <- paste_plate_to_column() # input the induced values (GFP/RFP)
 
 merged_data <- bind_cols(s1,ui1,i1) # merging all three data into 1 table
+colnames(merged_data)[2:3]  <- c('Uninduced', 'Induced') # proper naming of columns
 merged1 <- merged_data %>% gather(Induction, `GFP/RFP`,-Samples) # select only the data values
 ```
 
@@ -30,9 +31,21 @@ Doing calculations with the tables, relating sample names with the values
 ```{r data analysis, echo=FALSE}
 merged2 <- merged1 %>% filter(!str_detect(Samples, "pHC|NA|^MG"))  # remove unneccesary samples
 merged3 <- merged2 %>% mutate(category  = fct_lump(Samples, 2, other_level = 'Controls')) %>% arrange(Samples) # make a new column for frequent categories
-merged3$Samples[1:96] <- rep(1:24) # name each colony with a number
-merged3 %<>% mutate(Samples = as_factor(Samples)) 
-merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'pPK04', 'pRV01', 'rGFP', 'fGFP', after = 96)) # change order of the samples - for easy plotting
+merged3$Samples[seq(1,48,2)] <- rep(str_c('6.', 1:12)) # name each colony with a number
+merged3$Samples[seq(2,48,2)] <- rep(str_c('6.', 13:24)) # name each colony with a number
+merged3$Samples[seq(49,96,2)] <- rep(str_c('7.', 1:12)) # name each colony with a number
+merged3$Samples[seq(50,96,2)] <- rep(str_c('7.', 13:24)) # name each colony with a number
+
+merged3 %>% mutate(Samples = as_factor(Samples)) 
+merged3 %<>% mutate (Samples = fct_relevel(merged3$Samples, 'rGFP', 'pRV01', 'fGFP', 'pPK04', after = 96))
+
+# change order of the samples - for easy plotting
+# merged3 %>% mutate(Samples = as_factor(Samples)) %>% group_by(category) %>% mutate(Samples = fct_relevel(Samples, 'GFP/RFP')) -> m4
+
+# merged3_u <- merged3 %>% filter(Induction == 'Uninduced') %>% arrange(`GFP/RFP`) # create in ascending order of uninduced
+# factor_order <- with(merged3_u, fct_inorder(Samples))  # extract the sample names
+# 
+# levels(merged3$Samples) <- levels(factor_order) # apply the order to the data frame
 ```
 
 ## Raw data tables
@@ -50,7 +63,7 @@ merged3
 Plotting
 
 ```{r plotting, echo=FALSE}
-merged3 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point() + facet_wrap(~category, scales = 'free_x') -> plt
+merged3 %>% ggplot(aes(Samples,`GFP/RFP`, color = Induction)) + geom_point()  + facet_wrap(~category, scales = 'free_x') -> plt
 plt %<>% format_classic(.) %>% format_logscale()
 ggsave('plots and data/S011_faceted.png', height = 3.5, width = 14)
 ```
