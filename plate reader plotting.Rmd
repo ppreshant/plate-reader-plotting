@@ -52,7 +52,7 @@ merged2 %<>% mutate('GFP/RFP' = GFP/RFP)
 
 merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP
 # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column
-merged4 <- merged3 %>% ungroup() %>%  mutate(Samples = fct_relevel(merged3$Samples, 'pRV01'))
+merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples))
 ```
 
 ## Data tables
