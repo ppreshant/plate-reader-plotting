@@ -71,7 +71,7 @@ Plotting
 
 ```{r plotting, echo=T}
 merged5 <- merged4 %>% filter(str_detect(Samples, "pInt8|pRV01"))
-merged5 %>% ggplot(aes(log10(Inducer),mean, color = Samples)) + geom_point() + facet_wrap(~category, scales = 'free') -> plt
+merged5 %>% ggplot(aes(log10(Inducer),mean, color = Samples)) + geom_point() + geom_errorbar(aes(ymin = mean -sd, ymax = mean + sd), width = .25) +  facet_wrap(~category, scales = 'free') -> plt
 plt %<>% format_classic(.) 
 plt + ggtitle('Comparing gene flip vs promoter flip') + ylab('GFP/RFP')
 ggsave('plots and data/S012b_pInt8,pRV01.png')
