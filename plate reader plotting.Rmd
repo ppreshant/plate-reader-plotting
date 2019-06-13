@@ -51,23 +51,24 @@ merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric)  # convert the OD, GFP an
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
-merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
+merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
+# merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
+merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
 
 merged2 %<>% mutate('GFP/RFP' = GFP/RFP)
 
-merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP
-# merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column
-merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples))
+merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+# merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
+merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
 ```
 
 ## Data tables
 
-Showing raw data and processed data here
+Showing raw data and processed data here 
 
 GFP/RFP values
 ``` {r}
-merged2
+merged2 # format with colours etc for good visualization
 ```
 
 
@@ -78,6 +79,6 @@ Plotting
 ```{r plotting, echo=T}
 merged4 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,16)) -> plt
 plt %<>% format_classic(.) %>% format_logscale()
-plt <- plt + ggtitle('S013 : RBS library 7.2') + ylab('GFP/RFP') 
+plt <- plt + ggtitle('S013 : RBS library 6.2') + ylab('GFP/RFP')
 # ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
 ```
