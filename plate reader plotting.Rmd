@@ -26,24 +26,8 @@ data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default t
 n_Rows <- 3; 
 n_Cols <- 12;
 
-# Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
+merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
 
-if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26;
-}  else {b_gap = 24; a_gap <- 27}
- 
-
-
-table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
-table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
-table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table
-table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
-table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
-
-tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
-names_vector <- c('Samples','OD','GFP','RFP','Inducer')
-
-merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
-merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric)  # convert the OD, GFP and RFP into numbers (they are loaded as characters)
 ```
 
 ## Data crunching
@@ -51,11 +35,10 @@ merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric)  # convert the OD, GFP an
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
+# Purpose : Data crunching of plate reader after loading data set
 merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
 # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
-
-merged2 %<>% mutate('GFP/RFP' = GFP/RFP)
 
 merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
 # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple

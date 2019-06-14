@@ -55,6 +55,30 @@ read_plate_to_column <- function(data_tibble, val_name)
   data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
+# Reading all plate related data from a sheet ----
+# uses above functions and makes the working RMD file clean
+
+read_all_plates_in_sheet <- function(data_sheet, n_Rows, n_Cols)
+{
+  # Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
+  
+  if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26;
+  }  else {b_gap = 24; a_gap <- 27}
+  
+  table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
+  table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
+  table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table
+  table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
+  table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
+  
+  tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
+  names_vector <- c('Samples','OD','GFP','RFP','Inducer')
+  
+  merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
+  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
+  merged1
+}
+
 # formatting plots ----
 
 # plot formatting function : format as classic, colours = Set1
