@@ -51,6 +51,7 @@ merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric)  # convert the OD, GFP an
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
+# Purpose : Data crunching of plate reader after loading data set
 merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
 # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
