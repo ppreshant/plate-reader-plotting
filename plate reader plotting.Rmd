@@ -34,9 +34,11 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis, echo=FALSE}
-table_c0 <- extract_from_given_sheet("C0.a", 3, 7) # extracing from each sheet
-table_c1 <- extract_from_given_sheet("C1.m", n_Rows, n_Cols)
-table_c2 <- extract_from_given_sheet("C2.m", n_Rows, n_Cols)
+table_c0 <- extract_from_given_sheet("C0.a", 3, 7) %>% mutate(Time = '0') # extracing from each sheet
+table_c1 <- extract_from_given_sheet("C1.m", n_Rows, n_Cols) %>% mutate(Time = '6')
+table_c2 <- extract_from_given_sheet("C2.m", n_Rows, n_Cols) %>% mutate(Time = '24')
+
+all_days_table <- bind_rows(table_c0,table_c1,table_c2)
 ```
 
 ## Data tables
