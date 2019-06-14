@@ -55,10 +55,10 @@ read_plate_to_column <- function(data_tibble, val_name)
   data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
-# Reading all plate related data from a sheet ----
+# Reading all plate related data from a sheet; vectorizable ----
 # uses above functions and makes the working RMD file clean
 
-read_all_plates_in_sheet <- function(data_sheet, n_Rows, n_Cols)
+read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
 {
   # Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
   
@@ -77,6 +77,32 @@ read_all_plates_in_sheet <- function(data_sheet, n_Rows, n_Cols)
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
   merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
   merged1
+}
+
+clean_summarize_and_arrange <- function(merged1)
+{ # Purpose : Data crunching of plate reader after loading data set
+  # 1. removes NA and undesirable samples
+  # 2. adds units to inducer concentration value
+  # 4. Calculates mean and variance of GFP/RFP within replicates (treating different Inducer values differently)
+  # 5. Aranges the values in ascending order of mean for convenient plotting
+  
+  merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
+  # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
+  merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  
+  merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
+  merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+  merged4
+}
+
+extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
+{ # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
+  data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+  
+  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
+  table_sheet1 <- clean_summarize_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
+  
 }
 
 # formatting plots ----
