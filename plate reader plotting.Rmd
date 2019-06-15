@@ -56,8 +56,10 @@ GFP/RFP values
 Plotting
 
 ```{r plotting, echo=T}
-merged4 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,16)) -> plt
-plt %<>% format_classic(.) %>% format_logscale()
-plt <- plt + ggtitle('S013 : RBS library 6.2') + ylab('GFP/RFP')
-# ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
+sel_table1 <- all_days_table %>% filter(str_detect(Samples, "^[p|P]")) %>% filter(!str_detect(Inducer, "_"))
+sel_table1$Time %<>% as.numeric()
+plt1 <- ggplot(sel_table1, aes(Time, mean, colour = Inducer)) + geom_point(size = 3) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP') + ggtitle('AHL flipping with time')
+plt1 %>% format_classic() %>% format_logscale() %>% print()
+ggsave('plots and data/S015_linear.png', plt1)
 ```
+
