@@ -56,9 +56,11 @@ GFP/RFP values
 Plotting
 
 ```{r plotting, echo=T}
-sel_table1 <- all_days_table %>% filter(!str_detect(Samples, "MG")) %>% filter(!str_detect(Inducer, "_"))
+sel_table1 <- all_days_table %>% filter(!str_detect(Samples, "MG")) %>% filter(!str_detect(Inducer, "_")) # filter neccesary samples for plotting
 sel_table1$Time %<>% as.numeric()
-plt1 <- ggplot(sel_table1, aes(Time, mean, colour = Inducer)) + geom_point(size = 1) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP') + ggtitle('AHL flipping with time')
+sel_table1$Samples %<>% fct_relevel(levels(.)[c(5,4,1,3,2,6)]) # manually reorder sample order for plotting
+
+plt1 <- ggplot(sel_table1, aes(Time, mean, colour = Inducer)) + geom_point(size = 1) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
 plt2 <- plt1 %>% format_classic() %>% format_logscale()
 # ggsave('plots and data/S015_linear.png', plt1)
 ```
