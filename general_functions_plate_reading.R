@@ -79,7 +79,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   merged1
 }
 
-clean_summarize_and_arrange <- function(merged1)
+clean_and_arrange <- function(merged1)
 { # Purpose : Data crunching of plate reader after loading data set
   # 1. removes NA and undesirable samples
   # 2. adds units to inducer concentration value
@@ -87,10 +87,14 @@ clean_summarize_and_arrange <- function(merged1)
   # 5. Aranges the values in ascending order of mean for convenient plotting
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
-  # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
   merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
   
-  merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+}
+
+summarize_and_arrange_at <- function(merged2, feature_name = 'GFP/RFP')
+{ # calculates mean and SD of a given column / feature  ex: GFP/RFP
+  merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
   merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
   merged4
@@ -101,7 +105,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
   merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
-  table_sheet1 <- clean_summarize_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
+  table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
   
 }
 
