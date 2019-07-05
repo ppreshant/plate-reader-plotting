@@ -75,7 +75,7 @@ Plotting all GFP and RFPs
 sel_table1 <- all_days_gathered %>% filter(str_detect(Measurement,"^GFP$|^RFP$")) %>% filter(str_detect(Samples, "RV")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting
 sel_table1$Samples %<>% fct_relevel(levels(.)[c(5,4,1,3,2,6)]) # manually reorder sample order for plotting
 
-plt3 <- ggplot(sel_table1, aes(Time, Reading, colour = Measurement, shape = Inducer, group = interaction(Inducer, Measurement, `Replicate #`))) + geom_line() + geom_point(size = 3) + scale_shape_manual(values = c(1,19)) + facet_wrap(~Samples, scales = 'fixed') +  scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP') + ggtitle('AHL flipping with time') 
+plt3 <- ggplot(sel_table1, aes(Time, Reading, colour = Measurement, shape = Inducer, group = interaction(Inducer, Measurement, `Replicate #`))) + geom_line() + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + facet_wrap(~Samples, scales = 'fixed') +  scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP') + ggtitle('AHL flipping with time') 
 plt4 <- plt3 %>% format_classic() # %>% format_logscale()
 # ggsave('plots and data/S015_linear.png', plt1)
 # ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
