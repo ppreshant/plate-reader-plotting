@@ -75,7 +75,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   names_vector <- c('Samples','OD','GFP','RFP','Inducer')
   
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
-  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
+  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
   merged1
 }
 
@@ -88,7 +88,7 @@ clean_and_arrange <- function(merged1)
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
   merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
-  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
   
 }
 
@@ -96,8 +96,16 @@ summarize_and_arrange_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
   merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-  merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+  merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
   merged4
+}
+
+summarize_and_arrange_all <- function(merged2)
+{ # calculates mean and SD of all columns
+  merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_all(funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  # merged4 <- merged3 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
+  merged5 <- merged4 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
+  
 }
 
 extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
