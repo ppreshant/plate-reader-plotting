@@ -96,16 +96,8 @@ summarize_and_arrange_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
   merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-  merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
-  merged4
-}
-
-summarize_and_arrange_all <- function(merged2)
-{ # calculates mean and SD of all columns
-  merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_all(funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
-  # merged4 <- merged3 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-  merged5 <- merged4 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
-  
+  # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
+  # merged4
 }
 
 extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
