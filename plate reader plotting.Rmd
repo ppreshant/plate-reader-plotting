@@ -1,5 +1,5 @@
 ---
-title: "Plate reader plotting : S013"
+title: "Plate reader plotting : S015c"
 author: "Prashant"
 date: "June 2, 2019"
 output: html_document
@@ -22,7 +22,7 @@ flnm <- 'S015c_AHL flip timecourse_3-7-19'
 
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-sheet_names <- c("0 hr","6 hr","24 hr") # list the sheets to be loaded
+sheet_names <- c("0 hr","6 hr","24 hr", "48 hr") # list the sheets to be loaded
 n_Rows <- 8; 
 n_Cols <- 12; 
 # check the number of rows and columns for first sheet listed below
@@ -38,8 +38,9 @@ Doing calculations with the tables, relating sample names with the values
 table_c0 <- extract_from_given_sheet(sheet_names[1], 3, 12) %>% mutate(Time = 0) # extracing from each sheet
 table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Time = 6)
 table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Time = 24)
+table_c3 <- extract_from_given_sheet(sheet_names[4], 3, 12) %>% mutate(Time = 48)
 
-all_days_table <- bind_rows(table_c0,table_c1,table_c2) # merge all sheets into 1 table
+all_days_table <- bind_rows(table_c0,table_c1,table_c2,table_c3) # merge all sheets into 1 table
 
 all_days_table %<>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
@@ -65,11 +66,20 @@ Plotting GFP/RFP : mean and sd
 ```{r plotting1}
 sel_table1 <- all_days_table %>% group_and_summarize_at() %>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt1 <- ggplot(sel_table1, aes(Time, mean, colour = Inducer)) + geom_point(size = 1) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt1 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) + scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/RFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
 plt2 <- plt1 %>% format_classic() %>% format_logscale()
 plt2
 # ggsave('plots and data/S015_linear.png', plt1)
 # ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
+```
+Plotting GFP : mean and sd
+
+```{r plotting5}
+sel_table1 <- all_days_table %>% group_and_summarize_at('GFP') %>% filter(!str_detect(Samples, "MG|LB|SH|GFP")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt9 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt10 <- plt9 %>% format_classic() %>% format_logscale()
+plt10
 ```
 
 Plotting GFP/OD and RFP/OD: mean and SD
