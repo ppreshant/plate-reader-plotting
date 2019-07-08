@@ -92,7 +92,7 @@ clean_and_arrange <- function(merged1)
   
 }
 
-summarize_and_arrange_at <- function(merged2, feature_name = 'GFP/RFP')
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
   merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
