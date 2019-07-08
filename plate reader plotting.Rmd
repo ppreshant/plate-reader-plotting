@@ -75,9 +75,9 @@ plt2
 Plotting GFP : mean and sd
 
 ```{r plotting5}
-sel_table1 <- all_days_table %>% group_and_summarize_at('GFP') %>% filter(!str_detect(Samples, "MG|LB|SH|GFP")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt9 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt9 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24)) + ylab('GFP/OD (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
 plt10 <- plt9 %>% format_classic() %>% format_logscale()
 plt10
 ```
