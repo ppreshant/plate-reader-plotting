@@ -109,21 +109,20 @@ plt8 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
 Plotting OD : mean and SD
 
 ```{r plotting5}
-sel_table3 <- all_days_table %>% group_and_summarize_at('OD') %>% filter(!str_detect(Samples, "LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+sel_table5 <- all_days_table %>% group_and_summarize_at('OD')  # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt5 <- ggplot(sel_table3, aes(Time, mean, colour = Inducer)) + geom_point(size = 1) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_x_continuous(breaks = c(0,6,24,48)) + ylab('OD') + ggtitle('AHL flipping with time') 
-plt6 <- plt5 %>% format_classic()
-plt6
+plt9 <- ggplot(sel_table5, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_wrap(~ category, scales = 'free_x') + ylab('OD') + ggtitle('RBS mutant library')
+plt10 <- plt9 %>% format_classic()
+plt10
 ```
 
-Plotting all GFP/OD and RFP/OD (individual replicates)
+Fold change induced vs uninduced GFP/OD
 
 ```{r plotting6}
-sel_table2 <- all_days_gathered %>% filter(str_detect(Measurement,"^GFP/OD|^RFP/")) %>% filter(!str_detect(Samples, "LB|MG")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting
+sel_table6 <- all_days_table %>% select(Samples, category, Inducer, `GFP/OD`) %>% filter(!str_detect(Inducer, 'Primary')) %>% spread(Inducer, `GFP/OD`) %>% mutate(ratio = `1 uM`/`0 uM`) # spread GFP/OD for induced and uninduced and calculate ratio
+sel_table6$Samples %<>%  fct_relevel(levels(sel_table3$Samples))
 
-plt3 <- ggplot(sel_table2, aes(Time, Reading, colour = Measurement, shape = Inducer, group = interaction(Inducer, Measurement, `Replicate #`))) + geom_line() + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + facet_wrap(~Samples, scales = 'fixed') +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('Fluorescence/OD (a.u.)') + ggtitle('AHL flipping with time') 
-plt4 <- plt3 %>% format_classic() # %>% format_logscale()
-plt4 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
-# ggsave('plots and data/S015_linear.png', plt1)
-# ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
+plt11 <- ggplot(sel_table6, aes(Samples, ratio)) + geom_point(size = 2) + facet_wrap(~ category, scales = 'free_x') + geom_hline(yintercept = 1) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library')
+plt12 <- plt11 %>% format_classic()
+plt12
 ```
