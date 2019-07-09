@@ -94,10 +94,10 @@ clean_and_arrange <- function(merged1)
 
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
-  # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-  # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
-  # merged4
+  merged3 <- merged2 %>% group_by(Samples, Inducer, category) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
+  else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
 }
 
 extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
@@ -116,7 +116,7 @@ format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
     theme_classic() + scale_color_brewer(palette="Set1") + scale_fill_brewer(palette="Set1") + 
-    theme(plot.title = element_text(hjust = 0.5)) #,axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
+    theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 
 # plot formatting function : format as logscale
