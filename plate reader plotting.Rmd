@@ -1,12 +1,12 @@
 ---
-title: "Plate reader plotting : S013"
+title: "Plate reader plotting : S013b : pPK6.2 RBS library"
 author: "Prashant"
-date: "June 2, 2019"
+date: "July 9, 2019"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F, warning=F, fig.width = 14/3, fig.height = 11.34/3)
 source('./general_functions_plate_reading.R')
 ```
 
@@ -55,11 +55,13 @@ merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA sample
 # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
 
-merged2 %<>% mutate('GFP/RFP' = GFP/RFP)
+merged2 %<>% mutate('GFP/RFP' = GFP/RFP, 'GFP/OD' = GFP/OD, 'RFP/OD' = RFP/OD) %>% separate(Samples, c('Samples', NA), sep ='\\+') # calculate ratios and # remove the common reporter plasmid name after the + sign
 
 merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
 # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  
+
+merged2$Samples %<>% fct_relevel(levels(merged4$Samples)) # change sample order in ascending order of GFP/RFP from previous array
 ```
 
 ## Data tables
@@ -74,11 +76,39 @@ merged2 # format with colours etc for good visualization
 
 ## Plotting
 
-Plotting
+Plotting GFP/RFP
 
-```{r plotting, echo=T}
+```{r plotting1, echo=F}
 merged4 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,16)) -> plt
 plt %<>% format_classic(.) %>% format_logscale()
-plt <- plt + ggtitle('S013 : RBS library 6.2') + ylab('GFP/RFP')
+plt <- plt + ggtitle('S013 : RBS library 7.2') + ylab('GFP/RFP')
+plt
+# ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
+```
+
+Plotting GFP/OD and RFP/OD
+
+```{r plotting2, echo=F}
+grouped2 <- merged2 %>% group_and_summarize_at(c('GFP/OD','RFP/OD')) # calculate mean and sd of desired variables
+grouped2 %>% ggplot(aes(Samples, mean, color = Measurement, shape = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,19)) + ggtitle('S013 : RBS library 7.2') + ylab('Fluorescence/OD (a.u.)') -> plt
+plt2 <- plt %>% format_classic(.) #%>% format_logscale()
+plt2
+# ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
+```
+
+Logscale GFP/OD and RFP/OD
+
+```{r plotting2l, echo=F}
+plt2l <- format_logscale(plt2)
+plt2l
+```
+
+Plotting OD
+
+```{r plotting3}
+grouped3 <- merged2 %>% group_and_summarize_at(c('OD')) # calculate mean and sd of desired variables
+grouped3 %>% ggplot(aes(Samples, mean, color = Measurement, shape = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,19)) + ggtitle('S013 : RBS library 7.2') + ylab('OD 600') -> plt
+plt2 <- plt %>% format_classic(.) %>% format_logscale()
+plt2
 # ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
 ```

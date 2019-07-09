@@ -55,6 +55,13 @@ read_plate_to_column <- function(data_tibble, val_name)
   data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
+{ # calculates mean and SD of a given column / feature  ex: GFP/RFP
+  merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Seperate mean and variance and group by variable of measurement
+  else merged3 %>% mutate(Measurement = feature_name)
+}
+
 # formatting plots ----
 
 # plot formatting function : format as classic, colours = Set1
