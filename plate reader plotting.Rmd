@@ -72,7 +72,8 @@ plt2
 # ggsave('plots and data/S015_linear.png', plt1)
 # ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
 ```
-Plotting GFP : mean and sd
+
+Plotting GFP/OD : mean and sd
 
 ```{r plotting5}
 sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
