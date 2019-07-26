@@ -67,7 +67,14 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   
   table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
   table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
-  table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table
+  if (ncol(data_sheet1) >= 5+3*n_Cols) 
+  {
+    table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table if it exists
+    if (is_empty(table_Inducer)) table_Inducer <- table_Samples # if it is empty, make it same as Samples
+  }
+    
+  else table_Inducer <- table_Samples # if Inducer table doesn't exist, make it same as Samples; it will be overwritten later or will not be relevant so can be ignored
+  
   table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
   table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
   
