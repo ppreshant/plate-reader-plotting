@@ -18,12 +18,12 @@ User inputs for multiple sheets
 ```{r input data, message=F, results='hide'}
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
 
-flnm <- 'S011_pPK6.2,7.2_RBS library_16-5-19'
+flnm <- 'S011b_RBS library2_25-7-19'
 
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-sheet_names <- c( "Primary","Uninduced","Induced") # list the sheets to be loaded
-n_Rows <- 5; 
+sheet_names <- c( "day0","d1.u","d1.i") # list the sheets to be loaded
+n_Rows <- 8; 
 n_Cols <- 12; 
 # check the number of rows and columns for first sheet listed below
 ```
@@ -34,9 +34,9 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-table_c0 <- extract_from_given_sheet(sheet_names[1], 5, 12) %>% mutate(Inducer = 'Primary') # extracing from each sheet
-table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM')
-table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM')
+table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Inducer = '0 uM') %>% mutate(Day = 0) # extracing from each sheet
+table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Day = 1)
+table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Day = 1)
 
 merged2 <- bind_rows(table_c0,table_c1,table_c2) # merge all sheets into 1 table
 
