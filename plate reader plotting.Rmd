@@ -34,18 +34,18 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Inducer = '0 uM') %>% mutate(Day = 0) # extracing from each sheet
-table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Day = 1)
-table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Day = 1)
-table_c3 <- extract_from_given_sheet(sheet_names[4], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Day = 2)
-table_c4 <- extract_from_given_sheet(sheet_names[5], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Day = 2)
+table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Inducer = '0 uM') %>% mutate(Day = '0') # extracing from each sheet
+table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Day = '1')
+table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Day = '1')
+table_c3 <- extract_from_given_sheet(sheet_names[4], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Day = '2')
+table_c4 <- extract_from_given_sheet(sheet_names[5], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Day = '2')
 
 merged2 <- bind_rows(table_c0,table_c1,table_c2) # merge all sheets into 1 table
 
 all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\.', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
 
-# determine plotting order: based on ascending order of GFP/RFP values
-plotting_order <- all_days_table %>% group_and_summarize_at() %>% filter(str_detect(Inducer,'0')) %>% arrange(mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
+# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
+plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
 
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
 
@@ -65,23 +65,13 @@ GFP/RFP values
 
 ## Plotting
 
-Plotting GFP/RFP : mean and sd
 
-```{r plotting1}
-sel_table1 <- all_days_table %>% group_and_summarize_at() #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-
-plt1 <- ggplot(sel_table1, aes(Samples, mean, colour = Inducer, shape = Inducer)) + geom_point(size = 2) + facet_wrap(~ category, scales = 'free_x') + scale_shape_manual(values = c(18,19,2)) + ylab('GFP/RFP (a.u.)') + ggtitle('RBS mutant library')
-plt2 <- plt1 %>% format_classic() %>% format_logscale()
-plt2
-
-```
-
-Plotting GFP/OD : mean and sd
+Plotting GFP/OD
 
 ```{r plotting2}
 sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt3 <- ggplot(sel_table2, aes(Samples, mean, colour = Inducer, shape = Inducer)) + geom_point(size = 2) + facet_wrap(~ category, scales = 'free_x') + scale_shape_manual(values = c(18,19,2)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library')
+plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') # plot the mean and add y axis label
 plt4 <- plt3 %>% format_classic() %>% format_logscale()
 plt4
 ```
@@ -89,39 +79,60 @@ plt4
 Merge all GFP/OD
 
 ```{r plotting3}
-sel_table3 <- sel_table2 %>% arrange(Inducer, mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) # arrange samples in ascending order of uninduced
-plt5 <- ggplot(sel_table3, aes(Samples, mean, colour = Inducer, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(18,19,2)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library')
+# plotting GFP/OD without facetting, includes a reference line for the WT control
+WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1') & str_detect(Samples,'RV')) %>% pull(mean) # find the value for pRV01
+
+plt5 <- ggplot(sel_table2, aes(Samples, mean, colour = Day, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)
 plt6 <- plt5 %>% format_classic() %>% format_logscale()
 plt6
 ```
 
-Plotting GFP/OD and RFP/OD: mean and SD
+Plotting GFP/RFP 
 
-```{r plotting4}
-sel_table4 <- all_days_table %>% group_and_summarize_at(c('GFP/OD','RFP/OD')) %>% filter(!str_detect(Inducer,'-')) #%>% arrange(Inducer, Measurement, mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) # arrange samples in ascending order of uninduced # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+```{r plotting1}
+sel_table1 <- all_days_table %>% group_and_summarize_at() #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt7 <- ggplot(sel_table4, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_wrap(~ category, scales = 'free_x') + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library')
-plt8 <- plt7 %>% format_classic() %>% format_logscale()
-plt8 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
+plt1 <- plot_mean_facetted(sel_table1) + ylab('GFP/RFP (a.u.)') # plot the mean and add y axis label
+plt2 <- plt1 %>% format_classic() %>% format_logscale() # formatting with clean classic look and on a logscale
+plt2
+
 ```
 
-Plotting OD : mean and SD
+Plotting OD 
 
 ```{r plotting5}
-sel_table5 <- all_days_table %>% group_and_summarize_at('OD')  # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+sel_table5 <- all_days_table %>% group_and_summarize_at('OD') # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt9 <- ggplot(sel_table5, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_wrap(~ category, scales = 'free_x') + ylab('OD') + ggtitle('RBS mutant library')
+plt9 <- plot_mean_facetted(sel_table5) + ylab('OD')  # plot the mean and add y axis label 
 plt10 <- plt9 %>% format_classic()
 plt10
+```
+
+Plotting GFP/OD and RFP/OD
+
+```{r plotting4}
+sel_table4 <- all_days_table %>% group_and_summarize_at(c('GFP/OD','RFP/OD')) %>% filter(str_detect(Day,'1')) #%>% arrange(Inducer, Measurement, mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) # arrange samples in ascending order of uninduced # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt7 <- ggplot(sel_table4, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library-2 (Day1)')
+plt8 <- plt7 %>% format_classic() %>% format_logscale()
+plt8 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
 ```
 
 Fold change induced vs uninduced GFP/OD
 
 ```{r plotting6}
-sel_table6 <- all_days_table %>% select(Samples, category, Inducer, `GFP/OD`) %>% filter(!str_detect(Inducer, 'Primary')) %>% spread(Inducer, `GFP/OD`) %>% mutate(ratio = `1 uM`/`0 uM`) # spread GFP/OD for induced and uninduced and calculate ratio
-sel_table6$Samples %<>%  fct_relevel(levels(sel_table3$Samples))
+sel_table6 <- all_days_table %>% select(Samples, category, Inducer, Day, `GFP/OD`) %>% filter(str_detect(Day, '1')) %>% spread(Inducer, `GFP/OD`) %>% mutate(ratio = `1 uM`/`0 uM`) # spread GFP/OD for induced and uninduced and calculate ratio
+sel_table6$Samples %<>%  fct_relevel(plotting_order)
 
-plt11 <- ggplot(sel_table6, aes(Samples, ratio)) + geom_point(size = 2) + facet_wrap(~ category, scales = 'free_x') + geom_hline(yintercept = 1) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library')
+plt11 <- ggplot(sel_table6, aes(Samples, ratio)) + geom_point(size = 2) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + geom_hline(yintercept = 1, linetype = 2) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library-2 (Day 1)')
 plt12 <- plt11 %>% format_classic()
 plt12
+```
+
+Fold change induced vs uninduced GFP/OD : In logscale
+
+```{r plotting7}
+
+plt13 <- plt12 %>% format_logscale()
+plt13
 ```
