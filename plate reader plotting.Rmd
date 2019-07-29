@@ -1,7 +1,7 @@
 ---
-title: "RBS library : S011"
+title: "RBS library : S011b"
 author: "Prashant"
-date: "July 9, 2019"
+date: "July 29, 2019"
 output: html_document
 ---
 
@@ -40,10 +40,7 @@ table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(
 
 merged2 <- bind_rows(table_c0,table_c1,table_c2) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% mutate(category  = fct_lump(Samples, 2, other_level = 'Controls')) %>% mutate(Samples = fct_relevel(Samples,'6.2','7.2')) %>% arrange(Samples) %>% mutate(Samples = as.character(Samples)) # make a new column for frequent categories
-all_days_table$Samples[1:72] <-  rep(str_c('6.', 1:24)) # name each colony with a number
-all_days_table$Samples[73:144] <- rep(str_c('7.', 1:24)) # name each colony with a number
-all_days_table$Samples %<>%  fct_inorder() # make samples factor again
+all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\.', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
 
 # determine plotting order: based on ascending order of GFP/RFP values
 plotting_order <- all_days_table %>% group_and_summarize_at() %>% filter(str_detect(Inducer,'0')) %>% arrange(mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()

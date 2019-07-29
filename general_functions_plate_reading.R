@@ -60,6 +60,10 @@ read_plate_to_column <- function(data_tibble, val_name)
 
 read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
 {
+  # Reads OD, GFP and RFP tables from 1 sheet of plate reader output. 
+  # 1. Sample names should be provided in a table next to OD (the first table) in every sheet
+  # 2. Calculates GFP/RFP, GFP/OD and RFP/OD
+  
   # Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
   
   if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26;
@@ -90,8 +94,8 @@ clean_and_arrange <- function(merged1)
 { # Purpose : Data crunching of plate reader after loading data set
   # 1. removes NA and undesirable samples
   # 2. adds units to inducer concentration value
-  # 4. Calculates mean and variance of GFP/RFP within replicates (treating different Inducer values differently)
-  # 5. Aranges the values in ascending order of mean for convenient plotting
+  # 3. Aranges the values in order of plate columns
+  # 4. Adds a column for Replicate # (assuming 3 replicates), ignore if not neccesary or not being used
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
   merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
