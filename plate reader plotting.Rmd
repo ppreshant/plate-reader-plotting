@@ -137,15 +137,22 @@ plt13 <- plt12 %>% format_logscale()
 plt13
 ```
 
-Selected members with GFP/OD induced > uninduced
+Selected members with GFP/OD induced > uninduced: combined plot
 
 ```{r plotting8}
 samples_increase_induction <- sel_table6 %>% filter(ratio > 1) %>% pull(Samples) # select the samples with induced GFP/OD > uninduced
 samples_lower_baseline <- sel_table2 %>% filter(str_detect(Day, '1') & str_detect(Inducer, '0')) %>% filter(mean <= WT_baseline) %>% pull(Samples) # select the samples with induced GFP/OD > uninduced
 
-sel_table7 <- sel_table4 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline)
+sel_table7 <- sel_table4 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline) # select samples with lower baseline and increased GFP/OD upon induction on day1
 
-plt14 <- ggplot(sel_table7, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library-2 (Day1): Selected clones') + geom_hline(yintercept = WT_baseline, linetype = 2)
+plt14 <- ggplot(sel_table7, aes(Samples, mean, colour = Measurement, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library-2 (Day1): Selected clones') + geom_hline(yintercept = WT_baseline, linetype = 2)
 plt15 <- plt14 %>% format_classic() %>% format_logscale()
 plt15
+```
+
+Selected members with GFP/OD induced > uninduced 
+
+```{r plotting8}
+
+plt15 + facet_grid(~ category, scales = 'free_x', space = 'free_x')
 ```
