@@ -59,7 +59,7 @@ merged2 %<>% mutate('GFP/RFP' = GFP/RFP, 'GFP/OD' = GFP/OD, 'RFP/OD' = RFP/OD) %
 
 plotting_order <- group_and_summarize_at(merged2, 'GFP/OD') %>% filter(str_detect(Inducer,'AHL')) %>% arrange(mean) %>% ungroup() %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels() # determine plotting order: based on ascending order of uninduced GFP/OD values
 
-merged2$Samples %<>% fct_relevel(plotting_order) # change sample order: in ascending order of GFP/OD
+merged2$Samples %<>% fct_relevel('pSH001 ','pRV01 ') # change sample order: manually (# good practice : in ascending order of GFP/OD)
 ```
 
 ## Data tables
@@ -95,9 +95,9 @@ plt2l
 Plotting OD
 
 ```{r plotting3}
-grouped3 <- merged2 %>% group_and_summarize_at('OD') %>% filter(str_detect(Inducer,'None|AHL')) # calculate mean and sd of OD
-grouped3 %>% ggplot(aes(Samples, mean, color = Measurement, shape = Inducer)) + geom_point(size = 2) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.05) + scale_shape_manual(values = c(1,19)) + ggtitle('AHL influence on RFP') + ylab('OD 600') -> plt
-plt2 <- plt %>% format_classic(.) %>% format_logscale()
+grouped3 <- merged2 %>% group_and_summarize_at('OD') # calculate mean and sd of OD
+grouped3 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.05) + scale_shape_manual(values = c(1,19)) + ggtitle('AHL influence on RFP') + ylab('OD 600') -> plt
+plt2 <- plt %>% format_classic(.)
 plt2
 # ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
 ```
