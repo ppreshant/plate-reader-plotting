@@ -106,7 +106,7 @@ plt2l
 Plotting OD
 
 ```{r plotting3}
-grouped3 <- merged2 %>% group_and_summarize_at('OD') # calculate mean and sd of OD
+grouped3 <- merged2 %>% group_and_summarize_at('OD') %>% filter(str_detect(Inducer,'None|AHL')) # calculate mean and sd of OD
 
 grouped3 %>% ggplot(aes(Inducer, mean)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.15) + scale_shape_manual(values = c(1,19)) + facet_grid(~ Samples) + ggtitle('AHL influence on OD') + ylab('OD') -> plt3
 plt4 <- plt3 %>% format_classic(.)
