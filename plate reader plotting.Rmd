@@ -186,7 +186,7 @@ plt6 + ylim(c(0,8000))
 
 Filtering data for selecting desired clones
 ``` {r filtering data1}
-ordered_samples <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1')) %>% arrange(`GFP/OD`)
+ordered_samples <- sel_table7 %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1')) %>% mutate('GFP/OD' = mean)
 cutoff <- ordered_samples %>% filter(str_detect(Samples, '7.16')) %>% pull(`GFP/OD`) # manually selecting the clone from GFP/OD all graph
 selected_samples <- ordered_samples %>% filter(`GFP/OD` <= cutoff) %>% separate(Samples, into = c(NA, 'numbering'), sep = '\\.', remove = F) %>% mutate_at('numbering', as.numeric) %>% arrange(category, numbering) # select clones below the cutoff
 selected_samples %>% filter(!str_detect(category,'Control')) %>% nrow() # count the number of clones selected
