@@ -71,8 +71,9 @@ Plotting GFP/OD
 ```{r plotting2}
 sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1') & str_detect(Samples,'RV')) %>% pull(mean) # find the value for pRV01
+rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for pRV01
 
-plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
+plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
 plt4 <- plt3 %>% format_classic() %>% format_logscale()
 plt4
 ```

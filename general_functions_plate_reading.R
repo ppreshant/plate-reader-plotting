@@ -86,8 +86,10 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   names_vector <- c('Samples','OD','GFP','RFP','Inducer')
   
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
-  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
-  merged1
+  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) # convert to numeric (they are loaded as characters by default)
+  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  
+  merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
 }
 
 clean_and_arrange <- function(merged1)
