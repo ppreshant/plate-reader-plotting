@@ -168,7 +168,27 @@ Selected clones: Fold change induced vs uninduced GFP/OD
 ```{r plotting10}
 sel_table9 <- sel_table6 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline) # select samples with lower baseline and increased GFP/OD upon induction  on either day1 or 2
 
-plt18 <- ggplot(sel_table9, aes(Samples, ratio, colour = Day)) + geom_point(size = 2)  + geom_hline(yintercept = 1, linetype = 2) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library-2')
+plt18 <- ggplot(sel_table9, aes(Samples, ratio, colour = Day)) + geom_point(size = 2)  + geom_hline(yintercept = 1, linetype = 2) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library-2: Selected clones')
 plt19 <- plt18 %>% format_classic() %>% format_logscale()
 plt19
 ```
+
+Merge all GFP/OD: only day 1
+
+```{r plotting3}
+# plotting GFP/OD without facetting, includes a reference line for the WT control
+sel_table2_1 <- sel_table2 %>% filter(str_detect(Day, '2'))
+
+plt5 <- ggplot(sel_table2_1, aes(Samples, mean, colour = Day, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)
+plt6 <- plt5 %>% format_classic() 
+plt6 + ylim(c(0,8000))
+```
+
+Filtering data for selecting desired clones
+``` {r filtering data1}
+ordered_samples <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Day,'1')) %>% arrange(`GFP/OD`)
+cutoff <- ordered_samples %>% filter(str_detect(Samples, '7.16')) %>% pull(`GFP/OD`) # manually selecting the clone from GFP/OD all graph
+selected_samples <- ordered_samples %>% filter(`GFP/OD` <= cutoff) %>% separate(Samples, into = c(NA, 'numbering'), sep = '\\.', remove = F) %>% mutate_at('numbering', as.numeric) %>% arrange(category, numbering) # select clones below the cutoff
+selected_samples %>% filter(!str_detect(category,'Control')) %>% nrow() # count the number of clones selected
+```
+
