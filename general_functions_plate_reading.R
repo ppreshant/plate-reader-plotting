@@ -107,9 +107,9 @@ clean_and_arrange <- function(merged1)
 
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Day) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   
-  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category, -Day) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category, -Time) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
   else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
 }
 
@@ -127,7 +127,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # plotting function : to reduce redundancy, common elements are captured here
 plot_mean_facetted <- function(sel_tablex)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
-  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Day, shape = Inducer)) + geom_point(size = 2) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(1,19)) + ggtitle('RBS mutant library-2')
+  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(1,19)) + ggtitle('RBS mutant library-2')
 }
 
 
