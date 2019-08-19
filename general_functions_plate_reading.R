@@ -127,7 +127,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # plotting function : to reduce redundancy, common elements are captured here
 plot_mean_facetted <- function(sel_tablex)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
-  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(1,19)) + ggtitle('RBS mutant library-2')
+  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(1,19)) + ggtitle('RBS mutants selected')
 }
 
 
