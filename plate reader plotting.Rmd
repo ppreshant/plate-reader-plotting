@@ -170,6 +170,25 @@ plt8 <- plt7 %>% format_classic() %>% format_logscale()
 plt8 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
 ```
 
+ GFP/OD linear scale
+
+```{r plotting2l}
+# linear scale GFP/OD
+plt4l <- plt3 %>% format_classic()
+plt4l + ylim(c(0,2500))
+```
+
+ GFP/OD Uninduced only
+
+```{r plotting2u}
+# linear scale GFP/OD
+sel_table2u <- sel_table2 %>% filter(str_detect(Inducer,'0'))
+
+plt3u <- plot_mean_facetted(sel_table2u) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
+plt4lu <- plt3u %>% format_classic()
+plt4lu + ylim(c(0,500))
+```
+
 <!-- Selected members with GFP/OD induced > uninduced: combined plot -->
 
 <!-- ```{r plotting8} -->
