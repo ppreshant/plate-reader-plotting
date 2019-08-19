@@ -120,6 +120,13 @@ plt12 <- plt11 %>% format_classic()
 plt12
 ```
 
+Fold change : zoom in
+
+```{r plotting6zoom}
+plt12 + ylim(c(0,30)) + ggtitle('RBS mutants selected: fluorescence above MG1655 background')
+
+```
+
 Fold change induced vs uninduced GFP/OD : In logscale
 
 ```{r plotting7}
@@ -127,7 +134,10 @@ Fold change induced vs uninduced GFP/OD : In logscale
 plt13 <- plt12 %>% format_logscale()
 plt13
 ```
+
+
 ## extra plots : detailed analysis and troubleshooting
+
 
 Plotting GFP/RFP 
 
