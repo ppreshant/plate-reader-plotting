@@ -174,9 +174,9 @@ plt19 <- plt18 %>% format_classic() %>% format_logscale()
 plt19
 ```
 
-Merge all GFP/OD: only day 1
+Merge all GFP/OD: only day 2
 
-```{r plotting3}
+```{r plotting11}
 # plotting GFP/OD without facetting, includes a reference line for the WT control
 sel_table2_1 <- sel_table2 %>% filter(str_detect(Time, '25'))
 
