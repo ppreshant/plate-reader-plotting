@@ -42,12 +42,13 @@ table_c4 <- extract_from_given_sheet(sheet_names[5], n_Rows, n_Cols) %>% mutate(
 
 merged2 <- bind_rows(table_c0,table_c1,table_c2,table_c3,table_c4) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\.', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
+all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\_', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
 
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
 plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
 
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
+all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
 
 all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
 
