@@ -71,8 +71,8 @@ Plotting GFP/OD
 
 ```{r plotting2}
 sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6') & str_detect(Samples,'RV')) %>% pull(mean) # find the value for pRV01
-rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for pRV01
+WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
+rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control
 
 plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
 plt4 <- plt3 %>% format_classic() %>% format_logscale()
@@ -189,47 +189,20 @@ plt4lu <- plt3u %>% format_classic()
 plt4lu + ylim(c(0,500))
 ```
 
-<!-- Selected members with GFP/OD induced > uninduced: combined plot -->
+Selected GFP/OD - Top 5: only day 2
 
-<!-- ```{r plotting8} -->
-<!-- samples_increase_induction <- sel_table6 %>% filter(ratio > 1) %>% pull(Samples) # select the samples with induced GFP/OD > uninduced -->
-<!-- samples_lower_baseline <- sel_table2 %>% filter(str_detect(Time, '6') & str_detect(Inducer, '0')) %>% filter(mean <= WT_baseline) %>% pull(Samples) # select the samples with induced GFP/OD > uninduced -->
+```{r plotting1s, fig.width = 5, fig.height = 3.5}
+# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
+plotting_order_2 <- sel_table2_1 %>% ungroup() %>% filter(str_detect(Inducer,'0')) %>% arrange(mean) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
 
-<!-- sel_table7 <- sel_table2 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline) # select samples with lower baseline and increased GFP/OD upon induction on either day1 or 2 -->
+sel_table2_1$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
 
-<!-- plt14 <- ggplot(sel_table7, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2: Selected clones') + geom_hline(yintercept = WT_baseline, linetype = 2) -->
+# Selecting top 5 data points + controls
+sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_infreq(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
 
-<!-- plt15 <- plt14 %>% format_classic() %>% format_logscale() -->
-<!-- plt15 -->
-<!-- ``` -->
+plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
 
-
-<!-- Selected clones: Plotting GFP/OD and RFP/OD -->
-
-<!-- ```{r plotting9, fig.width = 14, fig.height = 7} -->
-<!-- sel_table8 <- sel_table4 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline) # select samples with lower baseline and increased GFP/OD upon induction on either day1 or 2 -->
-
-<!-- plt16 <- ggplot(sel_table8, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_grid(Measurement ~ ., scales = 'free_x', space = 'free_x') + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library-2: Selected clones') -->
-<!-- plt17 <- plt16 %>% format_classic() %>% format_logscale() -->
-<!-- plt17 -->
-<!-- ``` -->
-
-<!-- Selected clones: Fold change induced vs uninduced GFP/OD -->
-
-<!-- ```{r plotting10} -->
-<!-- sel_table9 <- sel_table6 %>% filter(Samples %in% samples_increase_induction & Samples %in% samples_lower_baseline) # select samples with lower baseline and increased GFP/OD upon induction  on either day1 or 2 -->
-
-<!-- plt18 <- ggplot(sel_table9, aes(Samples, ratio, colour = Time)) + geom_point(size = 2)  + geom_hline(yintercept = 1, linetype = 2) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutant library-2: Selected clones') -->
-<!-- plt19 <- plt18 %>% format_classic() %>% format_logscale() -->
-<!-- plt19 -->
-<!-- ``` -->
-
-
-<!-- Filtering data for selecting desired clones -->
-<!-- ``` {r filtering data1} -->
-<!-- ordered_samples <- sel_table7 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% mutate('GFP/OD' = mean) -->
-<!-- cutoff <- ordered_samples %>% filter(str_detect(Samples, '7.16')) %>% pull(`GFP/OD`) # manually selecting the clone from GFP/OD all graph -->
-<!-- selected_samples <- ordered_samples %>% filter(`GFP/OD` <= cutoff) %>% separate(Samples, into = c(NA, 'numbering'), sep = '\\.', remove = F) %>% mutate_at('numbering', as.numeric) %>% arrange(category, numbering) # select clones below the cutoff -->
-<!-- selected_samples %>% filter(!str_detect(category,'Control')) %>% nrow() # count the number of clones selected -->
-<!-- ``` -->
+plt1a <- plt1 %>% format_classic() 
+plt1a + ylim(0, 2000)
+```
 
