@@ -206,3 +206,14 @@ plt1a <- plt1 %>% format_classic()
 plt1a + ylim(0, 2000)
 ```
 
+WT pRV01 GFP/OD - uninduced : daily progression
+
+```{r plotting2wt, fig.width = 5, fig.height = 3.5}
+# Extract desired data: only pRV01 - various days
+sel_table2_wt <- sel_table2 %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG')) 
+
+plt2 <- ggplot(sel_table2_wt, aes(Time, mean, colour = Samples, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('Un-induced flipping with time') + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
+
+plt2a <- plt2 %>% format_classic() 
+plt2a# + ylim(0, 2000)
+```
