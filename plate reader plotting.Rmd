@@ -203,7 +203,7 @@ sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_dete
 plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
 
 plt1a <- plt1 %>% format_classic() 
-plt1a + ylim(0, 2000)
+plt1a + ylim(0, 2500)
 ```
 
 WT pRV01 GFP/OD - uninduced : daily progression
