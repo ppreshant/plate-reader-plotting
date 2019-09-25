@@ -200,7 +200,7 @@ sel_table2_1$Samples %<>% fct_relevel(plotting_order_2) # manually reorder sampl
 # Selecting top 5 data points + controls
 sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_infreq(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
 
-plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
+plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
 
 plt1a <- plt1 %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
 plt1a + ylim(0, 2500)
