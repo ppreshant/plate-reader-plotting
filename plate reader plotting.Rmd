@@ -128,3 +128,13 @@ plt2 <- ggplot(sel_table2_wt, aes(Time, mean, colour = Samples, shape = Inducer)
 plt2a <- plt2 %>% format_classic() 
 plt2a# + ylim(0, 2000)
 ```
+
+Plotting only WT and pSH01 : GFP/OD : mean and sd (thesis proposal)
+
+```{r plotting5b}
+sel_table1b <- sel_table1 %>% filter(str_detect(Samples, "pRV|pSH")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt9b <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt10b <- plt9b %>% format_classic() 
+plt10b
+```
