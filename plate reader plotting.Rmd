@@ -1,7 +1,7 @@
 ---
-title: "RBS library selected 14: S018"
+title: "Ara vs AHL induction titration : S010"
 author: "Prashant"
-date: "Aug 19, 2019"
+date: "Sep 28, 2019"
 output: html_document
 ---
 
@@ -18,11 +18,11 @@ User inputs for multiple sheets
 ```{r input data, message=F, results='hide'}
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
 
-flnm <- 'S018_pPK6-7 selected 14_18-7-19'
+flnm <- 'S010_Ara vs AHL_26-4-19'
 
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-sheet_names <- c( "day1.on","day1.ui","day1.i","day2.ui","day2.i") # list the sheets to be loaded
+sheet_names <- c( "0 hr","6.75 hr") # list the sheets to be loaded
 n_Rows <- 8; 
 n_Cols <- 12; 
 # check the number of rows and columns for first sheet listed below
@@ -34,13 +34,10 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Inducer = '0 uM') %>% mutate(Time = '0') # extracing from each sheet
-table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Time = '6')
-table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Time = '6')
-table_c3 <- extract_from_given_sheet(sheet_names[4], n_Rows, n_Cols) %>% mutate(Inducer = '0 uM') %>% mutate(Time = '25')
-table_c4 <- extract_from_given_sheet(sheet_names[5], n_Rows, n_Cols) %>% mutate(Inducer = '1 uM') %>% mutate(Time = '25')
+table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Time = '0')  # extracing from each sheet
+table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Time = '6.75')
 
-merged2 <- bind_rows(table_c0,table_c1,table_c2,table_c3,table_c4) # merge all sheets into 1 table
+merged2 <- bind_rows(table_c0,table_c1) # merge all sheets into 1 table
 
 all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\_', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
 

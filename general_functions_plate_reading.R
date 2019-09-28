@@ -101,7 +101,7 @@ clean_and_arrange <- function(merged1)
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
   merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
-  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
   
 }
 
