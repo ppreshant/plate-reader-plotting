@@ -55,14 +55,88 @@ read_plate_to_column <- function(data_tibble, val_name)
   data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
+# Reading all plate related data from a sheet; vectorizable ----
+# uses above functions and makes the working RMD file clean
+
+read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
+{
+  # Reads OD, GFP and RFP tables from 1 sheet of plate reader output. 
+  # 1. Sample names should be provided in a table next to OD (the first table) in every sheet
+  # 2. Calculates GFP/RFP, GFP/OD and RFP/OD
+  
+  # Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
+  
+  if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26;
+  }  else {b_gap = 24; a_gap <- 27}
+  
+  table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
+  table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
+  if (ncol(data_sheet1) >= 5+3*n_Cols) 
+  {
+    table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table if it exists
+    if (is_empty(table_Inducer)) table_Inducer <- table_Samples # if it is empty, make it same as Samples
+  }
+    
+  else table_Inducer <- table_Samples # if Inducer table doesn't exist, make it same as Samples; it will be overwritten later or will not be relevant so can be ignored
+  
+  table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
+  table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
+  
+  tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
+  names_vector <- c('Samples','OD','GFP','RFP','Inducer')
+  
+  merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
+  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) # convert to numeric (they are loaded as characters by default)
+  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  
+  merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
+}
+
+clean_and_arrange <- function(merged1)
+{ # Purpose : Data crunching of plate reader after loading data set
+  # 1. removes NA and undesirable samples
+  # 2. adds units to inducer concentration value
+  # 3. Aranges the values in order of plate columns
+  # 4. Adds a column for Replicate # (assuming 3 replicates), ignore if not neccesary or not being used
+  
+  merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
+  merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
+  
+}
+
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
+{ # calculates mean and SD of a given column / feature  ex: GFP/RFP
+  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category, -Time) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
+  else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
+}
+
+extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
+{ # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
+  data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+  
+  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
+  table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
+  
+}
+
 # formatting plots ----
+
+# plotting function : to reduce redundancy, common elements are captured here
+plot_mean_facetted <- function(sel_tablex)
+{ # Input the filtered summary table and plot the mean vs sample points with facetting and title
+  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
+}
+
 
 # plot formatting function : format as classic, colours = Set1
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
-    theme_classic() + scale_color_brewer(palette="Set1") + 
-    theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
+    theme_classic() + scale_color_brewer(palette="Set1") + scale_fill_brewer(palette="Set1") + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 
 # plot formatting function : format as logscale
