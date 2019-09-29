@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F, warning=F, fig.width = 14, fig.height = 3.5)
+knitr::opts_chunk$set(echo = F, warning=F, fig.width = 4.12, fig.height = 3.29)
 source('./general_functions_plate_reading.R')
 ```
 
@@ -40,7 +40,7 @@ table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols, partial_pla
 
 merged2 <- bind_rows(table_c0,table_c1) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\_|\\+', remove = F) %>% mutate(Samples  = str_replace(Samples, '(.*)\\_(.*)', '\\2')) # create a category row for controls and the library clones 6 and 7
+all_days_table <- merged2 %>% separate(Samples, into = c('category', 'Reporter'), sep = '\\_| \\+ ', remove = F) %>% mutate(Samples  = str_replace(Samples, '(.*)\\_(.*)', '\\2')) # create a category row for controls and the library clones 6 and 7
 
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
 # plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
@@ -49,6 +49,11 @@ all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = 
 # all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
 
 # all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+
+remove('table_c0', 'table_c1', 'merged2')
+
+# giving numeric analogs to inducer values (for easy logscale plotting) - prelim analysis only
+all_days_table %<>%  mutate(Inducer = recode(Inducer, `0` = 0.001), Inducer = replace_na(Inducer, 0.0005), Reporter = fct_relevel(Reporter, 'rGFP', "pEMF02", "pSH02", "fGFP", "DH10B"))
 
 ```
 
@@ -64,154 +69,50 @@ GFP/RFP values
 
 ## Plotting
 
+ **Notes**:   
+ - *0 inducer has been plotted as 1e-3 and glucose repression as 5e-4 (for ease on logscale)*  
+ - *AHL is in uM and Ara is in mM*
 
-Plotting GFP/OD with time
+Plotting GFP/OD with Inducer
 
 ```{r plotting1}
-sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
-rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control
+# plotting GFP/OD with Inducer (excludes time 0)
+sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Time, "0")) #%>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+# WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
+# rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control
 
-plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
-plt4 <- plt3 %>% format_classic() %>% format_logscale()
+plt3 <- plot_mean_w_inducer_facetted(sel_table2) + ylab('GFP/OD (a.u.)') #+ geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
+plt4 <- plt3 %>% format_classic() %>% format_logscale_x() %>% format_logscale_y()
 plt4
 ```
 
-Merge all GFP/OD
+Plotting GFP/OD with time : linear scale
+
+```{r plotting2}
+# plotting GFP/OD : Linear scales
+plt5 <- plt3 %>% format_classic() %>% format_logscale_x()
+plt5
+```
+
+Plotting GFP/OD with time : zoomed linear scale
 
 ```{r plotting3}
-# plotting GFP/OD without facetting, includes a reference line for the WT control
-
-plt5 <- ggplot(sel_table2, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)
-plt6 <- plt5 %>% format_classic() %>% format_logscale()
+# plotting GFP/OD : Linear scales
+plt6 <- plt5 + ylim(0,18000)
 plt6
 ```
 
-Facetted GFP/OD: only day 2
+Plotting GFP/OD with time : zoomed linear scale 0,10000
 
-```{r plotting11}
-# plotting GFP/OD without facetting, includes a reference line for the WT control
-sel_table2_1 <- sel_table2 %>% filter(str_detect(Time, '25'))
-
-plt5 <- plot_mean_facetted(sel_table2_1) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
-
-plt6 <- plt5 %>% format_classic() 
-plt6 + ylim(c(0,9000))
+```{r plotting4}
+# plotting GFP/OD : Linear scales
+plt7 <- plt5 + ylim(0,10000)
+plt7
 ```
-Facetted GFP/OD logscale: only day 2
-
-```{r plotting12}
-# plotting GFP/OD with facetting, includes a reference line for the WT control
-plt6l <- plt6 %>% format_logscale() 
-plt6l
-```
-
-Fold change induced vs uninduced GFP/OD
-
-```{r plotting6}
-sel_table6 <- all_days_table %>% select(Samples, category, Inducer, Time, `Replicate #`, `GFP/OD`) %>% filter(!str_detect(Time,'0')) %>% spread(Inducer, `GFP/OD`) %>% mutate(ratio = `1 uM`/`0 uM`, Inducer = 'none') %>% group_and_summarize_at('ratio') # spread GFP/OD for induced and uninduced and calculate ratio
-sel_table6$Samples %<>%  fct_relevel(plotting_order)
-
-plt11 <-   ggplot(sel_table6, aes(Samples, mean, colour = Time)) + geom_point(size = 2) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1)  + facet_grid(~ category, scales = 'free_x', space = 'free_x') + geom_hline(yintercept = 1, linetype = 2) + ylab('Induced/Uninduced ratio (GFP/OD)') + ggtitle('RBS mutants selected')
-
-plt12 <- plt11 %>% format_classic()
-plt12
-```
-
-Fold change : zoom in
-
-```{r plotting6zoom}
-plt12 + ylim(c(0,30)) + ggtitle('RBS mutants selected: fluorescence above MG1655 background')
-
-```
-
-Fold change induced vs uninduced GFP/OD : In logscale
-
-```{r plotting7}
-
-plt13 <- plt12 %>% format_logscale()
-plt13
-```
-
-
-## extra plots : detailed analysis and troubleshooting
-
-
-Plotting GFP/RFP 
-
-```{r plotting1}
-sel_table1 <- all_days_table %>% group_and_summarize_at() #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-
-plt1 <- plot_mean_facetted(sel_table1) + ylab('GFP/RFP (a.u.)') # plot the mean and add y axis label
-plt2 <- plt1 %>% format_classic() %>% format_logscale() # formatting with clean classic look and on a logscale
-plt2
-
-```
-
-Plotting OD 
+Plotting GFP/OD with time : Background levels : zoomed linear scale 0,500
 
 ```{r plotting5}
-sel_table5 <- all_days_table %>% group_and_summarize_at('OD') # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-
-plt9 <- plot_mean_facetted(sel_table5) + ylab('OD')  # plot the mean and add y axis label 
-plt10 <- plt9 %>% format_classic()
-plt10
-```
-
-Plotting GFP/OD and RFP/OD
-
-```{r plotting4, fig.width = 14, fig.height = 7}
-sel_table4 <- all_days_table %>% group_and_summarize_at(c('GFP/OD','RFP/OD')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-
-plt7 <- ggplot(sel_table4, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19,2)) + facet_grid(Measurement ~ category, scales = 'free_x', space = 'free_x') + ylab('Fluorescence/OD (a.u.)') + ggtitle('RBS mutant library-2')
-plt8 <- plt7 %>% format_classic() %>% format_logscale()
-plt8 #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
-```
-
- GFP/OD linear scale
-
-```{r plotting2l}
-# linear scale GFP/OD
-plt4l <- plt3 %>% format_classic()
-plt4l + ylim(c(0,2500))
-```
-
- GFP/OD Uninduced only
-
-```{r plotting2u}
-# linear scale GFP/OD
-sel_table2u <- sel_table2 %>% filter(str_detect(Inducer,'0'))
-
-plt3u <- plot_mean_facetted(sel_table2u) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
-plt4lu <- plt3u %>% format_classic()
-plt4lu + ylim(c(0,500))
-```
-
-Selected GFP/OD - Top 5: only day 2
-
-```{r plotting1s, fig.width = 5, fig.height = 3.5}
-# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
-plotting_order_2 <- sel_table2_1 %>% ungroup() %>% filter(str_detect(Inducer,'0')) %>% arrange(mean) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
-
-sel_table2_1$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
-
-# Selecting top 5 data points + controls
-sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_infreq(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
-
-plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
-
-plt1a <- plt1 %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
-plt1a + ylim(0, 2500)
-```
-
-WT pRV01 GFP/OD - uninduced : daily progression
-
-```{r plotting2wt, fig.width = 5, fig.height = 3.5}
-# Extract desired data: only pRV01 - various days
-sel_table2_wt <- sel_table2 %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG')) 
-
-plt2 <- ggplot(sel_table2_wt, aes(Time, mean, colour = Samples, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('Un-induced flipping with time') + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
-
-plt2a <- plt2 %>% format_classic() 
-plt2a# + ylim(0, 2000)
+# plotting GFP/OD : Linear scales
+plt8 <- plt5 + ylim(0,500)
+plt8
 ```

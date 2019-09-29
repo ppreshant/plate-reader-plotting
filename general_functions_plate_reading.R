@@ -101,13 +101,13 @@ clean_and_arrange <- function(merged1)
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
   # merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
-  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
-  
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
+  ungroup(merged3)
 }
 
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Time, Reporter) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   
   if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category, -Time) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
   else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
@@ -128,6 +128,12 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
 plot_mean_facetted <- function(sel_tablex)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
   plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
+}
+
+# plotting function Inducer series
+plot_mean_w_inducer_facetted <- function(sel_tablex)
+{ # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by category, colour by sample and title
+  plt1 <- ggplot(sel_tablex, aes(Inducer, mean, colour = Reporter)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x')
 }
 
 
