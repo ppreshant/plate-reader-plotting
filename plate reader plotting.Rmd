@@ -25,6 +25,7 @@ fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel fil
 sheet_names <- c( "0 hr","6.75 hr") # list the sheets to be loaded
 n_Rows <- 8; 
 n_Cols <- 12; 
+partial_plate = T;
 # check the number of rows and columns for first sheet listed below
 ```
 
@@ -34,20 +35,20 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Time = '0')  # extracing from each sheet
-table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Time = '6.75')
+table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 6, partial_plate) %>% mutate(Time = '0') %>% mutate(Inducer = 0)  # extracing from each sheet
+table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols, partial_plate) %>% mutate(Time = '6.75') %>% mutate(Inducer = as.numeric(Inducer))
 
 merged2 <- bind_rows(table_c0,table_c1) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\_', remove = F) %>% mutate(category  = fct_lump(category, 2, other_level = 'Controls')) # create a category row for controls and the library clones 6 and 7
+all_days_table <- merged2 %>% separate(Samples, into = c('category', NA), sep = '\\_|\\+', remove = F) %>% mutate(Samples  = str_replace(Samples, '(.*)\\_(.*)', '\\2')) # create a category row for controls and the library clones 6 and 7
 
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
-plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
+# plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
+# 
+# all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
+# all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
 
-all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
-all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
-
-all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+# all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
 
 ```
 
@@ -64,9 +65,9 @@ GFP/RFP values
 ## Plotting
 
 
-Plotting GFP/OD
+Plotting GFP/OD with time
 
-```{r plotting2}
+```{r plotting1}
 sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') #%>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
 rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control

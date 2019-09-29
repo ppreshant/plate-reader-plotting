@@ -58,7 +58,7 @@ read_plate_to_column <- function(data_tibble, val_name)
 # Reading all plate related data from a sheet; vectorizable ----
 # uses above functions and makes the working RMD file clean
 
-read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
+read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, partial_plate)
 {
   # Reads OD, GFP and RFP tables from 1 sheet of plate reader output. 
   # 1. Sample names should be provided in a table next to OD (the first table) in every sheet
@@ -66,7 +66,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   
   # Context: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
   
-  if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26;
+  if(n_Rows == 8 & n_Cols == 12 & partial_plate == F) {b_gap = 23; a_gap <- 26;
   }  else {b_gap = 24; a_gap <- 27}
   
   table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
@@ -87,7 +87,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols)
   
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
   merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) # convert to numeric (they are loaded as characters by default)
-  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'DH10B')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
   
   merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
 }
@@ -100,7 +100,7 @@ clean_and_arrange <- function(merged1)
   # 4. Adds a column for Replicate # (assuming 3 replicates), ignore if not neccesary or not being used
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  # merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
   merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% mutate(.,'Replicate #' = rep(1:3, length.out = as.numeric(count(.)))) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
   
 }
@@ -113,11 +113,11 @@ group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
   else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
 }
 
-extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
+extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
 { # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
-  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
+  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols, partial_plate)
   table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
   
 }
