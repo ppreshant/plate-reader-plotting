@@ -26,7 +26,7 @@ sheet_names <- c("0 hr","6 hr","24 hr", "48 hr") # list the sheets to be loaded
 n_Rows <- 8; 
 n_Cols <- 12; 
 # check the number of rows and columns for first sheet listed below
-plotting_order <- c("pRV01 ","pPK7/8 ", "pPK7/17 ","pSH001 ",'rGFP','fGFP')
+plotting_order <- c("pRV01","pPK7/8", "pPK7/17","Controls") # order of plotting for samples
 ```
 
 ## Data crunching
@@ -44,10 +44,12 @@ merged2 <- bind_rows(table_c0,table_c1,table_c2,table_c3) # merge all sheets int
 
 all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), Samples = if_else(Samples == Reporter, "Controls", Samples), Reporter  = str_replace(Reporter, 'rG$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
 
-all_days_table %<>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) # arranging samples again to make up for factor mismatch
+all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
 
 all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+
+
 
 ```
 
@@ -63,26 +65,28 @@ GFP/RFP values
 
 ## Plotting
 
+Plotting GFP/OD : mean and sd
+
+```{r plotting5}
+sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Reporter, "LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt9 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer, colour = Reporter, group = interaction(Reporter, Inducer))) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt10 <- plt9 %>% format_classic() %>% format_logscale()
+plt10
+```
+
+## Extra plots
+
 Plotting GFP/RFP : mean and sd
 
-```{r plotting1}
-sel_table1 <- all_days_table %>% group_and_summarize_at() %>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+```{r plottingGFP/RFP}
+sel_table5 <- all_days_table %>% group_and_summarize_at() %>% filter(!str_detect(Reporter, "LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt1 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) + scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/RFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt1 <- ggplot(sel_table5, aes(Time, mean, shape = Inducer, colour = Reporter)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) + scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/RFP (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
 plt2 <- plt1 %>% format_classic() %>% format_logscale()
 plt2
 # ggsave('plots and data/S015_linear.png', plt1)
 # ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
-```
-
-Plotting GFP/OD : mean and sd
-
-```{r plotting5}
-sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Samples, "MG|LB")) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-
-plt9 <- ggplot(sel_table1, aes(Time, mean, shape = Inducer)) + geom_point(size = 2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + scale_shape_manual(values = c(1,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
-plt10 <- plt9 %>% format_classic() %>% format_logscale()
-plt10
 ```
 
 Plotting GFP/OD and RFP/OD: mean and SD
@@ -143,8 +147,8 @@ plt10b
 Plotting controls and WT: GFP/OD : mean and sd with facets (thesis proposal)
 
 ```{r plotting5c}
-sel_table1b <- sel_table1 %>% filter(str_detect(Samples, "pRV|GFP")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt9b <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 1) + geom_line() + geom_point(size = 2, fill = 'white') + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
-plt10b <- plt9b %>% format_classic() 
-plt10b
+sel_table1c <- sel_table1 %>% filter(str_detect(Samples, "pRV|Controls")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt9c <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white') + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt10c <- plt9c %>% format_classic() 
+plt10c
 ```
