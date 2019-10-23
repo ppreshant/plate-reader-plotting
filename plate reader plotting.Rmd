@@ -137,3 +137,12 @@ plt9b <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + annotate('rect'
 plt10b <- plt9b %>% format_classic() 
 plt10b
 ```
+
+Plotting controls and WT: GFP/OD : mean and sd with facets (thesis proposal)
+
+```{r plotting5c}
+sel_table1b <- sel_table1 %>% filter(str_detect(Samples, "pRV|GFP")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt9b <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 1) + geom_line() + geom_point(size = 2, fill = 'white') + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = '[AHL]')
+plt10b <- plt9b %>% format_classic() 
+plt10b
+```
