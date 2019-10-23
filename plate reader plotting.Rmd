@@ -40,7 +40,9 @@ table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(
 table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Time = 24)
 table_c3 <- extract_from_given_sheet(sheet_names[4], 3, 12) %>% mutate(Time = 48)
 
-all_days_table <- bind_rows(table_c0,table_c1,table_c2,table_c3) # merge all sheets into 1 table
+merged2 <- bind_rows(table_c0,table_c1,table_c2,table_c3) # merge all sheets into 1 table
+
+all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), Samples = if_else(Samples == Reporter, "Controls", Samples), Reporter  = str_replace(Reporter, 'rG$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
 
 all_days_table %<>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
