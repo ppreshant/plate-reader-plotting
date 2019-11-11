@@ -18,11 +18,13 @@ User inputs for multiple sheets
 ```{r input data, message=F, results='hide'}
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
 
-flnm <- 'S015c_AHL flip timecourse_3-7-19'
+flnm <- 'S019_6-11-19'
 
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-sheet_names <- c("0 hr","6 hr","24 hr", "48 hr") # list the sheets to be loaded
+sheet_names <- c("0 h","6 h","24 h", "48 h", "72 h", "96 h") # list the sheets to be loaded
+sheet_times <- c(0,6,24,48,72,96)
+
 n_Rows <- 8; 
 n_Cols <- 12; 
 # check the number of rows and columns for first sheet listed below
@@ -35,10 +37,11 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-table_c0 <- extract_from_given_sheet(sheet_names[1], 3, 12) %>% mutate(Time = 0) # extracing from each sheet
+table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 12) %>% mutate(Time = 0) # extracing from each sheet
 table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols) %>% mutate(Time = 6)
 table_c2 <- extract_from_given_sheet(sheet_names[3], n_Rows, n_Cols) %>% mutate(Time = 24)
-table_c3 <- extract_from_given_sheet(sheet_names[4], 3, 12) %>% mutate(Time = 48)
+table_c3 <- extract_from_given_sheet(sheet_names[4], n_Rows, n_Cols) %>% mutate(Time = 48)
+# tables_cx <- map2(sheet_names, sheet_times, ~ extract_from_given_sheet(.x, n_Rows, n_Cols) %>% mutate(Time = .y)) # vectorized file loading
 
 merged2 <- bind_rows(table_c0,table_c1,table_c2,table_c3) # merge all sheets into 1 table
 
