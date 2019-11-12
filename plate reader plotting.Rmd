@@ -23,7 +23,8 @@ flnm <- 'S019_6-11-19'
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- c("0 h","6 h","24 h", "48 h", "72 h", "96 h") # list the sheets to be loaded
-sheet_times <- c(0,6,24,48,72,96)
+sheet_times <- sheet_names %>% str_split(' ') %>% unlist() %>% .[rep(c(T,F))] %>% as.numeric() # extracting the hour time from sheet name
+# sheet_times <- c(0,6,24,48,72,96) # manual entry of sheet times
 
 n_Rows <- 8; 
 n_Cols <- 12; 
@@ -41,7 +42,8 @@ tables_cx <- map2(sheet_names, sheet_times, ~ extract_from_given_sheet(.x, n_Row
 
 merged2 <- bind_rows(tables_cx) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), Samples = if_else(Samples == Reporter, "Controls", Samples), Reporter  = str_replace(Reporter, 'rG$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
+all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), Samples = if_else(Samples == Reporter, "Controls", Samples), Samples = if_else(str_detect(Reporter,'^[:digit:]*$'), str_c(Samples,Reporter, sep = '_'), Samples) , Reporter  = str_replace(Reporter, 'rG$|^[:digit:]*$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
+# details: split into 2 columns by _ and +; make singleton entries as controls and put name in Reporter; make mutants ex: pPK7_17 into 1 sample name and reporter as the default rGFP (also replace shorthand notation rG with rGFP) 
 
 all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
