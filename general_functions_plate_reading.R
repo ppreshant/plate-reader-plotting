@@ -115,7 +115,7 @@ clean_and_arrange <- function(merged1)
   ungroup(merged3)
 }
 
-group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
   merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
@@ -136,16 +136,19 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
-plot_time_series <- function(data_table, induction_start = 0, induction_end = 6, x_breaks = c(0,6,24,48))
+plot_time_series <- function(data_table, induction_duration = c(0,6), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (h)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
 {
-  ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + annotate('rect', xmin = induction_start, ymin = induction_end, xmax = 6, ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.5) + 
+  plt <- ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + 
+    annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
-    ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(shape = '[AHL]')
+    ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
+ 
+   format_classic(plt) # output a classic formatted plot
 }
 
 
-# plot formatting function : format as classic, colours = Set1
+# Set theme for plots : format as classic, colours = Set1
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
