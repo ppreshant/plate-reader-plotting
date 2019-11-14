@@ -185,7 +185,7 @@ plt6_sel
 
 Uninduced samples, zoomed in (excluding fGFP positive control)
 
-```{r plotting6_uninduced_zoomed, fig.width = 5, fig.height = 3.5}
+```{r plotting6_uninduced_zoomed}
 # Extract desired data
 sel_table6_uninduced_zoom <- all_days_table %>% group_and_summarize_at('GFP/OD') %>%  filter(str_detect(Inducer,'^0') & str_detect(Samples, 'pRV|pPK|Controls') & !str_detect(Reporter, 'fGFP')) 
 plt6_sel_zoom <- plot_time_series(sel_table6_uninduced_zoom, x_breaks = sheet_times)
@@ -194,7 +194,7 @@ plt6_sel_zoom
 
 Uninduced pRV01, pInt8 and controls, zoomed in (excluding fGFP positive control)
 
-```{r plotting6_uninduced_zoomed_select, fig.width = 5, fig.height = 3.5}
+```{r plotting6_uninduced_zoomed_select}
 # Extract desired data: exclude pPK7 mutants
 sel_uninduced_zoom_select <- sel_table6_uninduced_zoom %>% filter(str_detect(Samples, 'pRV|pInt|Controls')) 
 
@@ -216,7 +216,7 @@ Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01: GFP/OD
 
 ```{r plotting8}
 sel_table1c <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt9c <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
+plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
 plt8f <- plt8 %>% format_classic() 
 plt8f
 ```
