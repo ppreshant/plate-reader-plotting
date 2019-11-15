@@ -109,6 +109,15 @@ plt3 <- plot_time_series(sel_table3_OD, x_breaks = sheet_times, y_axis_label = '
 plt3
 ```
 
+Plotting OD: Zoomed to Specific control samples
+
+```{r plotting3_zoom}
+sel_table3_OD_select <- sel_table3_OD %>% filter(str_detect(Samples, "Control"), !str_detect(Reporter, 'pSH')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt3 <- plot_time_series(sel_table3_OD_select, x_breaks = sheet_times, y_axis_label = 'OD 600')
+plt3
+```
+
 Plotting RFP 
 
 ```{r plotting4_RFP}
@@ -139,9 +148,9 @@ plt5f
 Plotting GFP/RFP : mean and sd
 
 ```{r plotting5b_GFP/RFP}
-sel_table5 <- all_days_table %>% group_and_summarize_at('GFP/RFP') %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+sel_table5b <- all_days_table %>% group_and_summarize_at('GFP/RFP') %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt5b <- plot_time_series(sel_table1, x_breaks = sheet_times, y_axis_label = 'GFP/RFP (a.u.)')
+plt5b <- plot_time_series(sel_table5b, x_breaks = sheet_times, y_axis_label = 'GFP/RFP (a.u.)')
 plt5bf <- plt5b %>% format_logscale()
 plt5bf
 # ggsave('plots and data/S015_linear.png', plt1)
@@ -196,12 +205,13 @@ Uninduced pRV01, pInt8 and controls, zoomed in (excluding fGFP positive control)
 
 ```{r plotting6_uninduced_zoomed_select}
 # Extract desired data: exclude pPK7 mutants
-sel_uninduced_zoom_select <- sel_table6_uninduced_zoom %>% filter(str_detect(Samples, 'pRV|pInt|Controls')) 
+sel_table6_uninduced_zoom_select <- sel_table6_uninduced_zoom %>% filter(str_detect(Samples, 'pRV|pInt|Controls')) 
 
-plt6_sel_zoom <- plot_time_series(sel_uninduced_zoom_select, x_breaks = sheet_times)
+plt6_sel_zoom <- plot_time_series(sel_table6_uninduced_zoom_select, x_breaks = sheet_times)
 plt6_sel_zoom
 ```
 
+## Specific plots for presentations
 
 Plotting only WT pRV01: GFP/OD : linear scale
 
