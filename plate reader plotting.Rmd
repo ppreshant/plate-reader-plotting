@@ -88,6 +88,13 @@ Plotting GFP/OD all data in linearscale
 plt1
 ```
 
+Plotting GFP/OD zoom in to mutants
+
+```{r plotting1mutants}
+sel_table1_mutants <- sel_table1 %>% filter(str_detect(Samples, 'pPK'))
+plot_time_series(sel_table1_mutants, x_breaks = sheet_times) %>% print()
+```
+
 ## Individual measurement plots
 (GFP, RFP, OD and GFP/RFP)
 
@@ -211,6 +218,26 @@ plt6_sel_zoom <- plot_time_series(sel_table6_uninduced_zoom_select, x_breaks = s
 plt6_sel_zoom
 ```
 
+Uninduced controls, zoomed in (excluding fGFP positive control)
+
+```{r plotting6_uninduced_zoomed_controls}
+# Extract desired data: exclude pPK7 mutants
+sel_table6_uninduced_zoom_controls <- sel_table6_uninduced_zoom %>% filter(str_detect(Samples, 'Controls')) 
+
+plt6_sel_zoom_controls <- plot_time_series(sel_table6_uninduced_zoom_controls, x_breaks = sheet_times)
+plt6_sel_zoom_controls
+```
+
+Uninduced mutants and controls, zoomed in (excluding fGFP positive control)
+
+```{r plotting6_uninduced_zoomed_mutants and controls}
+# Extract desired data: exclude pPK7 mutants
+sel_table6_uninduced_zoom_mutants <- sel_table6_uninduced_zoom %>% filter(!str_detect(Samples, 'pRV')) 
+
+plt6_sel_zoom_mutants <- plot_time_series(sel_table6_uninduced_zoom_mutants, x_breaks = sheet_times)
+plt6_sel_zoom_mutants
+```
+
 ## Specific plots for presentations
 
 Plotting only WT pRV01: GFP/OD : linear scale
@@ -230,3 +257,14 @@ plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter))
 plt8f <- plt8 %>% format_classic() 
 plt8f
 ```
+
+### Processed data plots (ratio of max and others)
+
+<!-- Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> of uninduced and induced) -->
+
+<!-- ```{r plotting9} -->
+<!-- sel_table7_fraction_flip <- sel_table1 %>% group_by() -->
+<!-- plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]') -->
+<!-- plt8f <- plt8 %>% format_classic()  -->
+<!-- plt8f -->
+<!-- ``` -->
