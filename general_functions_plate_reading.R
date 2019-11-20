@@ -110,14 +110,15 @@ clean_and_arrange <- function(merged1)
   # 5. Aranges the values in ascending order of mean for convenient plotting
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  merged2$Inducer %<>% as_factor()
   merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates # group by variables and map out replicates  
   ungroup(merged3)
 }
 
-group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD')
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD', ...)
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  grouping_vars <- enquos(...)
+  merged3 <- merged2 %>% group_by(!!!grouping_vars) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
   # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
   # merged4
