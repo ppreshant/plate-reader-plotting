@@ -62,12 +62,32 @@ GFP/RFP values
 ## Plotting
 
 
-Plotting GFP/OD zoom in to mutants
+Plotting OD MG1655
 
 ```{r plotting1od}
 sel_table1_OD <- merged2 %>% filter(str_detect(Samples, 'MG')) %>% group_and_summarize_at('OD', Dilution)
-plt1_OD <- ggplot(sel_table1_OD, aes(x = Dilution, y = mean)) + geom_point() + geom_line() + scale_x_log10()
+plt1_OD <- ggplot(sel_table1_OD, aes(x = Dilution, y = mean)) + geom_point() + geom_line() + ylab('OD')
 plt1_OD
 ```
 
+Plotting GFP fGFP
+
+```{r plotting2GFP}
+sel_table1_OD <- merged2 %>% filter(str_detect(Samples, 'fG')) %>% group_and_summarize_at('GFP', Dilution)
+plt1_OD <- ggplot(sel_table1_OD, aes(x = Dilution, y = mean)) + geom_point() + geom_line()+ ylab('GFP')
+plt1_OD
+```
 ]
+Plotting GFP/OD fGFP
+
+```{r plotting3GFP/od}
+sel_table1_OD <- merged2 %>% filter(str_detect(Samples, 'fG')) %>% group_and_summarize_at('GFP/OD', Dilution)
+plt1_OD <- ggplot(sel_table1_OD, aes(x = Dilution, y = mean)) + geom_point() + geom_line() + ylab('GFP/OD')
+plt1_OD
+```
+
+```{r plotting4od}
+sel_table1 <- merged2 %>% group_and_summarize_at('OD', Samples, Dilution)
+plt1_OD <- ggplot(sel_table1, aes(x = Dilution, y = mean, colour = Samples)) + geom_point() + geom_line() + ylab('OD')
+plt1_OD
+```
