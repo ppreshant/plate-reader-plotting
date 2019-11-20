@@ -134,6 +134,11 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
   
 }
 
+scale_data_set <- function(data_set)
+{
+  mutate_if(data_set, is.numeric(), function(x) x - min(x)/(max(x) - min(x)))
+}
+
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
