@@ -97,6 +97,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name)
   merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
   
   MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  MG1655_baseline[] <- 0 # ignore the baseline
   
   merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
   
