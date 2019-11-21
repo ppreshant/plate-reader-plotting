@@ -61,6 +61,13 @@ GFP/RFP values
 
 ## Plotting
 
+Plotting all data interactive plotly
+
+```{r plotting0}
+sel_table1 <- merged2 %>% group_and_summarize_at(c('OD', 'GFP', 'RFP', 'GFP/OD', 'RFP/OD'), Samples, Dilution)
+plt1_OD <- ggplot(sel_table1, aes(x = Dilution, y = mean, colour = Samples)) + geom_point() + geom_line() + facet_wrap(~Measurement, scales = 'free')
+plt1_OD %>% format_classic() %>% ggplotly()
+```
 
 Plotting OD MG1655
 

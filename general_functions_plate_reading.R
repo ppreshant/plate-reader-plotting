@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly)  
 
 # reading files and manipulating columns ----
 
@@ -119,9 +119,9 @@ group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD', ...)
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
   grouping_vars <- enquos(...)
   merged3 <- merged2 %>% group_by(!!!grouping_vars) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
-  # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-  # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
-  # merged4
+  
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -c(!!! grouping_vars)) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
+  else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
 }
 
 extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
