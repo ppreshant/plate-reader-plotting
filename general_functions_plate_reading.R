@@ -136,11 +136,11 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
-plot_time_series <- function(data_table, induction_duration = c(0,6), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (h)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
+plot_time_series <- function(data_table, induction_duration = c(0,1), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (days)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
 {
   plt <- ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
  
