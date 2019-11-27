@@ -136,7 +136,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
-plot_time_series <- function(data_table, induction_duration = c(0,6/24), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (days)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
+plot_time_series <- function(data_table, induction_duration = c(0,1), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (days)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
 {
   plt <- ggplot(data_table, aes(Time, mean, colour = Inducer, shape = Reporter)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
@@ -152,7 +152,7 @@ plot_time_series <- function(data_table, induction_duration = c(0,6/24), x_break
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
-    theme_classic() + scale_color_brewer(palette="Set1") + scale_fill_brewer(palette="Set1") #+ 
+    theme_classic() + scale_color_brewer(palette="Dark2") + scale_fill_brewer(palette="Set1") #+ 
     #theme(plot.title = element_text(hjust = 0.5)) #,axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 

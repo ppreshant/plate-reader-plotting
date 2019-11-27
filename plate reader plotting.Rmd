@@ -73,7 +73,7 @@ GFP/RFP values
 Plotting GFP/OD of all data: logscale
 
 ```{r plotting1}
-sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(Inducer > 0.6 | Inducer == 0) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(Inducer > 0.6| Inducer == 0) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
 plt1 <- plot_time_series(sel_table1, x_breaks = sheet_times)
 
@@ -85,7 +85,7 @@ plt1f
 Plotting GFP/OD all data in linearscale
 
 ```{r plotting1linear}
-plt1 
+plt1 %>% ggplotly()
 ```
 
 Plotting GFP/OD zoom in to mutants
@@ -236,6 +236,26 @@ sel_table6_uninduced_zoom_mutants <- sel_table6_uninduced_zoom %>% filter(!str_d
 
 plt6_sel_zoom_mutants <- plot_time_series(sel_table6_uninduced_zoom_mutants, x_breaks = sheet_times)
 plt6_sel_zoom_mutants
+```
+
+Plotting GFP/OD of pRV01 only
+
+```{r plotting9_pRV01 only}
+sel_table9 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt9 <- plot_time_series(sel_table9, x_breaks = sheet_times)
+
+plt9
+```
+
+Plotting GFP/OD of pRV01 only
+
+```{r plotting9_pInt8 only}
+sel_table10 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pInt')) %>% ungroup() %>%  mutate(Inducer = str_replace(Inducer, '-1', 'Glucose')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt10 <- plot_time_series(sel_table10, x_breaks = sheet_times)
+
+plt10 %>% ggplotly()
 ```
 
 <!-- ## Specific plots for presentations -->
