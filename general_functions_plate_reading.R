@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly)  
 
 # reading files and manipulating columns ----
 
@@ -140,7 +140,7 @@ plot_time_series <- function(data_table, induction_duration = c(0,6/24), x_break
 {
   plt <- ggplot(data_table, aes(Time, mean, colour = Inducer, shape = Reporter)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.05) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
     scale_x_continuous(breaks = x_breaks) + 
     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
  
