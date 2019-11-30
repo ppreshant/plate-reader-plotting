@@ -88,6 +88,12 @@ Plotting GFP/OD all data in linearscale
 plt1
 ```
 
+Interactive plot: GFP/OD all data in linearscale
+
+```{r plotting1interactive}
+plt1 %>% ggplotly()
+```
+
 Plotting GFP/OD zoom in to mutants
 
 ```{r plotting1mutants}
@@ -244,7 +250,7 @@ Plotting only WT pRV01: GFP/OD : linear scale
 
 ```{r plotting7}
 sel_table1b <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt7 <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 1) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.5) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(shape = '[AHL]')
+plt7 <- ggplot(sel_table1b, aes(Time, mean, shape = Inducer)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 1) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.5) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (days)') + ggtitle('AHL flipping with time') + labs(shape = '[AHL]')
 plt7f <- plt7 %>% format_classic()
 plt7f
 ```
@@ -253,7 +259,7 @@ Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01: GFP/OD
 
 ```{r plotting8}
 sel_table1c <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
+plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (days)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
 plt8f <- plt8 %>% format_classic() 
 plt8f
 ```
@@ -264,7 +270,7 @@ plt8f
 
 <!-- ```{r plotting9} -->
 <!-- sel_table7_fraction_flip <- sel_table1 %>% group_by() -->
-<!-- plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]') -->
+<!-- plt8 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_times) + ylab('GFP/OD (a.u.)') + xlab('Time (days)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]') -->
 <!-- plt8f <- plt8 %>% format_classic()  -->
 <!-- plt8f -->
 <!-- ``` -->

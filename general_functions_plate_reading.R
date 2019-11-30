@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly)  
 
 # reading files and manipulating columns ----
 
@@ -58,7 +58,7 @@ read_plate_to_column <- function(data_tibble, val_name)
 # Reading all plate related data from a sheet; vectorizable ----
 # uses above functions and makes the working RMD file clean
 
-read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name)
+read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, sheet_name)
 {
   # Context: b_gap = row number of OD data header (<>) , a_gap = 2 + # of rows between OD and fluorescence value header(<>), The same between GFP and RFP as well; 
   # If partial plate is read there is 1 extra line in all 3 places for infinite; makes no difference for Spark
@@ -78,6 +78,8 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name)
   inducer_flag <- 0
   
   table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
+  
+  if(ncol(data_sheet1) < 3 + 2* n_Cols) {stop(str_c('Sample names do not exist for sheet: ',sheet_name))}
   table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
     if (ncol(data_sheet1) >= 5+3*n_Cols) # extracting the inducer table 
   {
@@ -128,7 +130,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
   device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name
-  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols, device_name)
+  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols, device_name, sheet_name)
   table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
   
 }
@@ -136,7 +138,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
-plot_time_series <- function(data_table, induction_duration = c(0,6), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (h)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
+plot_time_series <- function(data_table, induction_duration = c(0,6), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (days)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
 {
   plt <- ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
