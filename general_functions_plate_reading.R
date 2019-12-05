@@ -135,6 +135,18 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
   
 }
 
+mutate_cond <- function(.data, condition, ..., envir = parent.frame()) 
+{ # mutates a subset of data and returns a new array (without modifying the parent) - from https://stackoverflow.com/a/34096575/9049673
+  condition <- eval(substitute(condition), .data, envir)
+  .data[condition, ] <- .data[condition, ] %>% mutate(...)
+  .data
+}
+
+divide_by_mean_of_a_reference <- function(sel_table, reference_name)
+{ # takes 
+  
+}
+
 # formatting plots ----
 
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
