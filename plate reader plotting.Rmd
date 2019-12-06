@@ -273,7 +273,7 @@ Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> o
 
 ```{r plotting9}
 sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = 0) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction)
-sel_table9_fraction_flip <- sel_table_fGFP_modified %>% group_by(Samples, Reporter, Inducer, Time) %>% mutate('mean' = mean/mean[])
+sel_table9_fraction_flip <- sel_table_fGFP_modified %>% group_by(Samples, Reporter, Inducer, Time) %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/mean[Reporter == 'fGFP'])
 
 
 plt9 <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white', stroke = 1.1) + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = sheet_time_x_axis) + ylab('GFP/OD (a.u.)') + xlab('Time (days)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
