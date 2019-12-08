@@ -272,9 +272,9 @@ Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> o
 - (Warning: the division of two random variables is a complicated subject, cannot just divide the means - need to look into this in detail)
 
 ```{r plotting9}
-sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = 0) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction)
-sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/mean[Reporter == 'fGFP']) #%>% filter(Time < 9)
+sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = mean(mean)) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction)
+sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/sd[Reporter == 'fGFP']) %>% mutate_cond(Reporter == 'fGFP', 'sd' = 0) %>%  filter(Time < 9, str_detect(Samples, 'pRV|pInt|Controls')) # calculate ratio of fGFP per day and make SD of fGFP 0
 
 plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
-plt9
+plt9 #%>% format_logscale() %>% print()
 ```

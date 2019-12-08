@@ -142,10 +142,6 @@ mutate_cond <- function(.data, condition, ..., envir = parent.frame())
   .data
 }
 
-divide_by_mean_of_a_reference <- function(sel_table, reference_name)
-{ # takes 
-  
-}
 
 # formatting plots ----
 
