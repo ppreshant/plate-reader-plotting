@@ -255,11 +255,11 @@ plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_c
 plt7
 ```
 
-Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01: GFP/OD
+Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01 : important reporters only: GFP/OD
 
 ```{r plotting8}
-sel_table1_exclude_mutants <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt8 <- plot_time_series(sel_table1_exclude_mutants, x_breaks = sheet_time_x_axis)
+sel_table1_exclude_mutants <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt8 <- plot_time_series(sel_table1_exclude_mutants, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2)
 plt8
 ```
 
