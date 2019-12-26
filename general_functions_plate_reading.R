@@ -147,6 +147,22 @@ plot_time_series <- function(data_table, induction_duration = c(0,1), x_breaks =
    format_classic(plt) # output a classic formatted plot
 }
 
+# formatting labels in logscale cleanly : a x 10^b
+# use as ggplot(df,aes(x,y)) + geom_point() + scale_y_log10(labels = fancy_scientific)
+fancy_scientific <- function(l) {
+  # turn in to character string in scientific notation
+  l <- format(l, scientific = TRUE)
+  # quote the part before the exponent to keep all the digits
+  l <- gsub("^(.*)e", "'\\1'e", l)
+  # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2) 
+  l <- gsub("e\\+","e",l)
+  # turn the 'e+' into plotmath format
+  l <- gsub("e", "%*%10^", l)
+  # convert 1x10^ or 1.000x10^ -> 10^ 
+  l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
+  # return this as an expression
+  parse(text=l)
+}
 
 # Set theme for plots : format as classic, colours = Set1
 format_classic <- function(plt)

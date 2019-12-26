@@ -53,6 +53,7 @@ all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'),
 all_days_table %<>% filter(!str_detect(Reporter, 'LB'))
 all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
+all_days_table$Inducer %<>% as.numeric() %>% round(3) %>% as.character() 
 
 all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
 
@@ -70,7 +71,7 @@ GFP/RFP values
 
 ## Plotting
 
-Plotting GFP/OD of all data: logscale
+Plotting GFP/OD of higher [Induction]: logscale
 
 ```{r plotting1}
 sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(Inducer > 0.6| Inducer == 0) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
@@ -82,13 +83,26 @@ plt1f <- plt1 %>% format_logscale()
 plt1f
 ```
 
-Plotting GFP/OD all data in linearscale
+Plotting GFP/OD higher [Induction] in linearscale
 
 ```{r plotting1linear}
+plt1
+```
+
+Plotting GFP/OD higher [Induction] in linearscale : Interactive
+
+```{r plotting1interactive}
 plt1 %>% ggplotly()
 ```
 
-Plotting GFP/OD zoom in to mutants
+Plotting GFP/OD important only higher [Induction]: WT and controls
+
+```{r plotting1 WT and controls}
+sel_table1_WT_Controls <- sel_table1 %>% filter(str_detect(Samples, 'RV01|pInt|Control')) 
+plot_time_series(sel_table1_WT_Controls, x_breaks = sheet_times) %>% print()
+```
+
+Plotting GFP/OD zoom in to mutants higher [Induction]
 
 ```{r plotting1mutants}
 sel_table1_mutants <- sel_table1 %>% filter(str_detect(Samples, 'pPK'))
