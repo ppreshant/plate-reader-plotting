@@ -110,7 +110,7 @@ clean_and_arrange <- function(merged1)
   # 5. Aranges the values in ascending order of mean for convenient plotting
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  merged2$Inducer %>% as.numeric () %>% scales::scientific(digits = 0)
+  # merged2$Inducer %>% as.numeric () %>% scales::scientific(digits = 0)
   merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates # group by variables and map out replicates  
   ungroup(merged3)
 }
@@ -168,7 +168,7 @@ fancy_scientific <- function(l) {
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
-    theme_classic() + scale_color_brewer(palette="Dark2") + scale_fill_brewer(palette="Set1") #+ 
+    theme_classic() + scale_color_brewer(palette="Set1") + scale_fill_brewer(palette="Set1") #+ 
     #theme(plot.title = element_text(hjust = 0.5)) #,axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 

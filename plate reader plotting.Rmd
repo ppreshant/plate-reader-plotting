@@ -1,7 +1,7 @@
 ---
 title: "Plate reader plotting : S020"
 author: "Prashant"
-date: "Nov 26, 2019"
+date: "Dec 27, 2019"
 output: html_document
 ---
 
@@ -20,7 +20,7 @@ User inputs for multiple sheets
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) to exclude 3. number of rows and columns in plate reader data 4. Title for plots 
 # Comment (make sure excel file is in the parent directory of the Rproject file or code)
 
-flnm <- 'S022_optimal 25-11-19'
+flnm <- 'S020_optimal 25-11-19'
 sheets_to_exclude <- 'auto' # regular expression for sheets to be excluded
 
 n_Rows <- 8; # default full 96 well plate = 8 rows x 12 columns
@@ -53,7 +53,6 @@ all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'),
 all_days_table %<>% filter(!str_detect(Reporter, 'LB'))
 all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
-all_days_table$Inducer %<>% as.numeric() %>% round(3) %>% as.character() 
 
 all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
 
