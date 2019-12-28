@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly)  
 
 # reading files and manipulating columns ----
 
@@ -110,7 +110,7 @@ clean_and_arrange <- function(merged1)
   # 5. Aranges the values in ascending order of mean for convenient plotting
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+  merged2$Inducer %>% as.numeric () %>% scales::scientific(digits = 0)
   merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates # group by variables and map out replicates  
   ungroup(merged3)
 }
@@ -138,21 +138,37 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
 # plotting timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
 plot_time_series <- function(data_table, induction_duration = c(0,1), x_breaks = c(0,6,24,48), stroke_width = 1, x_axis_label = 'Time (days)', y_axis_label = 'GFP/OD (a.u.)', plot_title = 'AHL flipping with time' )
 {
-  plt <- ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + 
+  plt <- ggplot(data_table, aes(Time, mean, colour = Inducer, shape = Reporter)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
-    scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.05) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
+    scale_x_continuous(breaks = x_breaks) + 
     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
  
    format_classic(plt) # output a classic formatted plot
 }
 
+# formatting labels in logscale cleanly : a x 10^b
+# use as ggplot(df,aes(x,y)) + geom_point() + scale_y_log10(labels = fancy_scientific)
+fancy_scientific <- function(l) {
+  # turn in to character string in scientific notation
+  l <- format(l, scientific = TRUE)
+  # quote the part before the exponent to keep all the digits
+  l <- gsub("^(.*)e", "'\\1'e", l)
+  # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2) 
+  l <- gsub("e\\+","e",l)
+  # turn the 'e+' into plotmath format
+  l <- gsub("e", "%*%10^", l)
+  # convert 1x10^ or 1.000x10^ -> 10^ 
+  l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
+  # return this as an expression
+  parse(text=l)
+}
 
 # Set theme for plots : format as classic, colours = Set1
 format_classic <- function(plt)
 { # formats plot as classic, with colour palette Set1, centred title, angled x axis labels
   plt <- plt +
-    theme_classic() + scale_color_brewer(palette="Set1") + scale_fill_brewer(palette="Set1") #+ 
+    theme_classic() + scale_color_brewer(palette="Dark2") + scale_fill_brewer(palette="Set1") #+ 
     #theme(plot.title = element_text(hjust = 0.5)) #,axis.text.x = element_text(angle = 90, hjust = 1, vjust = .3))
 }
 
