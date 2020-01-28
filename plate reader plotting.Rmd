@@ -21,7 +21,7 @@ User inputs for multiple sheets
 # Comment (make sure excel file is in the parent directory of the Rproject file or code)
 
 flnm <- 'S023_4-1-20'
-sheets_to_exclude <- 'analysis|dil|\.' # regular expression for sheets to be excluded
+sheets_to_exclude <- 'analysis|dil|\\.' # regular expression for sheets to be excluded
 
 n_Rows <- 8; # default full 96 well plate = 8 rows x 12 columns
 n_Cols <- 12; 
