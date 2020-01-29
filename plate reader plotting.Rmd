@@ -28,6 +28,7 @@ n_Cols <- 12;
 # check the number of rows and columns for first sheet listed below
 
 plotting_order <- c("pRV01", "pInt8", "pPK7/8", "pPK7/17","Controls") # order of plotting for samples
+baseline_name <- 'MG1655' # name of negative control for background fluorescence subtraction
 
 flpath <- str_c('../',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
