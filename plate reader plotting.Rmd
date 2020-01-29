@@ -95,12 +95,12 @@ Interactive plot: GFP/OD all data in linearscale
 plt1 %>% ggplotly()
 ```
 
-Plotting GFP/OD zoom in to mutants
+<!-- Plotting GFP/OD zoom in to mutants -->
 
-```{r plotting1mutants}
-sel_table1_mutants <- sel_table1 %>% filter(str_detect(Samples, 'pPK'))
-plot_time_series(sel_table1_mutants, x_breaks = sheet_time_x_axis) %>% print()
-```
+<!-- ```{r plotting1mutants} -->
+<!-- sel_table1_mutants <- sel_table1 %>% filter(str_detect(Samples, 'pPK')) -->
+<!-- plot_time_series(sel_table1_mutants, x_breaks = sheet_time_x_axis) %>% print() -->
+<!-- ``` -->
 
 ## Individual measurement plots
 (GFP, RFP, OD and GFP/RFP)
@@ -247,14 +247,14 @@ plt6_sel_zoom_mutants
 
 ## Specific plots for presentations
 
-Plotting only WT pRV01: GFP/OD : linear scale
+<!-- Plotting only WT pRV01: GFP/OD : linear scale -->
 
-```{r plotting7}
-sel_table1_pRV <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+<!-- ```{r plotting7} -->
+<!-- sel_table1_pRV <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
 
-plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F)
-plt7
-```
+<!-- plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F) -->
+<!-- plt7 -->
+<!-- ``` -->
 
 Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01 : important reporters only: GFP/OD
 
@@ -279,13 +279,14 @@ sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('me
 plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
 plt9 #%>% format_logscale() %>% print()
 ```
-On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD
+<!-- On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD -->
 
-```{r plotting10}
-sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) + 
-    annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
-    scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
-    ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
-plt10
+<!-- ```{r plotting10} -->
+<!-- sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
+<!-- plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) +  -->
+<!--     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration -->
+<!--     geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) +  -->
+<!--     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) +  -->
+<!--     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title) -->
+<!-- plt10 -->
+<!-- ``` -->
