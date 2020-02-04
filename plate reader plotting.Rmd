@@ -20,7 +20,7 @@ User inputs for multiple sheets
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) to exclude 3. number of rows and columns in plate reader data 4. Title for plots 
 # Comment (make sure excel file is in the parent directory of the Rproject file or code)
 
-flnm <- 'S025_25-1-20_till d3'
+flnm <- 'S025_25-1-20_till d8'
 sheets_to_exclude <- 'analysis|dil|\\.' # regular expression for sheets to be excluded
 
 n_Rows <- 8; # default full 96 well plate = 8 rows x 12 columns
@@ -247,46 +247,46 @@ plt6_sel_zoom_mutants
 
 ## Specific plots for presentations
 
-<!-- Plotting only WT pRV01: GFP/OD : linear scale -->
+<!-- <!-- Plotting only WT pRV01: GFP/OD : linear scale --> -->
 
-<!-- ```{r plotting7} -->
-<!-- sel_table1_pRV <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
+<!-- <!-- ```{r plotting7} --> -->
+<!-- <!-- sel_table1_pRV <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column --> -->
 
-<!-- plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F) -->
-<!-- plt7 -->
+<!-- <!-- plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F) --> -->
+<!-- <!-- plt7 --> -->
+<!-- <!-- ``` --> -->
+
+<!-- Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01 : important reporters only: GFP/OD -->
+
+<!-- ```{r plotting8} -->
+<!-- sel_table1_exclude_mutants <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
+<!-- plt8 <- plot_time_series(sel_table1_exclude_mutants, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2) -->
+<!-- plt8 -->
 <!-- ``` -->
 
-Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01 : important reporters only: GFP/OD
+<!-- ### Processed data plots (ratio of max and others) -->
 
-```{r plotting8}
-sel_table1_exclude_mutants <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt8 <- plot_time_series(sel_table1_exclude_mutants, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2)
-plt8
-```
+<!-- Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> of uninduced and induced) -->
+<!-- - Grabs the mean of fGFP (3 biological replicates) at each condition -->
+<!-- - Divide the mean and SD at each condition by this mean -->
+<!-- - (In effect this is dividing each data point by this mean, the variability (SD) of the fGFP triplicates itself is ignored) -->
+<!-- - (Warning: the division of two random variables is a complicated subject, cannot just divide the means - need to look into this in detail) -->
 
-### Processed data plots (ratio of max and others)
+<!-- ```{r plotting9} -->
+<!-- sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = mean(mean)) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction) -->
+<!-- sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/sd[Reporter == 'fGFP']) %>% mutate_cond(Reporter == 'fGFP', 'sd' = 0) %>%  filter(Time < 9, str_detect(Samples, 'pRV|pInt|Controls')) # calculate ratio of fGFP per day and make SD of fGFP 0 -->
 
-Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> of uninduced and induced)
-- Grabs the mean of fGFP (3 biological replicates) at each condition
-- Divide the mean and SD at each condition by this mean
-- (In effect this is dividing each data point by this mean, the variability (SD) of the fGFP triplicates itself is ignored)
-- (Warning: the division of two random variables is a complicated subject, cannot just divide the means - need to look into this in detail)
-
-```{r plotting9}
-sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = mean(mean)) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction)
-sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/sd[Reporter == 'fGFP']) %>% mutate_cond(Reporter == 'fGFP', 'sd' = 0) %>%  filter(Time < 9, str_detect(Samples, 'pRV|pInt|Controls')) # calculate ratio of fGFP per day and make SD of fGFP 0
-
-plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
-plt9 #%>% format_logscale() %>% print()
-```
-<!-- On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD -->
-
-<!-- ```{r plotting10} -->
-<!-- sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
-<!-- plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) +  -->
-<!--     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration -->
-<!--     geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) +  -->
-<!--     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) +  -->
-<!--     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title) -->
-<!-- plt10 -->
+<!-- plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD') -->
+<!-- plt9 #%>% format_logscale() %>% print() -->
 <!-- ``` -->
+<!-- <!-- On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD --> -->
+
+<!-- <!-- ```{r plotting10} --> -->
+<!-- <!-- sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column --> -->
+<!-- <!-- plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) +  --> -->
+<!-- <!--     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration --> -->
+<!-- <!--     geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) +  --> -->
+<!-- <!--     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) +  --> -->
+<!-- <!--     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title) --> -->
+<!-- <!-- plt10 --> -->
+<!-- <!-- ``` --> -->

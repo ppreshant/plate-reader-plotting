@@ -81,7 +81,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
   
   if(ncol(data_sheet1) < 3 + 2* n_Cols) {stop(str_c('Sample names do not exist for sheet: ',sheet_name))}
   table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
-  if(!str_detect(table_Samples[1,1], '<>')) {stop(str_c('Sample names in the wrong place or are improperly formatted, for sheet: ',sheet_name))}
+  if(!str_detect(table_Samples[[1,1]], '<>') | is.na(table_Samples[[1,1]])) {stop(str_c('Sample names in the wrong place or are improperly formatted, for sheet: ',sheet_name))}
   
     if (ncol(data_sheet1) >= 5+3*n_Cols) # extracting the inducer table 
   {
