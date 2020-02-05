@@ -278,13 +278,14 @@ sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('me
 plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
 plt9 #%>% format_logscale() %>% print()
 ```
-On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD
+<!-- On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD -->
 
-```{r plotting10}
-sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) + 
-    annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
-    scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
-    ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
-plt10
+<!-- ```{r plotting10} -->
+<!-- sel_table1_exclude_mutants_only_rGFP <- sel_table1 %>% filter(str_detect(Samples, "pRV|pInt|Controls"), str_detect(Reporter,'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column -->
+<!-- plt10 <- ggplot(sel_table1_exclude_mutants_only_rGFP, aes(Time, mean, colour = Samples, shape = Inducer)) +  -->
+<!--     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration -->
+<!--     geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) +  -->
+<!--     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) +  -->
+<!--     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title) -->
+<!-- plt10 -->
+<!-- ``` -->
