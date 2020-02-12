@@ -1,5 +1,5 @@
 ---
-title: "Plate reader plotting : S020"
+title: "Plate reader plotting : S022"
 author: "Prashant"
 date: "Nov 26, 2019"
 output: html_document
@@ -271,6 +271,17 @@ plt10 <- plot_time_series(sel_table10, x_breaks = sheet_times)
 
 plt10 %>% ggplotly()
 ```
+
+Plotting dose response by day
+
+```{r plotting9_pInt8 only}
+sel_table11 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pInt|pRV')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% filter(Time == 1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt11 <- plot_dose_response(sel_table11)
+
+plt11
+```
+
 
 <!-- ## Specific plots for presentations -->
 
