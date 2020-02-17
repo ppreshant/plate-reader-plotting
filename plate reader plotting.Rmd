@@ -263,6 +263,22 @@ plt8 <- plot_time_series(sel_table1_exclude_mutants, x_breaks = sheet_time_x_axi
 plt8
 ```
 
+Plotting Arabinose induction pInt8: important reporters only: GFP/OD
+
+```{r plotting9}
+sel_table1_pInt8 <- sel_table1 %>% filter(str_detect(Samples, "pInt"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt9 <- plot_time_series(sel_table1_pInt8, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2)
+plt9
+```
+
+Plotting controls, and AHL induction WT pRV01: important reporters only: GFP/OD
+
+```{r plotting10}
+sel_table1_pRV_Con <- sel_table1 %>% filter(str_detect(Samples, "pRV|Controls"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt10 <- plot_time_series(sel_table1_pRV_Con, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2)
+plt10
+```
+
 ### Processed data plots (ratio of max and others)
 
 Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> of uninduced and induced)
