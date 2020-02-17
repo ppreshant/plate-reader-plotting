@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly); library(minpack.lm)   
 
 # reading files and manipulating columns ----
 
@@ -131,6 +131,36 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
   merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols, device_name)
   table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
   
+}
+
+hill_fit <- function(results_array)
+{ # Fittiing Hill equation (typically useful for dose reponse curves)
+  
+  # source: https://github.com/dritoshi/Fitting-Hill-equation/blob/master/bin/hill.r
+  # Itoshi NIKAIDO <dritoshi@gmail.com>
+  
+  # make demo data
+  L  <- results_array$L
+  y  <- results_array$y
+  
+  # # conf
+  # output <- "results/hill.pdf"
+  
+  # initial
+  y0 <- min(y)
+  ymax.init <- 1e10
+  n.init  <- 1
+  Kd.init <- .005
+  
+  # fitting Hill equation
+  y.nls <- nlsLM(y ~ y0 + (ymax - y0) * L^n / (Kd^n + L^n), start = c(ymax = ymax.init, n = n.init, Kd = Kd.init))
+  
+  # # extract fitting data
+  # y.nls.summary <- summary(y.nls)
+  # y.nls.n       <- y.nls.summary$param[1]
+  # y.nls.Kd      <- y.nls.summary$param[2]
+  # y.nls.predict <- predict(y.nls)
+  # results <- cbind(y, y.nls.predict)
 }
 
 # formatting plots ----
