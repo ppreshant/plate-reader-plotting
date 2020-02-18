@@ -281,13 +281,13 @@ sel_table11 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(st
 
 hill_table11 <- sel_table11 %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
   nest() %>%  # seperate each group into a different data frame for fitting
-  mutate (fit = map(data, hill_fit), y.fit = map(fit, augment)) %>% # call hill fitting function on a single time point data
+  mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
   unnest(y.fit)
 
   
-sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
 
-plt11 <- plot_dose_response(sel_table11.fit) + geom_line(aes(x = Inducer, y = y.fit), linetype = 2)
+plt11 <- plot_dose_response(sel_table11) + geom_line(data = hill_table11, aes(x = L, y = .fitted), linetype = 2) + geom_ribbon(data = hill_table11, aes(x = L, ymin = `.fitted` - .resid^2, ymax = `.fitted` + `.resid`))
 
 plt11
 ```
