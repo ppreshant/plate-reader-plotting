@@ -1,7 +1,7 @@
 ---
-title: "Plate reader plotting : S019"
+title: "Plate reader plotting : S023"
 author: "Prashant"
-date: "Dec 1, 2019"
+date: "Feb 18, 2019"
 output: html_document
 ---
 
@@ -51,7 +51,10 @@ merged2 <- bind_rows(tables_cx) # merge all sheets into 1 table
 all_days_table <- merged2 %>% separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), Samples = if_else(Samples == Reporter, "Controls", Samples), Samples = if_else(str_detect(Reporter,'^[:digit:]*$'), str_c(Samples,Reporter, sep = '_'), Samples) , Reporter  = str_replace(Reporter, 'rG$|^[:digit:]*$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
 # details: split into 2 columns by _ and +; make singleton entries as controls and put name in Reporter; make mutants ex: pPK7_17 into 1 sample name and reporter as the default rGFP (also replace shorthand notation rG with rGFP) 
 
-all_days_table %<>% filter(!str_detect(Reporter, 'LB'))
+MG1655_baseline <- all_days_table %>% filter(str_detect(Reporter, 'MG1655'), Time == 3) # MG1655 fluor values on day 3
+all_days_table %<>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
+
+all_days_table %<>% filter(!str_detect(Reporter, 'LB|MG')) # filter out LB and MG1655 from plotting
 all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
 
