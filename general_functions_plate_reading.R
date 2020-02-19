@@ -181,7 +181,7 @@ plot_time_series <- function(data_table, induction_duration = c(0,1), x_breaks =
 plot_dose_response <- function(sel_tablex, y_axis_label = 'GFP/OD (a.u.)', plot_title = 'Flipping vs inducer dose' )
 { # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by Samples, colour by sample and title
   plt1 <- ggplot(sel_tablex, aes(Inducer, mean)) + 
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + 
     geom_point(size = 2, fill = 'white') + 
     facet_grid(~ Samples, scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) +
