@@ -134,7 +134,7 @@ clean_and_arrange <- function(merged1)
 
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time, Media) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
   # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
   # merged4
@@ -172,7 +172,7 @@ plot_time_series <- function(data_table, induction_duration = c(0,6/24), x_break
   facet_by_var <- enquo(facet_by_var)
   plt <- ggplot(data_table, aes(Time, mean, colour = Reporter, shape = Inducer)) + 
     annotate('rect', xmin = induction_duration[1], ymin = 0, xmax = induction_duration[2], ymax = Inf, alpha = .2) +  # grey rectangle for induction duration
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + facet_wrap(Media ~ Samples) + geom_line() + geom_point(size = 2, fill = 'white', stroke = stroke_width) + 
     scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = x_breaks) + 
     ylab(y_axis_label) + xlab(x_axis_label) + ggtitle(plot_title)
  
