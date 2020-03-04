@@ -271,12 +271,21 @@ plt9 <- plot_time_series(sel_table1_pInt8, x_breaks = sheet_time_x_axis) + annot
 plt9
 ```
 
-Plotting controls, and AHL induction WT pRV01: important reporters only: GFP/OD
+Plotting controls, and AHL induction WT pRV01: important reporters only: GFP/OD - Change for other subsets
 
 ```{r plotting10}
-sel_table1_pRV_Con <- sel_table1 %>% filter(str_detect(Samples, "pRV|Controls"), str_detect(Reporter, 'GFP')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-plt10 <- plot_time_series(sel_table1_pRV_Con, x_breaks = sheet_time_x_axis) + annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2)
+sel_table1_pRV_Con <- sel_table1 %>% filter(str_detect(Samples, "Control"), str_detect(Reporter, 'GFP'), Time <= 8) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt10 <- plot_time_series(sel_table1_pRV_Con, x_breaks = sheet_time_x_axis, errorbar_width = .1)
 plt10
+```
+
+Plotting controls: important reporters only: GFP/OD - Change for other subsets
+
+```{r plotting10}
+sel_table1_Con <- sel_table1 %>% filter(str_detect(Samples, "Control"), str_detect(Reporter, 'GFP'), Time <= 8, str_detect(Inducer, '0')) %>% ungroup() %>% mutate(Reporter = recode_factor(Reporter, rGFP = 'Off state', fGFP = 'On state (flipped)')) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+plt11 <- ggplot(sel_table1_Con, aes(Time, mean, colour = Reporter)) %>%
+  add_layers_time_series(x_breaks = sheet_time_x_axis, errorbar_width = .1) 
+plt11
 ```
 
 ### Processed data plots (ratio of max and others)
@@ -291,8 +300,8 @@ Plotting GFP/OD normalized to the fGFP control at the respective point (<fGFP> o
 sel_table_fGFP_modified <- sel_table1 %>% group_by(Samples, Time) %>% mutate_cond(Reporter == 'fGFP', 'mean' = mean(mean), 'sd' = mean(mean)) # average fGFP values at each time across inducer values (since fGFP control has no effect from the induction)
 sel_table9_fraction_flip <- sel_table_fGFP_modified %>% ungroup() %>% mutate('mean' = mean/mean[Reporter == 'fGFP'], 'sd' = sd/sd[Reporter == 'fGFP']) %>% mutate_cond(Reporter == 'fGFP', 'sd' = 0) %>%  filter(Time < 9, str_detect(Samples, 'pRV|pInt|Controls')) # calculate ratio of fGFP per day and make SD of fGFP 0
 
-plt9 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
-plt9 #%>% format_logscale() %>% print()
+plt12 <- plot_time_series(sel_table9_fraction_flip, x_breaks = sheet_time_x_axis, y_axis_label = 'Fraction of maximum GFP/OD')
+plt12 #%>% format_logscale() %>% print()
 ```
 <!-- On same plot: controls, Arabinose induction pInt8 and AHL induction WT pRV01 GFP/OD -->
 
