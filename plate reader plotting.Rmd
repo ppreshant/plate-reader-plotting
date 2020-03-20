@@ -83,7 +83,7 @@ Plotting GFP/OD of all data: logscale
 ```{r plotting1}
 sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt1 <- plot_time_series(sel_table1, x_breaks = sheet_time_x_axis)
+plt1 <- plot_time_series(sel_table1, x_breaks = sheet_time_x_axis, facet_by_var = Samples)
 
 
 plt1f <- plt1 %>% format_logscale()
