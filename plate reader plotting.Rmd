@@ -193,17 +193,18 @@ Selected GFP/OD - Top 5: only day 2
 
 ```{r plotting1s, fig.width = 5, fig.height = 3.5}
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
-plotting_order_2 <- sel_table2_1 %>% ungroup() %>% filter(str_detect(Inducer,'0')) %>% arrange(mean) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
+plotting_order_2 <- sel_table2_1 %>% ungroup() %>% filter(str_detect(Inducer,'1')) %>% arrange(desc(mean)) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
 
 sel_table2_1$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
 
 # Selecting top 5 data points + controls
-sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_infreq(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
+sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_inorder(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
 
-plt1 <- plot_mean_facetted(sel_table2_s) + ylab('Fold') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
+plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
 
 plt1a <- plt1 %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
 plt1a + ylim(0, 2500)
+ggsave('plots and data/S018_top5.pdf', plt1a, width = 4, height = 3)
 ```
 
 WT pRV01 GFP/OD - uninduced : daily progression
@@ -224,9 +225,9 @@ Selected GFP/OD and fold change - Top 5: only day 2
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
 
 # Selecting top 5 data points + controls
-sel_table6_s <- sel_table6 %>% filter(str_detect(Time, '25')) %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_infreq(category), Inducer = '1 uM') %>% group_by(Samples, Inducer, category, Time) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
+sel_table6_s <- sel_table6 %>% filter(str_detect(Time, '25')) %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_inorder(category), Inducer = '1 uM') %>% group_by(Samples, Inducer, category, Time) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
 
-# sel_table6_s$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
+sel_table6_s$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
 
 sel_table2fc <- bind_rows(sel_table2_s, sel_table6_s)
 
@@ -234,6 +235,7 @@ plt1fc <- plot_mean_facetted(sel_table6_s) + ylab('Fold change') + scale_shape_m
 
 plt1fca <- plt1fc %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
 plt1fca
+ggsave('plots and data/S018_top5_fold change.pdf', plt1fca, width = 4, height = 2.5)
 ```
 
 
