@@ -272,14 +272,14 @@ plt10 <- plot_time_series(sel_table10, x_breaks = sheet_times)
 plt10 %>% ggplotly()
 ```
 
-Plotting dose response by day
+Plotting dose response by day: day 1
 
-```{r plotting9_pInt8 only}
-sel_table11 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
+```{r plotting11}
+sel_table11 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV|pInt')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
   filter(Time == 1 & Inducer != -1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
   
 
-hill_table11 <- sel_table11 %>% filter(str_detect(Samples, 'pRV')) %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
+hill_table11 <- sel_table11 %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
   nest() %>%  # seperate each group into a different data frame for fitting
   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
   unnest(y.fit)
@@ -292,6 +292,25 @@ plt11 <- plot_dose_response(sel_table11) + geom_line(data = hill_table11, aes(x 
 plt11
 ```
 
+Plotting dose response by day
+
+```{r plotting12}
+sel_table12 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV|pInt')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Inducer != -1 & Time > 0 & Time < 3) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  
+
+hill_table12 <- sel_table12 %>% group_by(Samples, Time) %>% rename(L = Inducer, y = mean) %>% 
+  nest() %>%  # seperate each group into a different data frame for fitting
+  mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+  unnest(y.fit)
+
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plt12 <- plot_dose_response(sel_table12) + geom_line(data = hill_table12, aes(x = L, y = .fitted), linetype = 2) + aes(colour = factor(Time))
+
+plt12
+```
 
 <!-- ## Specific plots for presentations -->
 

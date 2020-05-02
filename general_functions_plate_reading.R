@@ -150,7 +150,7 @@ hill_fit <- function(results_array)
   y0 <- min(y)
   ymax.init <- 1e10
   n.init  <- 1
-  Kd.init <- .005
+  Kd.init <- 50
   
   # fitting Hill equation
   y.nls <- nlsLM(y ~ y0 + (ymax - y0) * L^n / (Kd^n + L^n), start = c(ymax = ymax.init, n = n.init, Kd = Kd.init))
@@ -186,8 +186,8 @@ plot_dose_response <- function(sel_tablex, y_axis_label = 'GFP/OD (a.u.)', plot_
     facet_grid(~ Samples, scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) +
     scale_x_log10(  # logscale for y axis with tick marks
-      labels = scales::trans_format("log10", scales::math_format(10^.x) ) )
-  
+      labels =  fancy_scientific)
+  # depreceated labels = scales::trans_format("log10", scales::math_format(10^.x) )
   format_classic(plt1) # output a classic formatted plot
 }
 
