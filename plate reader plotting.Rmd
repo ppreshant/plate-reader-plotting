@@ -20,7 +20,7 @@ User inputs for multiple sheets
 
 flnm <- 'S010_Ara vs AHL_26-4-19'
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- c( "0 hr","6.75 hr") # list the sheets to be loaded
 n_Rows <- 8; 
