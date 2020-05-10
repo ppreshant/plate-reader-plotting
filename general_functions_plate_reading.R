@@ -58,7 +58,7 @@ read_plate_to_column <- function(data_tibble, val_name)
 # Reading all plate related data from a sheet; vectorizable ----
 # uses above functions and makes the working RMD file clean
 
-read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, sheet_name)
+read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
 {
   # Context: b_gap = row number of OD data header (<>) , a_gap = 2 + # of rows between OD and fluorescence value header(<>), The same between GFP and RFP as well; 
   # If partial plate is read there is 1 extra line in all 3 places for infinite; makes no difference for Spark
@@ -66,7 +66,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
   if(str_detect(device_name, 'infinite')) # infinite M1000 plate reader
     
   {
-    if(n_Rows == 8 & n_Cols == 12) {b_gap = 23; a_gap <- 26; # full plate
+    if(n_Rows == 8 & n_Cols == 12 & partial_plate == F) {b_gap = 23; a_gap <- 26; # full plate
     }  else {b_gap = 24; a_gap <- 27} # partial plate (has extra lines for plate region)
     
   } else if(str_detect(device_name, 'Spark')) # Spark plate reader
@@ -89,7 +89,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
     if (is_empty(table_Inducer)) inducer_flag <- 1 # flag that there are no inducer values
   }  else inducer_flag <- 1 # flag that there are no inducer values
   
-  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- 0} # if inducer table is empty or absent, make it zero (same size as samples)
+  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- '0'} # if inducer table is empty or absent, make it zero (same size as samples)
   
   table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
   table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
@@ -106,12 +106,12 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
   
 }
 
-extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols)
+extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
 { # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
   device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name
-  merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols, device_name, sheet_name)
+  merged1 <- read_all_plates_in_sheet(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
   table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
   
 }

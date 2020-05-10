@@ -24,13 +24,14 @@ flnm <- 'S025_25-1-20'
 sheets_to_exclude <- 'analysis|dil|\\.' # regular expression for sheets to be excluded
 
 n_Rows <- 8; # default full 96 well plate = 8 rows x 12 columns
-n_Cols <- 12; 
+n_Cols <- 12;
+partial_plate = F; # if the plate is 8 x 12 but non rectangular (partially filled), make this TRUE (T)
 # check the number of rows and columns for first sheet listed below
 
 plotting_order <- c("pRV01", "pInt8", "pPK7/8", "pPK7/17","Controls") # order of plotting for samples
 baseline_name <- 'MG1655' # name of negative control for background fluorescence subtraction
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- names(fl) %>% .[!str_detect(., sheets_to_exclude)] # get the list of sheets unless excluded
 # sheet_names <- c("0 h","6 h","24 h", "48 h", "72 h", "96 h") # list the sheets to be loaded manually
@@ -44,7 +45,7 @@ Copy the tables of GFP, OD, Sample names etc. in excel and run the command below
 Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
-tables_cx <- map2(sheet_names, sheet_times, ~ extract_from_given_sheet(.x, n_Rows, n_Cols) %>% mutate(Time = .y)) # extracing OD, GFP and RFP from each sheet (vectorized)
+tables_cx <- map2(sheet_names, sheet_times, ~ extract_from_given_sheet(.x, n_Rows, n_Cols, partial_plate) %>% mutate(Time = .y)) # extracing OD, GFP and RFP from each sheet (vectorized)
 
 merged2 <- bind_rows(tables_cx) # merge all sheets into 1 table
 
