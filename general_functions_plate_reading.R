@@ -142,6 +142,38 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
   
 }
 
+
+# Hill function ----
+hill_fit <- function(results_array)
+{ # Fittiing Hill equation (typically useful for dose reponse curves)
+  
+  # source: https://github.com/dritoshi/Fitting-Hill-equation/blob/master/bin/hill.r
+  # Itoshi NIKAIDO <dritoshi@gmail.com>
+  
+  # make demo data
+  L  <- results_array$L
+  y  <- results_array$y
+  
+  # # conf
+  # output <- "results/hill.pdf"
+  
+  # initial
+  y0 <- min(y)
+  ymax.init <- 1e10
+  n.init  <- 1
+  Kd.init <- 50
+  
+  # fitting Hill equation
+  y.nls <- nlsLM(y ~ y0 + (ymax - y0) * L^n / (Kd^n + L^n), start = c(ymax = ymax.init, n = n.init, Kd = Kd.init))
+  
+  # # extract fitting data
+  # y.nls.summary <- summary(y.nls)
+  # y.nls.n       <- y.nls.summary$param[1]
+  # y.nls.Kd      <- y.nls.summary$param[2]
+  # y.nls.predict <- predict(y.nls)
+  # results <- cbind(y, y.nls.predict)
+}
+
 # formatting plots ----
 
 # plotting function : to reduce redundancy, common elements are captured here
@@ -150,10 +182,33 @@ plot_mean_facetted <- function(sel_tablex)
   plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
 }
 
-# plotting function Inducer series
-plot_mean_w_inducer_facetted <- function(sel_tablex)
-{ # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by category, colour by sample and title
-  plt1 <- ggplot(sel_tablex, aes(Inducer, mean, colour = Reporter)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x')
+# plotting dose response (mean vs Inducer)
+plot_dose_response <- function(sel_tablex, y_axis_label = 'GFP/OD (a.u.)', plot_title = 'Flipping vs inducer dose' )
+{ # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by Samples, colour by sample and title
+  plt1 <- ggplot(sel_tablex, aes(Inducer, mean, colour = Reporter)) + 
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + 
+    geom_point(size = 2) + 
+    facet_grid(~ category, scales = 'free_x', space = 'free_x') +
+    ylab(y_axis_label) + ggtitle(plot_title) 
+  
+  format_classic(plt1) %>% format_logscale_x # output a classic formatted plot with logscale x
+}
+
+# formatting labels in logscale cleanly : a x 10^b
+# use as ggplot(df,aes(x,y)) + geom_point() + scale_y_log10(labels = fancy_scientific)
+fancy_scientific <- function(l) {
+  # turn in to character string in scientific notation
+  l <- format(l, scientific = TRUE)
+  # quote the part before the exponent to keep all the digits
+  l <- gsub("^(.*)e", "'\\1'e", l)
+  # remove + after exponent, if exists. E.g.: (3x10^+2 -> 3x10^2) 
+  l <- gsub("e\\+","e",l)
+  # turn the 'e+' into plotmath format
+  l <- gsub("e", "%*%10^", l)
+  # convert 1x10^ or 1.000x10^ -> 10^ 
+  l <- gsub("\\'1[\\.0]*\\'\\%\\*\\%", "", l)
+  # return this as an expression
+  parse(text=l)
 }
 
 
@@ -170,14 +225,15 @@ format_logscale_y <- function(plt)
 { # extra comments
   plt <- plt +
     scale_y_log10(  # logscale for y axis with tick marks
-      labels = scales::trans_format("log10", scales::math_format(10^.x) )
+      labels = fancy_scientific
     )
 }
 
 format_logscale_x <- function(plt)
 { # extra comments
   plt <- plt +
-    scale_x_log10(  # logscale for y axis with tick marks
-      labels = scales::trans_format("log10", scales::math_format(10^.x) )
+    scale_x_log10(  # logscale for x axis
+      labels = fancy_scientific
+      # depreceated : labels = scales::trans_format("log10", scales::math_format(10^.x) )
     )
 }

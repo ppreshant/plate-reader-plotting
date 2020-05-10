@@ -36,27 +36,16 @@ Doing calculations with the tables, relating sample names with the values
 
 ```{r data analysis}
 table_c0 <- extract_from_given_sheet(sheet_names[1], 8, 6, partial_plate) %>% mutate(Time = '0') %>% mutate(Inducer = 0)  # extracing from each sheet
-table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols, partial_plate) %>% mutate(Time = '6.75') %>% mutate(Inducer = as.numeric(Inducer))
+table_c1 <- extract_from_given_sheet(sheet_names[2], n_Rows, n_Cols, partial_plate) %>% mutate(Time = '6.75') %>% mutate(Inducer = str_replace_all(Inducer, c('Glucose' = '1e-3', 'none' = '1e-4')), Inducer = as.numeric(Inducer)) # select the dose response time/sheet, convert string values into arbitrary numbers (ease of plotting)
 
 merged2 <- bind_rows(table_c0,table_c1) # merge all sheets into 1 table
 
-all_days_table <- merged2 %>% separate(Samples, into = c('category', 'Reporter'), sep = '\\_| \\+ ', remove = F) %>% mutate(Samples  = str_replace(Samples, '(.*)\\_(.*)', '\\2')) # create a category row for controls and the library clones 6 and 7
-
-# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
-# plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect(Time,'6')) %>% arrange(`GFP/OD`) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
-# 
-# all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
-# all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
-
-# all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+all_days_table <- merged2 %>% separate(Samples, into = c('category', 'Reporter'), sep = '\\_| \\+ ', remove = F) %>% mutate(Samples  = str_replace(Samples, '(.*)\\_(.*)', '\\2')) # create a category row for controls and integrase plasmid names
 
 remove('table_c0', 'table_c1', 'merged2')
 
-# giving numeric analogs to inducer values (for easy logscale plotting) - prelim analysis only
-all_days_table %<>%  mutate(Inducer = recode(Inducer, `0` = 0.001), Inducer = replace_na(Inducer, 0.0005), Reporter = fct_relevel(Reporter, 'rGFP', "pEMF02", "pSH02", "fGFP", "DH10B"))
-
+all_days_table$Reporter %<>% fct_relevel('rGFP', "pEMF02", "pSH02", "fGFP", "DH10B") # Change order of plotting reporters
 ```
-
 ## Data tables
 
 Showing raw data and processed data here 
@@ -81,10 +70,11 @@ sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!st
 # WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
 # rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control
 
-plt3 <- plot_mean_w_inducer_facetted(sel_table2) + ylab('GFP/OD (a.u.)') #+ geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
-plt4 <- plt3 %>% format_classic() %>% format_logscale_x() %>% format_logscale_y()
+plt3 <- plot_dose_response(sel_table2)
+plt4 <- plt3 %>% format_logscale_y()
 plt4
 ```
+
 
 Plotting GFP/OD with time : linear scale
 
