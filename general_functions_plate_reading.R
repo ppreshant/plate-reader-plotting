@@ -3,7 +3,7 @@
 # read in excel file (.xls or .xlsx) exported from Tecan Spark plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist)  
+library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(minpack.lm)  
 
 # reading files and manipulating columns ----
 
@@ -150,18 +150,18 @@ hill_fit <- function(results_array)
   # source: https://github.com/dritoshi/Fitting-Hill-equation/blob/master/bin/hill.r
   # Itoshi NIKAIDO <dritoshi@gmail.com>
   
-  # make demo data
-  L  <- results_array$L
-  y  <- results_array$y
+  # Unpack data
+  L  <- results_array$L # x axis = independent variable
+  y  <- results_array$y # dependant variable
   
   # # conf
   # output <- "results/hill.pdf"
   
   # initial
   y0 <- min(y)
-  ymax.init <- 1e10
+  ymax.init <- 4e4
   n.init  <- 1
-  Kd.init <- 50
+  Kd.init <- 1e-2
   
   # fitting Hill equation
   y.nls <- nlsLM(y ~ y0 + (ymax - y0) * L^n / (Kd^n + L^n), start = c(ymax = ymax.init, n = n.init, Kd = Kd.init))

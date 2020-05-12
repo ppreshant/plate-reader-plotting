@@ -44,7 +44,10 @@ all_days_table <- merged2 %>% separate(Samples, into = c('category', 'Reporter')
 
 remove('table_c0', 'table_c1', 'merged2')
 
+all_days_table %<>% mutate(category = if_else(Inducer == 1e-3, 'Control', category)) # moving Glucose into Control - to avoid going into hill function fitting 
 all_days_table$Reporter %<>% fct_relevel('rGFP', "pEMF02", "pSH02", "fGFP", "DH10B") # Change order of plotting reporters
+
+dose_response_data <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Time, "0")) # exclude overnight data and take mean and SD for GFP/OD
 ```
 ## Data tables
 
@@ -53,6 +56,18 @@ Showing raw data and processed data here
 GFP/RFP values
 ``` {r}
 # Not showing anything for now # format with colours etc for good visualization
+```
+
+## Hill function fitting
+
+Non linear regression to fit data to hill function
+
+```{r hill_fits}
+hill_table2 <- all_days_table %>% filter(!str_detect(Time, "0"), !str_detect(category, 'Control') | str_detect(Reporter, 'pSH02')) %>%        # select relevant data for hill fits - excluding controls without inducer doses
+  group_by(category, Reporter) %>% rename(L = Inducer, y = 'GFP/OD') %>% 
+  nest() %>%  # seperate each group into a different data frame for fitting
+  mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+  unnest(y.fit)
 ```
 
 
@@ -66,9 +81,7 @@ Plotting GFP/OD with Inducer
 
 ```{r plotting1}
 # plotting GFP/OD with Inducer (excludes time 0)
-sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Time, "0")) #%>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
-# WT_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'RV01 $')) %>% pull(mean) # find the value for pRV01
-# rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,'25') & str_detect(Samples,'rGFP')) %>% pull(mean) # find the value for rGFP negative control
+sel_table2 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(!str_detect(Time, "0"))
 
 plt3 <- plot_dose_response(sel_table2)
 plt4 <- plt3 %>% format_logscale_y()
