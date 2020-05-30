@@ -2,11 +2,15 @@
 title: "Plate reader plotting : S025"
 author: "Prashant"
 date: "Feb 18, 2019"
-output: html_document
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = F, warning=F, fig.width = 8, fig.height = 4)
+knitr::opts_chunk$set(echo = F, warning=F, message = F, fig.width = 8, fig.height = 4)
 # fig.width = 14/3, fig.height = 11.34/3
 source('./general_functions_plate_reading.R')
 ```

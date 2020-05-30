@@ -174,7 +174,6 @@ plot_time_series <- function(data_table, induction_duration = c(0,6/24), x_break
   
   plt_layers <- add_layers_time_series(plt, x_breaks, facet_by_var = !! facet_by_var)
  
-   format_classic(plt_layers) # output a classic formatted plot
 }
 
 # Adding layers to timeseries (mean in points, stdev in errorbars; Coloured by reporter plasmid, facetted by integrase plasmid and shape as inducer)
