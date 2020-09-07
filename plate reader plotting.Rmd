@@ -292,7 +292,7 @@ plt11 <- plot_dose_response(sel_table11) + geom_line(data = hill_table11, aes(x 
 plt11
 ```
 
-Plotting dose response by day
+Plotting dose response by day (day 1 and 2)
 
 ```{r plotting12}
 sel_table12 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV|pInt')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
@@ -310,6 +310,65 @@ hill_table12 <- sel_table12 %>% group_by(Samples, Time) %>% rename(L = Inducer, 
 plt12 <- plot_dose_response(sel_table12) + geom_line(data = hill_table12, aes(x = L, y = .fitted), linetype = 2) + aes(colour = factor(Time))
 
 plt12
+```
+
+Plotting dose response by day (joined points)
+
+```{r plotting13}
+sel_table13 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, 'pRV|pInt')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Inducer != -1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plot_dose_response(sel_table13) + geom_line() + aes(colour = factor(Time))
+
+```
+
+Plotting dose response by day (Controls)
+
+```{r plotting14}
+sel_table14 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% 
+  filter(str_detect(Samples, 'Control'), Reporter == 'pSH001') %>% 
+  ungroup() %>% 
+  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Inducer != -1 & Time == 1) %>%  # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  na.omit()
+
+hill_table14 <- sel_table14 %>% group_by(Samples, Reporter, Time) %>% rename(L = Inducer, y = mean) %>% 
+  nest() %>%  # seperate each group into a different data frame for fitting
+  mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+  unnest(y.fit)
+
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plt14 <- plot_dose_response(sel_table14) + geom_line(data = hill_table14, aes(x = L, y = .fitted), linetype = 2) + aes(colour = factor(Time))
+
+plt14
+```
+
+Plotting dose response by day (all plasmids)
+
+```{r plotting15}
+sel_table15 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% 
+  # filter(str_detect(Samples, 'Control'), Reporter == 'pSH001') %>% 
+  ungroup() %>% 
+  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Inducer != -1) %>%  # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  na.omit()
+
+# hill_table15 <- sel_table15 %>% group_by(Samples, Reporter, Time) %>% rename(L = Inducer, y = mean) %>% 
+#   nest() %>%  # seperate each group into a different data frame for fitting
+#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+#   unnest(y.fit)
+
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plt15 <- plot_dose_response(sel_table15) + geom_line() + aes(colour = factor(Time), label = ) 
+
+plt15 %>% ggplotly(dynamicTicks = T)
+
 ```
 
 <!-- ## Specific plots for presentations -->
