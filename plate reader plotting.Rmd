@@ -29,7 +29,7 @@ n_Cols <- 12;
 
 plotting_order <- c("pRV01", "pInt8", "pPK7/8", "pPK7/17","Controls") # order of plotting for samples
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- names(fl) %>% .[!str_detect(., sheets_to_exclude)] # get the list of sheets, other than excluded ones 
 # sheet_names <- c("0 h","6 h","24 h", "48 h", "72 h", "96 h") # list the sheets to be loaded manually

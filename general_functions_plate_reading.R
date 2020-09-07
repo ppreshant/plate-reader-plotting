@@ -85,7 +85,10 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name)
     if (is_empty(table_Inducer)) inducer_flag <- 1 # flag that there are no inducer values
   }  else inducer_flag <- 1 # flag that there are no inducer values
   
-  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- 0} # if inducer table is empty or absent, make it zero (same size as samples)
+  if(inducer_flag) # if inducer table is empty or absent, make it zero (same size as samples)
+    {table_Inducer <- table_Samples;
+    table_Inducer %<>% mutate(across(is.numeric, as.character)) # Accounts for partial plate where numeric and char columns are mixed
+    table_Inducer[-1,-1] <- '0'} # Make all entries '0' to avoid confusion
   
   table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
   table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
