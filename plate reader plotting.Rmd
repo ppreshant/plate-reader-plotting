@@ -310,7 +310,10 @@ hill_table12 <- sel_table12 %>% group_by(Samples, Time) %>% rename(L = Inducer, 
 plt12 <- plot_dose_response(sel_table12) + geom_line(data = hill_table12, aes(x = L, y = .fitted), linetype = 2) + aes(colour = factor(Time))
 
 plt12
+
+plt12 %>% format_logscale() %>% print()
 ```
+
 
 Plotting dose response by day (joined points)
 
@@ -345,6 +348,8 @@ hill_table14 <- sel_table14 %>% group_by(Samples, Reporter, Time) %>% rename(L =
 plt14 <- plot_dose_response(sel_table14) + geom_line(data = hill_table14, aes(x = L, y = .fitted), linetype = 2) + aes(colour = factor(Time))
 
 plt14
+
+plt14 %>% format_logscale() %>% print()
 ```
 
 Plotting dose response by day (all plasmids)

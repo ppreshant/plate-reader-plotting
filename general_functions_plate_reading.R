@@ -224,6 +224,7 @@ format_logscale <- function(plt)
 { # extra comments
   plt <- plt +
     scale_y_log10(  # logscale for y axis with tick marks
-      labels = scales::trans_format("log10", scales::math_format(10^.x) )
+      labels = fancy_scientific
+      # labels = scales::trans_format("log10", scales::math_format(10^.x) )
     )
 }
