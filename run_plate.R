@@ -1,0 +1,34 @@
+# Pulls a file output from plate readers () and plots GFP, GFP/OD, RFP/OD etc. in both linear and logscales
+
+# User inputs ----
+
+flnm <- 'Laurens pSH041 etc. 11-3-21'
+# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
+
+# Prelims ----
+
+
+
+# Input data ----
+
+
+
+flpath <- str_c('../',flnm,'.xlsx')
+fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
+data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+n_Rows <- 3; 
+n_Cols <- 12;
+
+merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
+
+
+# Processing ----
+
+# Purpose : Data crunching of plate reader after loading data set
+merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
+# merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
+merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
+
+merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+# merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
+merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
