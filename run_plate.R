@@ -16,23 +16,30 @@ source('./general_functions_plate_reading.R') # source the file that contains al
 
 flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-data_sheet1 <- fl[[1]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
-n_Rows <- 3; 
-n_Cols <- 12;
 
-merged1 <- read_all_plates_in_sheet(data_sheet1, n_Rows, n_Cols)
+n_Rows <- 2; 
+n_Cols <- 12;
+partial_plate = T; # enter FALSE (F) here when the plate is 8 x 12 but non rectangular
+
+merged1 <- extract_from_given_sheet('Result sheet', n_Rows, n_Cols, partial_plate)
 
 
 # Processing ----
 
 # Purpose : Data crunching of plate reader after loading data set
-merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG"))  # remove NA samples (empty wells)
+merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG")) %>%   # remove NA samples (empty wells)
+  group_by(Samples, Inducer) %>%  # mean will be calculated in these groups 
+  mutate(across(where(is.numeric), list( mean = ~ mean(.x, na.rm = T)) )) # calculate mean of 
+
 # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
 
-merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
-# merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+
+
+
+# merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+# # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
+# merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
 
 # plotting ----
 
