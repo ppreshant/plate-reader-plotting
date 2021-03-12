@@ -2,18 +2,19 @@
 
 # User inputs ----
 
-flnm <- 'Laurens pSH041 etc. 11-3-21'
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
+flnm <- 'Laurens pSH041 etc. 11-3-21'
+title_name <- flnm
 
 # Prelims ----
 
-
+source('./general_functions_plate_reading.R') # source the file that contains all the functions
 
 # Input data ----
 
 
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
 n_Rows <- 3; 
@@ -32,3 +33,8 @@ merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
 merged3 <- merged2 %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
 # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
 merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+
+# plotting ----
+
+# calling r markdown file for plotting in a nice format html file
+rmarkdown::render('plate reader plotting.Rmd', output_file = str_c('./html files/', title_name, '.html'))

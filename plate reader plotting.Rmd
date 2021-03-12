@@ -1,15 +1,16 @@
 ---
-title: "Laurens pSH041 etc. 11-3-21"
-author: "Prashant"
-date: "March 12, 21"
-output: html_document
+author: "Prashant Kalvapalle"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-source('./general_functions_plate_reading.R')
-```
-
+---
+title: `r title_name`
+---
 
 ## Plotting
 
