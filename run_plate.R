@@ -16,7 +16,7 @@ source('./general_functions_plate_reading.R') # source the file that contains al
 
 flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
-data_sheet1 <- fl$Sheet2 # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+data_sheet1 <- fl[[1]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
 n_Rows <- 3; 
 n_Cols <- 12;
 

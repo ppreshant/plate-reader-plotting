@@ -43,7 +43,7 @@ paste_plate_to_column <- function(val_name = '0')
   data_tibble <- read_tsv(clipboard(), col_names = F) # read table from clipboard
   colnames(data_tibble) <- data_tibble[2,] # set column names as the second row
   if(val_name == '0') val_name <- data_tibble[[1,1]] # returns the first column name (which is the sample type etc.) 
-  data_tibble[-(1:2),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
+  data_tibble[-(1:2),] %>% pivot_longer(names_to = 'col_num', values_to = !!val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
 read_plate_to_column <- function(data_tibble, val_name)
@@ -52,7 +52,7 @@ read_plate_to_column <- function(data_tibble, val_name)
   
   val_name <- enquo(val_name)
   colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
-  data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
+  data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = !!val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
 }
 
 # Reading all plate related data from a sheet ----
