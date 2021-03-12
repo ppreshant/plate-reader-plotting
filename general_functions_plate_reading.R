@@ -43,16 +43,15 @@ paste_plate_to_column <- function(val_name = '0')
   data_tibble <- read_tsv(clipboard(), col_names = F) # read table from clipboard
   colnames(data_tibble) <- data_tibble[2,] # set column names as the second row
   if(val_name == '0') val_name <- data_tibble[[1,1]] # returns the first column name (which is the sample type etc.) 
-  data_tibble[-(1:2),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
+  data_tibble[-(1:2),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
 }
 
 read_plate_to_column <- function(data_tibble, val_name)
 { # transforms a plate reader table into a column (named after the top left cell, unless mentioned)
   # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
   
-  val_name <- enquo(val_name)
   colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
-  data_tibble[-(1),] %>% gather(key = 'col_num', value = !!val_name, -`<>`) %>% rename(row_num = `<>`) %>% select(!!val_name)
+  data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
 }
 
 # Reading all plate related data from a sheet; vectorizable ----
@@ -79,7 +78,8 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
     
   } else if(str_detect(device_name, 'Spark')) # Spark plate reader
     
-  {b_gap = 35; a_gap <- 27;}  
+  {b_gap = 35; a_gap <- 27;
+  n_Rows = 8; n_Cols = 12}  # override rows and columns numbering since empty cells are also printed  
   
   else stop(paste('Device not recognised. it is ', device_name)) # stop and throw error for unrecognized plate reader device
   
@@ -105,9 +105,12 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
   
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
   merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) # convert to numeric (they are loaded as characters by default)
-  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'DH10B')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  empty_cells_baseline <- merged1 %>% 
+    filter(str_detect(Samples, 'MG1655|DH10B|NEB10b')) %>% 
+    group_by(Samples) %>% 
+    summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) # avg of MG1655/other controls fluor values in plate
   
-  merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
+  merged2 <- merged1 %>% mutate(GFP_bs = pmax(GFP - empty_cells_baseline$GFP,0), RFP_bs = pmax(RFP - empty_cells_baseline$RFP,0)) %>% mutate('GFP/RFP_bs' = GFP_bs/RFP_bs) %>% mutate('GFP/OD_bs' = GFP_bs/OD) %>% mutate('RFP/OD_bs' = RFP_bs/OD) # Subtract baseline fluor and calculate ratios
 }
 
 clean_and_arrange <- function(merged1)
@@ -175,6 +178,14 @@ hill_fit <- function(results_array)
 }
 
 # formatting plots ----
+
+
+# Set theme universally : format as classic, colours = Set1
+theme_set(theme_classic()) # theme
+scale_colour_discrete <- function(...) { # palette
+  scale_colour_brewer(..., palette="Set1")
+}
+
 
 # plotting function : to reduce redundancy, common elements are captured here
 plot_mean_facetted <- function(sel_tablex)
