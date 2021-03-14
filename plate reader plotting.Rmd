@@ -28,17 +28,27 @@ gfp_order_merged2 <- merged2 %>%
   ungroup() %>% 
   mutate(across(Samples, fct_inorder))
 
+gfp_unique_mean <- gfp_order_merged2 %>% 
+  select(Samples, contains('mean')) %>% 
+  unique()
+
 plt_GFP <- ggplot(data = gfp_order_merged2,
                   mapping = aes(y = Samples, x = GFP)) + 
-  geom_jitter(width = .1) + 
-  geom_point(aes(x = GFP_mean), alpha = .3, colour = 'red') + 
-    geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.3, colour = 'red')
+  geom_jitter(width = 0, height = .3) + 
+  geom_point(data = gfp_unique_mean,
+             aes(x = GFP_mean), size = 0.5) + 
+  geom_bar(data = gfp_unique_mean, 
+           aes(x = GFP_mean, y = Samples), alpha = 0.1, fill = 'gray', stat = 'identity',position = 'dodge') +
+    # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
+  xlab('GFP (a.u)') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
   
   {plt_GFP + geom_text(data = merged2 %>% select(ends_with('mean')) %>% unique(),  
-              mapping = aes(x = GFP_mean, label = GFP_mean %>% round), 
-              hjust = -0.3, colour = 'red', alpha = .3)
+              mapping = aes(x = GFP_mean, label = GFP_mean %>% round, 
+              hjust = if_else(GFP_mean > max(GFP_mean)/2, 1.3, -0.3)))
   } %>% 
 print()
+
+# ggsave(str_c('./plots and data/', title_name, '.png'), width = 5, height = 4) # save plot if necessary
 
 plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 
@@ -47,6 +57,7 @@ plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 
 
 ```{r plotting, echo=T}
+
 # This is work in progress
 # merged4 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,16)) -> plt
 # plt %<>% format_classic(.) %>% format_logscale()
