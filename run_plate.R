@@ -29,7 +29,7 @@ merged1 <- extract_from_given_sheet('Result sheet', n_Rows, n_Cols, partial_plat
 # Purpose : Data crunching of plate reader after loading data set
 merged2 <- merged1 %>% filter(!str_detect(Samples, "NA|MG")) %>%   # remove NA samples (empty wells)
   group_by(Samples, Inducer) %>%  # mean will be calculated in these groups 
-  mutate(across(where(is.numeric), list( mean = ~ mean(.x, na.rm = T)) )) # calculate mean of 
+  mutate(across(where(is.numeric), list( mean = ~ mean(.x, na.rm = T)) )) # calculate mean of all numbers
 
 # merged2 %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()

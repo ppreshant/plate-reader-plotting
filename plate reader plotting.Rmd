@@ -23,8 +23,13 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width = 5, fig.hei
 Note : X and Y are one of pIDV_9 and pSPB868 : the exact order I have to doublecheck in the lab
 
 ```{r plot1}
+gfp_order_merged2 <- merged2 %>% 
+  arrange(GFP) %>% 
+  ungroup() %>% 
+  mutate(across(Samples, fct_inorder))
 
-plt_GFP <- ggplot(merged2, aes(y = Samples, x = GFP)) + 
+plt_GFP <- ggplot(data = gfp_order_merged2,
+                  mapping = aes(y = Samples, x = GFP)) + 
   geom_jitter(width = .1) + 
   geom_point(aes(x = GFP_mean), alpha = .3, colour = 'red') + 
     geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.3, colour = 'red')
