@@ -5,10 +5,10 @@
 read_plateReader_file <- function(flnm)
 { # reads excel file output by plate reader; outputs a list of non-empty sheets
   fl <- flnm %>%  
-    excel_sheets() %>% 
+    excel_sheets() %>% # get the names of all the sub-sheets
     set_names(.,.) %>% 
-    map(read_excel, path = flnm, col_names = F) %>% 
-    list.clean(fun = is_empty)
+    map(read_excel, path = flnm, col_names = F) %>% # read each sub-sheet
+    list.clean(fun = is_empty) # removes data from empty sheets
 }
 
 
@@ -16,13 +16,24 @@ read_plateReader_file <- function(flnm)
 # Browse the plate reader files ----
 
 map_in_sheet <- function(data_list, key, column)
-{ # finds the occurance of "key" in the column (generally 1st column) of data list and gives the row of occurance along with the index
+{ # finds the occurrence of "key" in the column (generally 1st column) of data list and gives the row of occurrence along with the index
   
   data_list %<>% mutate(index = 1:n())  # add a column for row index
-  label_list <- data_list %>% pull(column) %>% str_subset(key) %>% tibble(label = .)   # identify cells with 'Label' in first column
-  label_index_boolean <- data_list %>% pull(column) %>% str_detect(key)   # temporary variable to locate where 'Label' matches 
-  label_list <- data_list %>% select('index') %>% filter(label_index_boolean) %>% bind_cols(label_list,.)   # get the index of the matching rows, merge label and index into 1 data frame
-  label_list
+  # label_list_match <- data_list %>% 
+  #   pull(column) %>% 
+  #   str_subset(key) %>% 
+  #   tibble(label = .)   # identify cells with 'Label' in n'th column, where n is user input : typically 1st column
+
+  label_index_boolean <- data_list %>%
+    pull(column) %>% 
+    str_detect(key)   # temporary variable to locate where 'Label' matches
+  
+  label_and_index.match <- data_list %>% 
+    filter(label_index_boolean) %>% 
+    select(identifier = all_of(column), match = all_of(column + 1), index)
+  
+  # label_list <- data_list %>% select('index') %>% filter(label_index_boolean) %>% bind_cols(label_list_match,.)   # get the index of the matching rows, merge label and index into 1 data frame
+  # label_list
 }
 
 find_plate_read_cells <- function(data_starting_index, empty_cells)
