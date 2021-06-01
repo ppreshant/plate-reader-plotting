@@ -30,7 +30,7 @@ map_in_sheet <- function(data_list, key, column)
   
   label_and_index.match <- data_list %>% 
     filter(label_index_boolean) %>% 
-    select(identifier = all_of(column), match = all_of(column + 1), index)
+    select(identifier = all_of(column), neighbour = all_of(column + 1), index)
   
   # label_list <- data_list %>% select('index') %>% filter(label_index_boolean) %>% bind_cols(label_list_match,.)   # get the index of the matching rows, merge label and index into 1 data frame
   # label_list

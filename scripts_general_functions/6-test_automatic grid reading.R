@@ -9,12 +9,15 @@ label.text = 'Name' # only for SPARK plate reader
 data_sheet1 <- fl$`Result sheet` # extract the first sheet (everything after this should be vectorized for all sheets, with sheet name auto found)
 
 label_list <- map_in_sheet(data_sheet1, str_c('^', label.text, '|<>'), 1) %>% 
-  separate(identifier, c('identifier','label'), sep = ': ') # find the occurance and index of "Label" word in the sheet; retain the text after 'label: '
-
-# data_starting <- map_in_sheet(data_sheet1,'<>', 1) # maps the index of where plate read values start by '<>'
-
+  separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+  mutate(label = coalesce(neighbour, regex_part)) %>%  # if match is NA, takes the value from label (accounts for Spark and Infinite M1000)
+  select(-neighbour, -regex_part) %>%  # remove the individual columns since coalesced column contains this data
+  filter(!is.na(label)) # remove the dummy first occurence of 'Name' in Spark data
 
 # Now we need to identify automatically, how many rows and columns of data appear below the <> // or count the number of empty cells somehow
+# plan : make each <> and the element before it into a group, walk across groups
+# in each group, go to the index of <>, look for ^A-H$ and ^1-12$ in that row and 1st column and capture the grid between these
+
 # empty_cells <- data_sheet1 %>% is.na(.) %>% which(arr.ind = T) %>% as.tibble() # maps empty cells with row and column index
 
 
