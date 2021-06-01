@@ -23,7 +23,11 @@ knitr::opts_chunk$set(echo = F, warning=F, fig.width = 8, fig.height = 4)
 Plotting GFP/OD of higher [Induction]: logscale
 
 ```{r plotting1}
-sel_table1 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(Inducer > 0.6| Inducer == 0) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+# filter neccesary samples for plotting ; mean and variance of any column
+sel_table1 <- all_days_table %>% 
+  group_and_summarize_at('GFP/OD') %>% 
+  filter(Inducer > 0.6| Inducer == 0) # filtering above significant inducer conc. to reduce clutter
 
 plt1 <- plot_time_series(sel_table1, x_breaks = sheet_times)
 
@@ -279,7 +283,8 @@ plot_dose_response(sel_table13) + geom_line() + aes(colour = factor(Time))
 Plotting dose response by day (Controls)
 
 ```{r plotting14}
-sel_table14 <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% 
+sel_table14 <- all_days_table %>% 
+  group_and_summarize_at('GFP/OD') %>% 
   filter(str_detect(Samples, 'Control'), Reporter == 'pSH001') %>% 
   ungroup() %>% 
   mutate(Inducer = as.numeric(Inducer)) %>% 

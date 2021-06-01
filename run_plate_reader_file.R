@@ -47,19 +47,28 @@ all.sheets_data.merged <- map2_dfr(sheet_names, sheet_times,
                                      mutate(Time = .y)) # extracing OD, GFP and RFP from each sheet (vectorized) by preset number of dummy rows between the grids, and merge into one table by joining rows <dfr>
 
 all_days_table <- all.sheets_data.merged %>% 
-  separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>% 
-  mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), 
+  separate(Samples, into = c('Samples', 'Reporter'), sep = '\\_| \\+ ') %>%  # parsing the names for multiple plasmids separated by + or _
+
+  # details: split into 2 columns by _ and +; 
+  # make singleton entries as controls and put name in Reporter; 
+  # make mutants ex: pPK7_17 into 1 sample name and reporter as the default rGFP (also replace shorthand notation rG with rGFP) 
+    mutate(Reporter = if_else(is.na(Reporter)|str_detect(Reporter,"rM"), Samples, Reporter), 
          Samples = if_else(Samples == Reporter, "Controls", Samples), 
          Samples = if_else(str_detect(Reporter,'^[:digit:]*$'), str_c(Samples,Reporter, sep = '_'), Samples) ,
-         Reporter  = str_replace(Reporter, 'rG$|^[:digit:]*$', 'rGFP')) # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
-# details: split into 2 columns by _ and +; make singleton entries as controls and put name in Reporter; make mutants ex: pPK7_17 into 1 sample name and reporter as the default rGFP (also replace shorthand notation rG with rGFP) 
+         Reporter  = str_replace(Reporter, 'rG$|^[:digit:]*$', 'rGFP')) %>%  # Samples has the recombinase plasmid or controls and reporter has the reporter plasmid
+  
+  filter(!str_detect(Reporter, 'LB')) %>%  # remove unnecessary elements from results 
+  mutate(Reporter = fct_inorder(Reporter),  # arranging samples again to make up for factor mismatch
+         Reporter = fct_relevel(Reporter, 'rGFP', "fGFP"),
+         across(Samples, ~ fct_relevel(., plotting_order)),  # manually reorder sample order for plotting 
+         across(Inducer, ~ as.numeric(.) %>% 
+                  round(3) %>%  # round off the inducer value and convert to character
+                  as.character()) )  # why convert to character??
+  
+  
 
-all_days_table %<>% filter(!str_detect(Reporter, 'LB'))
-all_days_table %<>% mutate(Reporter = fct_inorder(Reporter), Reporter = fct_relevel(Reporter, 'rGFP', "fGFP")) # arranging samples again to make up for factor mismatch
-all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder sample order for plotting
-all_days_table$Inducer %<>% as.numeric() %>% round(3) %>% as.character() 
-
-all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+all_days_gathered <- all_days_table %>% 
+  gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
 
 
 # plotting ----
