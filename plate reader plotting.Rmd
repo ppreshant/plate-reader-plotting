@@ -32,13 +32,14 @@ gfp_unique_mean <- gfp_order_merged2 %>%
   select(Samples, contains('mean')) %>% 
   unique()
 
+# plot a horizontal bar graph, along with individual replicates and mean annotated
 plt_GFP <- ggplot(data = gfp_order_merged2,
                   mapping = aes(y = Samples, x = GFP)) + 
-  geom_jitter(width = 0, height = .3) + 
-  geom_point(data = gfp_unique_mean,
-             aes(x = GFP_mean), size = 0.5) + 
+  geom_jitter(width = 0, height = .3) + # plot individual replicates
+  geom_point(data = gfp_unique_mean, # plot mean as a vertical dash (for small point, use size = 0.5)
+             aes(x = GFP_mean), size = 5, shape = '|') + 
   geom_bar(data = gfp_unique_mean, 
-           aes(x = GFP_mean, y = Samples), alpha = 0.1, fill = 'gray', stat = 'identity',position = 'dodge') +
+           aes(x = GFP_mean, y = Samples), alpha = 0.3, fill = 'gray', stat = 'identity',position = 'dodge') +
     # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
   xlab('GFP (a.u)') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
   
@@ -70,5 +71,5 @@ plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 Showing raw data and processed data here 
 
 ``` {r}
-merged2 # format with colours etc for good visualization
+kable(merged2, caption = 'full data') # format with colours etc for good visualization
 ```
