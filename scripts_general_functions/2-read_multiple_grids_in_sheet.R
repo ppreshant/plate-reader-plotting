@@ -49,14 +49,24 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
   tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
   names_vector <- c('Samples','OD','GFP','RFP','Inducer')
   
-  merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
-  merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) # convert to numeric (they are loaded as characters by default)
-  empty_cells_baseline <- merged1 %>% 
-    filter(str_detect(Samples, 'MG1655|DH10B|NEB10b')) %>% 
+  merged_all.grids.in.sheet <- map2_dfc(tables_list, names_vector, read_plate_to_column) %>%  # convert plate tables into columns and merge all four data types into 1 table
+    mutate(across(any_of(c('OD','GFP','RFP')), as.numeric)) # convert to numeric (they are loaded as characters by default)
+  
+  # set baseline for empty cells or empty vector
+  empty_cells_baseline <- merged_all.grids.in.sheet %>% 
+    filter(str_detect(Samples, baseline_sample_to_subtract)) %>% # select samples that are the baseline cells
     group_by(Samples) %>% 
     summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) # avg of MG1655/other controls fluor values in plate
   
-  merged2 <- merged1 %>% mutate(GFP_bs = pmax(GFP - empty_cells_baseline$GFP,0), RFP_bs = pmax(RFP - empty_cells_baseline$RFP,0)) %>% mutate('GFP/RFP_bs' = GFP_bs/RFP_bs) %>% mutate('GFP/OD_bs' = GFP_bs/OD) %>% mutate('RFP/OD_bs' = RFP_bs/OD) # Subtract baseline fluor and calculate ratios
+  # baseline subtraction
+  baseline.subtracted_all.grids <- merged_all.grids.in.sheet %>% 
+    mutate(GFP_bs = pmax(GFP - empty_cells_baseline$GFP,0), 
+           RFP_bs = pmax(RFP - empty_cells_baseline$RFP,0), # Subtract baseline fluor
+           
+           # and calculate ratios 
+           'GFP/RFP_bs' = GFP_bs/RFP_bs,
+           'GFP/OD_bs' = GFP_bs/OD,
+           'RFP/OD_bs' = RFP_bs/OD)
 }
 
 
@@ -67,7 +77,7 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
   
   device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name  
   
-  merged1 <- read_all_plates_in_sheet(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
-  table_sheet1 <- clean_and_arrange(merged1) # gives mean and var of GFP/RFP ratio (arranged in ascending order of mean)
+  merged_processed_all.grids <- read_all_plates_in_sheet(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
+  cleaned.data_all.grids <- clean_and_arrange(merged_processed_all.grids) # removes empty wells or unlabelled cells; arranges by sample alphabetical order and inducer, makes replicates
   
 }

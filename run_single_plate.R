@@ -12,6 +12,9 @@ n_Rows <- 2;
 n_Cols <- 12;
 partial_plate = T; # enter FALSE (F) here when the plate is 8 x 12 but non rectangular
 
+baseline_sample_to_subtract <- 'MG1655|DH10B|NEB10b' # Add baseline cell name(s) here
+# Fluorescence from samples matching this name will be subtracted from all values (baseline)
+
 # Prelims ----
 
 source('./general_functions_plate_reading.R') # source the file that contains all the functions
