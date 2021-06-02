@@ -10,16 +10,31 @@ clean_and_arrange <- function(merged1)
   # 4. Adds a column for Replicate #, ignore if not neccesary
   
   merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  # merged2$Inducer %<>% str_c(.,' uM') %>% as_factor()
-  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates # remove the common reporter plasmid name after the + sign  
+  # merged2$Inducer %<>% str_c(.,' uM') %>% as_factor() # convert to a string with units -- plots are not representative
+  # merged2$Inducer %>% as.numeric () %>% scales::scientific(digits = 0) # convert to scientific format number; digits = 0 removes information?
+  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates; group by variables and figure out replicates
   ungroup(merged3)
 }
 
-group_and_summarize_at <- function(merged2, feature_name = 'GFP/RFP')
-{ # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Inducer, category, Time, Reporter) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD',
+                                   
+                                   # variables to group by, excluding Reporter
+                                   grouping_vars = c('Samples', 'Inducer', 'category', 'Time') )
+                                   
+
+{ # calculates mean and SD of a given column / feature  ex: GFP/OD; 
+  # makes output into wide format for multiple features; with mean and stdev in separate columns
   
-  if(length(feature_name) > 1) merged3_g <- merged3 %>% gather(key = 'Measurement', value = 'Reading', -Samples, -Inducer, -category, -Time) %>% separate(Measurement, into = c('Measurement','val'),"_") %>% spread(val,Reading) # Cleaning: Seperate mean and variance and group by variable of measurement
+  merged3 <- merged2 %>% 
+    group_by(across(any_of(c(grouping_vars, 'Reporter')))) %>%  # any_of accounts for missing variables among grouping_vars
+    summarize(across(any_of(feature_name), lst(mean, sd))) # calculate mean and SD of the feature_name for each group : Sample, inducer value etc.
+  
+  # when summarizing multiple columns, the output is recast into long format
+  if(length(feature_name) > 1) merged3_g <- merged3 %>% # if multiple columns need to be summarized
+      pivot_longer(cols = -any_of(grouping_vars), names_to = 'Measurement', values_to = 'Reading')  %>% 
+      separate(Measurement, into = c('Measurement','type'),"_") %>% 
+      pivot_wider(names_from = type, values_from = Reading) # Cleaning: Separate mean and variance and group by variable of measurement
+  
   else merged3 %>% mutate(Measurement = feature_name) # if there is only 1 feature, it's name will be saved in measurement
 }
 

@@ -6,7 +6,7 @@
 # Set theme universally : format as classic, colours = Set1
 theme_set(theme_classic()) # theme
 scale_colour_discrete <- function(...) { # palette
-  scale_colour_brewer(..., palette="Set1")
+  scale_colour_brewer(..., palette="Set1") # choose Dark2 if there are > 4 categories to avoid light yellow
 }
 
 
