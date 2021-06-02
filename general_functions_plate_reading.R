@@ -4,8 +4,9 @@
 
 # Libraries ----
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(minpack.lm)  
-
+library(tidyverse); # general 
+library(minpack.lm); # for hill fitting
+library(plotly) # for plotting
 
 
 

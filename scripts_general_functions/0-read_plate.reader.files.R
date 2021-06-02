@@ -5,10 +5,10 @@
 read_plateReader_file <- function(flnm)
 { # reads excel file output by plate reader; outputs a list of non-empty sheets
   fl <- flnm %>%  
-    excel_sheets() %>% # get the names of all the sub-sheets
+    readxl::excel_sheets() %>% # get the names of all the sub-sheets
     set_names(.,.) %>% 
-    map(read_excel, path = flnm, col_names = F) %>% # read each sub-sheet
-    list.clean(fun = is_empty) # removes data from empty sheets
+    map(readxl::read_excel, path = flnm, col_names = F) %>% # read each sub-sheet
+    rlist::list.clean(fun = is_empty) # removes data from empty sheets
 }
 
 
