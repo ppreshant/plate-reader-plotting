@@ -18,9 +18,55 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width = 5, fig.hei
 
 ```
 
-## Plotting
 
-Note : X and Y are one of pIDV_9 and pSPB868 : the exact order I have to doublecheck in the lab
+
+## Dose response plots
+
+ **Notes**:   
+ <!-- - *0 inducer has been plotted as 1e-3 and glucose repression as 5e-4 (for ease on logscale)*   -->
+ - *AHL is in uM and Ara is in mM*
+
+Plotting GFP/OD vs [Inducer]
+
+```{r plotting_GFPbs_by_OD}
+
+# hill_table1 <- processed.data_w.mean %>% 
+#   ungroup %>% 
+#   group_by(across(any_of(grouping_vars_for_mean[grouping_vars_for_mean != 'Inducer']))) %>% 
+#   rename(L = Inducer, y = `GFP/OD_bs`) %>% 
+#   nest() %>%  # seperate each group into a different data frame for fitting
+#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+#   unnest(y.fit)
+
+plt11 <- plot_dose_response(processed.data_w.mean)  
+  # geom_line(data = hill_table1, aes(x = L, y = .fitted), linetype = 2)
+
+plt11 %>% format_logscale_x()
+
+
+# old code S022 : 
+
+# sel_table11 <- processed_all.sheets %>% 
+#   # group_and_summarize_at('GFP/OD') %>% 
+#   filter(str_detect(Samples, 'pRV|pInt')) %>% 
+#   ungroup() %>% 
+#   mutate(Inducer = as.numeric(Inducer)) %>% 
+#   filter(Time == 1 & Inducer != -1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+#   
+# hill_table11 <- sel_table11 %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
+#   nest() %>%  # seperate each group into a different data frame for fitting
+#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+#   unnest(y.fit)
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+```
+
+
+
+
+
+## Plotting --OLD/basic_plot
+
 
 ```{r plot1}
 gfp_order_merged2 <- merged2 %>% 
@@ -56,20 +102,3 @@ plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 ```
 
 
-
-```{r plotting, echo=T}
-
-# This is work in progress
-# merged4 %>% ggplot(aes(Samples, mean, color = Inducer)) + geom_point(size = 3) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + scale_shape_manual(values = c(1,16)) -> plt
-# plt %<>% format_classic(.) %>% format_logscale()
-# plt <- plt + ggtitle('S013 : RBS library 6.2') + ylab('GFP/RFP')
-# ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
-```
-
-## Data tables
-
-Showing raw data and processed data here 
-
-``` {r}
-kable(merged2, caption = 'full data') # format with colours etc for good visualization
-```
