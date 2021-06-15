@@ -32,16 +32,25 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
   inducer_flag <- 0
   
   table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
-  table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
+  table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] %>%  # exract the Sample names table
+    mutate(across(where(is.numeric), as.character)) # if there's any blank columnm this converts it to character
+  
   if(!str_detect(table_Samples[1,1], '<>')) {stop(str_c('Sample names in the wrong place or are improperly formatted, for sheet: ', sheet_name))}
+  
   
   if (ncol(data_sheet1) >= 5+3*n_Cols) # extracting the inducer table 
   {
-    table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table if it exists
+    table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # extract the Inducer table if it exists
+    # if there is any error with column type incompatibility, check if there are is text in any column in the whole sheet
+    # Run this manually : table_Inducer[-1] <- table_Inducer[-1] %>% mutate(across(everything(), as.numeric))
+    
     if (is_empty(table_Inducer)) inducer_flag <- 1 # flag that there are no inducer values
   }  else inducer_flag <- 1 # flag that there are no inducer values
   
-  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- '0'; warning(str_c('No inducer values provided, assumed to be zero. in sheet: ', sheet_name))} # if inducer table is empty or absent, make it zero (same size as samples) and throw a warning
+  if(inducer_flag) {table_Inducer <- table_Samples; 
+  table_Inducer[-1,-1] <- '0'; 
+  warning(str_c('No inducer values provided, assumed to be zero. in sheet: ', sheet_name))} # if inducer table is empty or absent, make it zero (same size as samples) and throw a warning
+  
   
   table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
   table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
@@ -75,7 +84,8 @@ extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
 { # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
-  device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name  
+  device_name <- data_sheet1[1:3, 1] %>% as_vector %>% 
+    str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name  
   
   merged_processed_all.grids <- read_all_plates_in_sheet(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
   cleaned.data_all.grids <- clean_and_arrange(merged_processed_all.grids) # removes empty wells or unlabelled cells; arranges by sample alphabetical order and inducer, makes replicates
