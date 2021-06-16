@@ -115,6 +115,22 @@ plt5_noctontrols %>% format_logscale() %>%
 plt5_noctontrols %>% plotly::ggplotly(dynamicTicks = T)
 ```
 
+individual replicates: GFP/OD without controls
+
+```{r plotting3Mi}
+# plotting GFP/OD without facetting, includes a reference line for the WT control
+
+plt5_noctontrols.ind <- {ggplot(processed.data_w.mean %>% filter(!str_detect(category, 'Control')), 
+                           aes(Samples, `GFP/OD`, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)} %>% 
+   format_classic() 
+
+# plt5_noctontrols.ind %>% format_logscale() %>% 
+#   print()
+
+plt5_noctontrols.ind %>% plotly::ggplotly(dynamicTicks = T)
+```
+
+
 Facetted GFP/OD: only day 2
 
 ```{r plotting11}
