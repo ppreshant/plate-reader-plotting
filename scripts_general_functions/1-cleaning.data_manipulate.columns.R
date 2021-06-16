@@ -59,3 +59,13 @@ read_plate_to_column <- function(data_tibble, val_name)
   colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
   data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
 }
+
+# Extra function : convert a column into a plate layout
+column_to_plate <- function(.data, column_of_interest)
+{
+  grid.outpyt <- .data %>% 
+    mutate(colid = 0:(n()-1)%/% 8 + 1, 
+           rowid = 0:(n()-1) %% 8 + 1) %>% # create column and row IDs; 8 wells per column
+    select(rowid, colid, {{column_of_interest}}) %>% # select only relevant column
+    pivot_wider(names_from = colid, values_from = {{column_of_interest}}) # creates the grid
+}
