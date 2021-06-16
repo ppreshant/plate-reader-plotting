@@ -20,7 +20,7 @@ User inputs for multiple sheets
 
 flnm <- 'S018_pPK6-7 selected 14_18-7-19'
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- c( "day1.on","day1.ui","day1.i","day2.ui","day2.i") # list the sheets to be loaded
 n_Rows <- 8; 
@@ -50,7 +50,16 @@ plotting_order <- all_days_table %>% filter(str_detect(Inducer,'0') & str_detect
 all_days_table$Samples %<>% fct_relevel(plotting_order) # manually reorder samples for plotting
 all_days_table$Time %<>% fct_inorder() # manually reorder Time for plotting
 
-all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+# all_days_gathered <- all_days_table %>% gather(key = 'Measurement', value = 'Reading', OD, GFP, RFP, 'GFP/RFP', 'GFP/OD', 'RFP/OD') # gather different measurements and ratios into 1 column
+
+## extra analysis : 15/6/2021 <from dose_response_master>
+
+grouping_vars_for_mean = c('Samples', 'category', 'Inducer', 'Time') # all replicates within these groups will be averaged
+
+# Calculate mean, retaining individual replicates
+processed.data_w.mean <- all_days_table %>% 
+  group_by(across(any_of(grouping_vars_for_mean))) %>%  # mean will be calculated in these groups 
+  mutate(across(where(is.numeric), list( mean = ~ mean(.x, na.rm = T)) )) # calculate mean of all numeric columns, into new columns
 
 ```
 
@@ -77,6 +86,8 @@ rGFP_baseline = sel_table2 %>% filter(str_detect(Inducer,'0') & str_detect(Time,
 plt3 <- plot_mean_facetted(sel_table2) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2) +  geom_hline(yintercept = rGFP_baseline, linetype = 2) # plot the mean, add y axis label and a baseline indication
 plt4 <- plt3 %>% format_classic() %>% format_logscale()
 plt4
+
+# plotly::ggplotly (p = plt4)
 ```
 
 Merge all GFP/OD
@@ -87,6 +98,21 @@ Merge all GFP/OD
 plt5 <- ggplot(sel_table2, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)
 plt6 <- plt5 %>% format_classic() %>% format_logscale()
 plt6
+```
+
+merged GFP/OD without controls
+
+```{r plotting3M}
+# plotting GFP/OD without facetting, includes a reference line for the WT control
+
+plt5_noctontrols <- {ggplot(sel_table2 %>% filter(!str_detect(category, 'Control')), 
+                           aes(Samples, mean, colour = Time, shape = Inducer)) + geom_point(size = 2) + scale_shape_manual(values = c(1,19)) + ylab('GFP/OD (a.u.)') + ggtitle('RBS mutant library-2') + geom_hline(yintercept = WT_baseline, linetype = 2)} %>% 
+   format_classic() 
+
+plt5_noctontrols %>% format_logscale() %>% 
+  print()
+
+plt5_noctontrols %>% plotly::ggplotly(dynamicTicks = T)
 ```
 
 Facetted GFP/OD: only day 2
@@ -236,6 +262,30 @@ plt1fc <- plot_mean_facetted(sel_table6_s) + ylab('Fold change') + scale_shape_m
 plt1fca <- plt1fc %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
 plt1fca
 ggsave('plots and data/S018_top5_fold change.pdf', plt1fca, width = 4, height = 2.5)
+```
+
+Combined plot, by day
+
+```{r combplt}
+
+
+# pull relevant columns for manual inspection
+snippet_data <- processed.data_w.mean %>% 
+  select(any_of(grouping_vars_for_mean), `GFP/OD_mean`, `GFP/OD`, `Replicate #`) %>%
+  ungroup() %>% 
+  filter(!str_detect(Samples, 'pSH|fGFP|pRV|MG|LB')) # remove high and low signal data points
+
+{snippet_data %>% 
+    mutate(across(Time, ~ as.numeric(.) %>% jitter)) %>% # add random noise for plotting
+    # filter(str_detect(Samples, '28|32')) %>% # selected samples
+  ggplot(., aes(x = Time, y = `GFP/OD`, colour = Inducer, label = Samples)) +
+  geom_point(alpha = 1) + # all points transparent
+    # geom_point(data = . %>% filter(str_detect(Samples, '28|17'))) + # highlight selected points
+    geom_line(aes(group = interaction(Samples, Inducer, `Replicate #`)),
+              # position = position_jitter(height = 0, seed = 1),
+              alpha = 0.2)} %>% 
+  plotly::ggplotly()
+
 ```
 
 
