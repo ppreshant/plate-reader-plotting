@@ -20,20 +20,18 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width = 5, fig.hei
 
 ## Plotting
 
-Note : X and Y are one of pIDV_9 and pSPB868 : the exact order I have to doublecheck in the lab
-
 ```{r plot1}
-gfp_order_merged2 <- merged2 %>% 
+gfp_order_processed.data <- processed.data %>% 
   arrange(GFP) %>% 
   ungroup() %>% 
   mutate(across(Samples, fct_inorder))
 
-gfp_unique_mean <- gfp_order_merged2 %>% 
+gfp_unique_mean <- gfp_order_processed.data %>% 
   select(Samples, contains('mean')) %>% 
   unique()
 
 # plot a horizontal bar graph, along with individual replicates and mean annotated
-plt_GFP <- ggplot(data = gfp_order_merged2,
+plt_GFP <- ggplot(data = gfp_order_processed.data,
                   mapping = aes(y = Samples, x = GFP)) + 
   geom_jitter(width = 0, height = .3) + # plot individual replicates
   geom_point(data = gfp_unique_mean, # plot mean as a vertical dash (for small point, use size = 0.5)
@@ -43,7 +41,7 @@ plt_GFP <- ggplot(data = gfp_order_merged2,
     # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
   xlab('GFP (a.u)') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
   
-  {plt_GFP + geom_text(data = merged2 %>% select(ends_with('mean')) %>% unique(),  
+  {plt_GFP + geom_text(data = processed.data %>% select(ends_with('mean')) %>% unique(),  
               mapping = aes(x = GFP_mean, label = GFP_mean %>% round, 
               hjust = if_else(GFP_mean > max(GFP_mean)/2, 1.3, -0.3)))
   } %>% 
@@ -55,7 +53,41 @@ plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 
 ```
 
+```{r allfluor}
+long_fluor.normalized_processed <- processed.data %>% 
+  select(matches('/OD')) %>%  # choose OD, x/OD and _bs and _mean additions
+  mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
+  
+  rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
 
+  pivot_longer(cols = c(-1, -2, -3), # pull measurement types and summary type (mean vs 'raw' value) into two cols
+               names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
+  
+  pivot_wider(names_from = type_of_summary, values_from = value) # bring values and means into two separate cols
+
+long_unique_processed <- select(long_fluor.normalized_processed, -c(value, index)) %>% unique()
+
+plt_all_fluor <- ggplot(data = long_fluor.normalized_processed,
+                  mapping = aes(y = Samples, x = value)) + 
+  geom_jitter(width = 0, height = .3) + # plot individual replicates
+  
+  # plot mean as a vertical dash (for small point, use size = 0.5)
+  geom_point(data = long_unique_processed,
+             aes(x = mean), size = 5, shape = '|') + 
+  geom_bar(data = long_unique_processed, 
+           aes(x = mean, y = Samples), alpha = 0.3, fill = 'gray', stat = 'identity',position = 'dodge') +
+  
+  facet_grid(~ Measurement, space = 'free', scale = 'free') +
+    # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
+  xlab('Value') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
+  
+  {plt_all_fluor + geom_text(data = long_unique_processed,  
+              mapping = aes(x = mean, label = mean %>% round, 
+              hjust = if_else(mean > max(mean)/2, 1.3, -0.3)))
+  } %>% 
+print()
+
+```
 
 ```{r plotting, echo=T}
 
@@ -66,10 +98,10 @@ plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 # ggsave('plots and data/S010_faceted.png', height = 3.5, width = 14)
 ```
 
-## Data tables
+<!-- ## Data tables -->
 
-Showing raw data and processed data here 
+<!-- Showing raw data and processed data here  -->
 
-``` {r}
-kable(merged2, caption = 'full data') # format with colours etc for good visualization
-```
+<!-- ``` {r} -->
+<!-- # kable(processed.data, caption = 'full data') # format with colours etc for good visualization -->
+<!-- ``` -->
