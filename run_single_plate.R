@@ -3,16 +3,16 @@
 # User inputs ----
 
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- 'Laurens pSH041 etc. 11-3-21'
-sheet_name <- 'Result sheet'
+flnm <- 'S032_Mfdpir_pPK66,sPK14,15_mScarlet_leak_check'
+sheet_name <- 'Sheet2'
 
 title_name <- flnm # appears on the html file name and header of selected plots, change as required
 
 n_Rows <- 2; 
-n_Cols <- 12;
+n_Cols <- 9;
 partial_plate = T; # enter FALSE (F) here when the plate is 8 x 12 but non rectangular
 
-baseline_sample_to_subtract <- 'MG1655|DH10B|NEB10b' # Add baseline cell name(s) here
+baseline_sample_to_subtract <- 'MG1655|DH10B|NEB10b|PBS' # Add baseline cell name(s) here
 # Fluorescence from samples matching this name will be subtracted from all values (baseline)
 
 # Prelims ----
