@@ -7,7 +7,7 @@ read_plateReader_file <- function(flnm)
   fl <- flnm %>%  
     readxl::excel_sheets() %>% # get the names of all the sub-sheets
     set_names(.,.) %>% 
-    map(readxl::read_excel, path = flnm, col_names = F) %>% # read each sub-sheet
+    map(readxl::read_excel, path = flnm, col_names = F, col_types = 'text') %>% # read each sub-sheet
     rlist::list.clean(fun = is_empty) # removes data from empty sheets
 }
 
