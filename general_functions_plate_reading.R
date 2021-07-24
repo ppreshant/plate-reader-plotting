@@ -7,7 +7,8 @@
 library(tidyverse); # general 
 library(minpack.lm); # for hill fitting
 library(plotly) # for plotting
-
+# extra libraries
+library(magrittr) # for complex pipes not included in tidyverse (ex: %<>% )
 
 
 # dummy data  ---- 

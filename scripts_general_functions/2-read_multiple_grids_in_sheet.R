@@ -73,6 +73,8 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
 
 extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
 { # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
+  if(str_detect(sheet_name, 'default')) sheet_name <- names(fl)[1] # if default, read the first sheet
+  
   data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
   device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name  
