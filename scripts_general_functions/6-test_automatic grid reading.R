@@ -3,24 +3,40 @@
 # experimental 
 
 # Identify the data grid using <> and Identify the table of data and type (OD, GFP, RFP etc. by the Label field)
-label.text = 'Name' # only for SPARK plate reader
+label.text = 'Name' # only for SPARK plate reader ; Tecan uses Label --> needs an if loop?
 
 
 data_sheet1 <- fl$`Result sheet` # extract the first sheet (everything after this should be vectorized for all sheets, with sheet name auto found)
 
-label_list <- map_in_sheet(data_sheet1, str_c('^', label.text, '|<>'), 1) %>% 
+label_list <- map_in_sheet(data_sheet1, str_c('^', label.text, '|<>'), 1) %>% # find occurrences
+  
+  # clean up into two columns
   separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
   mutate(label = coalesce(neighbour, regex_part)) %>%  # if match is NA, takes the value from label (accounts for Spark and Infinite M1000)
   select(-neighbour, -regex_part) %>%  # remove the individual columns since coalesced column contains this data
-  filter(!is.na(label)) # remove the dummy first occurence of 'Name' in Spark data
+  filter(!is.na(label)) %>%  # remove the dummy first occurrence of 'Name' in Spark data
+
+  # making groups
+  mutate(grp_index = (row_number()/2) %>% ceiling()) %>%  # divide into growps of 2 rows each
+  group_by(grp_index)
+  
+
+
 
 # Now we need to identify automatically, how many rows and columns of data appear below the <> // or count the number of empty cells somehow
 # plan : make each <> and the element before it into a group, walk across groups
 # in each group, go to the index of <>, look for ^A-H$ and ^1-12$ in that row and 1st column and capture the grid between these
+ # or look for is.na() in an 9x13 grid starting from the <> index -> pick the index of the closest na's in rows and columns where the grid ends
+ # or map all the empty cells and search in this grid below ->
+# empty_cells <- data_sheet1 %>% is.na(.) %>% which(arr.ind = T) %>% as_tibble() # maps empty cells with row and column index
 
-# empty_cells <- data_sheet1 %>% is.na(.) %>% which(arr.ind = T) %>% as.tibble() # maps empty cells with row and column index
 
-
+# Suggestion
+# Check the way this is done in the FlopR script - for timeseries == 'FALSE'
+# https://github.com/ucl-cssb/flopr/blob/master/R/tecanSparkFunctions.R
+# uses 'Start Time' and 'End time' keys to identify the data grid
+# This only works for the Spark which puts the full grid irrespective of how many rows/columns are read
+ # need to adapt this for the weird Infinite M1000 pro output..
 
 
 read_all_plates_in_sheet2 <- function(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
