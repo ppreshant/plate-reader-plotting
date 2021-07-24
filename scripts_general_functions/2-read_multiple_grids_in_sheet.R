@@ -33,7 +33,7 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
   
   table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
   table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
-  if(!str_detect(table_Samples[1,1], '<>')) {stop(str_c('Sample names in the wrong place or are improperly formatted, for sheet: ', sheet_name))}
+  if(!str_detect(table_Samples[1,1], '<>')) {stop(str_c('Sample names in the wrong place or improperly formatted; check if n_Rows and n_Cols is accurate. \n for sheet: ', sheet_name))}
   
   if (ncol(data_sheet1) >= 5+3*n_Cols) # extracting the inducer table 
   {

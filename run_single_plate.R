@@ -3,8 +3,10 @@
 # User inputs ----
 
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- 'S032_Mfdpir_pPK66,sPK14,15_mScarlet_leak_check'
-sheet_name <- 'Sheet2'
+flnm <- 'S033_ww-isolts_AHL-gfp_23-7-21'
+# Note: The script only works for SPARK files where OD, GFP and RFP are read, 
+  # if you leave out anything b_gap needs to be changed accordingly
+sheet_name <- 'default'
 
 title_name <- flnm # appears on the html file name and header of selected plots, change as required
 
