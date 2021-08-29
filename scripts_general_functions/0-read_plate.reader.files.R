@@ -15,34 +15,46 @@ read_plateReader_file <- function(flnm)
 
 # Browse the plate reader files ----
 
-map_in_sheet <- function(data_list, key, column)
-{ # finds the occurrence of "key" in the column (generally 1st column) of data list and gives the row of occurrence along with the index
+map_in_sheet <- function(data_list, match.key, 
+                         match.col.number, neighbour.col.number = match.col.number + 1)
+{ # finds the occurrence of "match.key" in the match.col.number (generally 1st column) of data list and gives the row of occurrence along with the index
   
   data_list %<>% mutate(index = 1:n())  # add a column for row index
-  # label_list_match <- data_list %>% 
-  #   pull(column) %>% 
-  #   str_subset(key) %>% 
-  #   tibble(label = .)   # identify cells with 'Label' in n'th column, where n is user input : typically 1st column
-
-  label_index_boolean <- data_list %>%
-    pull(column) %>% 
-    str_detect(key)   # temporary variable to locate where 'Label' matches
   
-  label_and_index.match <- data_list %>% 
-    filter(label_index_boolean) %>% 
-    select(identifier = all_of(column), neighbour = all_of(column + 1), index)
-  
-  # label_list <- data_list %>% select('index') %>% filter(label_index_boolean) %>% bind_cols(label_list_match,.)   # get the index of the matching rows, merge label and index into 1 data frame
-  # label_list
+  matched_rows_and_neighbour <- data_list %>%
+    pull(match.col.number) %>% # select the column where matching is desired
+    str_detect(match.key) %>%    # temporary variable to locate where 'Label' matches
+    which() %>% # find the index of the matching row
+    data_list[.,] %>%  # select this row and all columns from the data
+    
+    # return the labelled columns of the matching column and it's next column
+    select(identifier = all_of(match.col.number), neighbour = all_of(neighbour.col.number), index) 
+    
 }
 
-find_plate_read_cells <- function(data_starting_index, empty_cells)
-{ # finds non empty cells below and to the right of the starting cell with '<>' 
+
+# finds non empty cells below and to the right of the starting cell with '<>' 
+find_plate_read_grid <- function(.df, start_row_index, start_col_index = 1)
+{ 
+  # add an error check if first cell is not <>
   
-  plate_full_index <- tibble(row = rep(data_starting_index + 0:8,13), col = rep(1:13, each = 9)) # 9 columns x 13 rows including labels = theortical maximum 96 well plate # 9 columns x 13 rows including labels = theortical maximum 96 well plate
   
-  # setdiff(plate_full_index - empty_cells)
-  # anti_join(plate_full_index,empty_cells)
+  # 9 columns x 13 rows including labels = theoretical maximum 96 well plate 
+  full_grid <- .df[start_row_index + 0:8, start_col_index + 0:12]
+  
+  # find the empty cells around the edges of the grid using the headers for rows and cols
+  col_edge <- full_grid[1,] %>% # select first row (<>, 1, 2, 3..)
+    {which(is.na(.))} %>%  # find the empty cells (NA) in the grid header
+    min(10) # find the minimum NA occurrence or the cell beyond the full grid
+  
+  row_edge <- full_grid[,1] %>% # select first col (<>, A, B, C..)
+    {which(is.na(.))} %>%  # find the empty cells (NA) in the row headers
+    min(14) # find the minimum NA occurrence or the cell beyond the full grid
+  
+  # read the actual grid (< = full grid)
+  if(col_edge == 10 & row_edge == 14) {data_grid <- full_grid # if it's a full grid
+  }  else data_grid <- .df[start_row_index + 0:(row_edge-2), start_col_index + 0:(col_edge-2)]
+  
 }
 
 
