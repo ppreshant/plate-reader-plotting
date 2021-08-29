@@ -24,8 +24,12 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
     
   } else if(str_detect(device_name, 'Spark')) # Spark plate reader
     
-  {b_gap = 35; a_gap <- 27;
-  n_Rows = 8; n_Cols = 12}  # override rows and columns numbering since empty cells are also printed  
+  {
+    # locate the first data set and store the row number of the <> in b_gap
+    b_gap <- (data_sheet1$...1 %>% str_which('Start Time') %>% min()) + 3
+    a_gap <- 27;
+    n_Rows = 8; n_Cols = 12 # override rows and columns numbering since empty cells are also printed
+  }    
   
   else stop(paste('Device not recognised. it is ', device_name)) # stop and throw error for unrecognized plate reader device
   
@@ -56,9 +60,16 @@ read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, p
   empty_cells_baseline <- merged_all.grids.in.sheet %>% 
     filter(str_detect(Samples, baseline_sample_to_subtract)) %>% # select samples that are the baseline cells
     group_by(Samples) %>% 
-    summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) # avg of MG1655/other controls fluor values in plate
+    summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) %>%  # avg of MG1655/other controls fluor values in plate
+  
+  # if there is no data for baseline, make it zero
+    {if(plyr::empty(.)) 
+      (add_row(., Samples = 'none') %>%  # add a dummy row
+         mutate(across(where(is.numeric), ~0 )) # make the number entries 0 
+  ) else .}
   
   # baseline subtraction
+  # Bug: this is not generalized to work when GFP or RFP is missing .. do we make them 0??
   baseline.subtracted_all.grids <- merged_all.grids.in.sheet %>% 
     mutate(GFP_bs = pmax(GFP - empty_cells_baseline$GFP,0), 
            RFP_bs = pmax(RFP - empty_cells_baseline$RFP,0), # Subtract baseline fluor
