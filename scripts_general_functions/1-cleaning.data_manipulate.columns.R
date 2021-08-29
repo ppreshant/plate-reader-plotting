@@ -42,20 +42,43 @@ group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD',
 
 # Plate reader grid to single column ----
 
-paste_plate_to_column <- function(val_name = '0')
-{ # extracts table from clipboard and transforms it into a column (named after the top left cell, unless mentioned)
-  # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
+# transforms a plate reader table into a column (named after the top left cell, unless mentioned)
+# eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
+
+read_plate_to_column <- function(data_tibble, val_name)
+{ 
+  # Check if the tibble is empty
+  if(drop_na(data_tibble) %>% plyr::empty()) return(NULL)  # return NULL if tibble is empty
   
+  # check for '<>' in the top left (or if NA)
+  if(data_tibble[[1,1]] %>% 
+     {is.na(.) | !str_detect(.,'<>')})
+  {stop(str_c('Could not locate "<>" in : ', val_name, 
+                '\n Could be improperly formatted; check if n_Rows and n_Cols is accurate.'))}
+  
+  colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
+  data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
+}
+
+
+# obsolete function
+
+# extracts table from clipboard and transforms it into a column (named after the top left cell, unless mentioned)
+# eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
+
+paste_plate_to_column <- function(val_name = '0')
+{   
   data_tibble <- read_tsv(clipboard(), col_names = F) # read table from clipboard
   colnames(data_tibble) <- data_tibble[2,] # set column names as the second row
   if(val_name == '0') val_name <- data_tibble[[1,1]] # returns the first column name (which is the sample type etc.) 
   data_tibble[-(1:2),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
 }
 
-read_plate_to_column <- function(data_tibble, val_name)
-{ # transforms a plate reader table into a column (named after the top left cell, unless mentioned)
-  # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
-  
-  colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
-  data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
-}
+# Naming interchanges ----
+
+measurement.labels_translation <- c('OD600|^od$' = 'OD', # labels in file = new labels for rest of code
+                       'sfgfp|mgl|.*greenlantern|gfp' = 'GFP',
+                       'mcherry.*|mscarlet.*|rfp' = 'RFP',
+                       '^Sample.*' = 'Samples',
+                       'inducer' = 'Inducer',
+                       'time' = 'Time')
