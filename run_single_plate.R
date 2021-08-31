@@ -27,25 +27,20 @@ source('./general_functions_plate_reading.R') # source the file that contains al
 flpath <- str_c('../plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 
-all.grids.merged_raw.data <- extract_from_given_sheet(sheet_name, n_Rows, n_Cols, partial_plate)
+# Get all measurements and metadata (sample names, ..) into a data frame
+# 1. Map locations of all relevant grids with data '<>', along with labels
+# 2. Retrieve and merge the grids to associate metadata for respective samples
+# 3. Calculate ratios of fluorescence to OD, calculate mean
+# 4. Create a number for replicates (same name, and metadata)
+
+processed.data <- read_multiple_grids_in_sheet(sheet_name)
 
 
 # Processing ----
-
-# Purpose : Data crunching of plate reader after loading data set
-processed.data <- all.grids.merged_raw.data %>% 
-  filter(!str_detect(Samples, "NA|MG")) %>%   # remove NA samples (empty wells)
-  group_by(Samples, Inducer) %>%  # mean will be calculated in these groups 
-  mutate(across(where(is.numeric), list( mean = ~ mean(.x, na.rm = T)) )) # calculate mean of all numbers
+# location for optional processing - custom written code
 
 # processed.data %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
-processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
-
-
-
-# merged3 <- processed.data %>% group_by(Samples, Inducer) %>%  summarize_at('GFP/RFP', funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
-# # merged3 <- processed.data %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
-# merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% separate(Samples, c('Samples', NA), sep ='\\+') %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced  # remove the common reporter plasmid name after the + sign
+# processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
 
 # plotting ----
 
