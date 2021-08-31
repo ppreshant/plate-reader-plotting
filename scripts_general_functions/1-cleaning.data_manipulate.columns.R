@@ -2,20 +2,6 @@
 
 # Clean up and summary ----
 
-clean_and_arrange <- function(merged1)
-{ # Purpose : Data crunching of plate reader after loading data set
-  # 1. removes NA and undesirable samples
-  # 2. adds units to inducer concentration value if desired
-  # 3. Aranges the values in order of plate columns
-  # 4. Adds a column for Replicate #, ignore if not neccesary
-  
-  merged2 <- merged1 %>% filter(!str_detect(Samples, "NA"))  # remove NA samples (empty wells)
-  # merged2$Inducer %<>% str_c(.,' uM') %>% as_factor() # convert to a string with units -- plots are not representative
-  # merged2$Inducer %>% as.numeric () %>% scales::scientific(digits = 0) # convert to scientific format number; digits = 0 removes information?
-  merged3 <- merged2 %>% arrange(Inducer, Samples) %>% mutate(Samples = fct_inorder(Samples)) %>% group_by(Samples, Inducer) %>%  mutate('Replicate #' = row_number()) # freeze samples in order of plate columns and replicates; group by variables and figure out replicates
-  ungroup(merged3)
-}
-
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD',
                                    
                                    # variables to group by, excluding Reporter
@@ -82,3 +68,19 @@ measurement.labels_translation <- c('OD600|^od$' = 'OD', # labels in file = new 
                        '^Sample.*' = 'Samples',
                        'inducer' = 'Inducer',
                        'time' = 'Time')
+
+
+# Special function to implement a switch() using regex matches
+# Source : https://stackoverflow.com/a/66519022/9049673
+# Usage : 
+# map_chr(
+# c("aaaa","bb","aabbaa"),
+# regex_switch,
+# "^aa"="Apple","^bbbb"="Grape","^*$"="Unknown"
+
+regex_switch<-function(.v,...)
+{
+  e <- enexprs(...)
+  i <- min(which(str_detect(.v,names(e))))
+  eval(e[[i]],parent.frame())
+}

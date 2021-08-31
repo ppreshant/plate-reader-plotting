@@ -1,96 +1,174 @@
 # 2-read_multiple_grids_in_sheet.R
 
-# Reading all plate related data from a sheet; vectorizable ----
-# uses above functions and makes the working RMD file clean
 
-read_all_plates_in_sheet <- function(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
-{
-  # Reads OD, GFP and RFP tables from 1 sheet of plate reader output.
-  # And calculates GFP/RFP, GFP/OD and RFP/OD
-  # 1. Sample names should be provided in a table next to OD (the first table) in every sheet 
-  # 2. Inducer values should be provided in a table next to the Sample names in every sheet
-  # -> See example excel file S010 for reference
+# Extracts sheet from file, data from all plate like grids, combines all data and processing : Vectorizable over multiple sheets
+
+# Reads OD, GFP and RFP, Sample name, Inducer etc. tables from 1 sheet of plate reader output.
+# And calculates GFP/RFP, GFP/OD and RFP/OD
+# 1. Sample names should be provided in a table next to OD (the first table) in every sheet 
+# 2. Inducer values should be provided in a table next to the Sample names in every sheet
+# -> See example excel file S010 for reference
+
+
+read_multiple_grids_in_sheet <- function(sheet_name)
+{   
+  # Prelims ----
   
-  # Context: b_gap = row number of OD data header (<>) , a_gap = 2 + # of rows between OD and fluorescence value header(<>), The same between GFP and RFP as well; 
-  # Example - Infinite M1000 with full plate has: 23 rows of lines before data is seen, 26 rows between data and fluorescence values, 26 more rows till RFP values (including the row with <>); If partial plate is read there is 1 extra line in all 3 places
+  if(str_detect(sheet_name, 'default')) sheet_name <- names(fl)[1] # if default, read the first sheet
   
-  # If partial plate is read there is 1 extra line in all 3 places for infinite; makes no difference for Spark
+  # load data form the given sheet
+  .df <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
-  if(str_detect(device_name, 'infinite')) # infinite M1000 plate reader
+  # extract the plate reader device name  
+  device_name <- .df[1:3, 1] %>% as.character %>% str_match('Device: (.*)') %>% pluck(2)
+  
+  
+  # Device check ----
+  measurement_identifier.text <- # Find the label text that defines the data identity in each grid
     
-  {
-    if(n_Rows == 8 & n_Cols == 12 & partial_plate == F) {b_gap = 23; a_gap <- 26; # full plate
-    }  else {b_gap = 24; a_gap <- 27} # partial plate (has extra lines for plate region) - also includes non rectangular selection
+    if(str_detect(device_name, 'infinite')) # infinite M1000 plate reader
+    {
+      'Label' # InfiniteM1000 uses 'Label:... ' 
+      
+    } else if(str_detect(device_name, 'Spark')) 
+      
+    { 'Name' # for Spark plate reader 
     
-  } else if(str_detect(device_name, 'Spark')) # Spark plate reader
+    } else { # ask user input for the measurement demarcator
+      paste('Device not recognised. it is :', device_name, 
+            'Your device is not Tecan Spark or Infinite M1000, we need some help from you \n') 
+      
+      readline('Enter the text that demarcates the type of measurement above the data grid here :,
+                                           ex: `Label` from "Label:OD600" ')
+    }
+      
+  # Map the grids ----
+  
+  # map the locations of data grids with '<>' along with their labels (ex: OD, GFP, RFP etc.)
+  measurement.grid_info <- map_in_sheet(.df, str_c('^', measurement_identifier.text, '|<>'), 1) %>% # find occurrences of labels and '<>'
     
-  {
-    # locate the first data set and store the row number of the <> in b_gap
-    b_gap <- (data_sheet1$...1 %>% str_which('Start Time') %>% min()) + 3
-    a_gap <- 27;
-    n_Rows = 8; n_Cols = 12 # override rows and columns numbering since empty cells are also printed
-  }    
+    # clean up into two columns
+    separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+    mutate(label = coalesce(neighbour, regex_part)) %>%  # if match is NA, takes the value from label (accounts for Spark and Infinite M1000)
+    select(-neighbour, -regex_part) %>%  # remove the individual columns since coalesced column contains this data
+    filter(!is.na(label)) %>%  # remove the dummy first occurrence of 'Name' in Spark data, where 2nd column is empty
+    
+    # making groups for each label, <> pair
+    mutate(grp_index = (row_number()/2) %>% ceiling()) %>%   # divide into groups of 2 rows each
+    group_by(grp_index) %>% # each group has one label and one dataset, marked by <>
+    nest() %>% # get all columns for each group into a smaller data-frame for easy manipulation
+    
+    # iterating functions on each group,  
+    mutate(label = map_chr(data, # bring out the label of the data, with minimal standardized names
+                           ~ str_replace_all(.$label[1], 
+                                             regex(measurement.labels_translation, ignore_case = TRUE) )), 
+           row_index = map_int(data, ~ .$index[2]), # bring out the index of '<>' 
+           col_index = 1) %>%  # all measurement grid '<>' are in the first column
+    
+    ungroup() %>%  # group index will be removed and re-created after joining with metadata info
+    select(-data, -grp_index) # drop the list column 'data' and the group index
   
-  else stop(paste('Device not recognised. it is ', device_name)) # stop and throw error for unrecognized plate reader device
   
-  inducer_flag <- 0
+  # get user written metadata to the right of OD data (or the first set of data)
   
-  table_OD <- data_sheet1[b_gap + 0:n_Rows, 1 + 0:n_Cols] # exract the OD table
-  table_Samples <- data_sheet1[b_gap + 0:n_Rows, 3 + n_Cols + 0:n_Cols] # exract the Sample names table
-  if(!str_detect(table_Samples[1,1], '<>')) {stop(str_c('Sample names in the wrong place or improperly formatted; check if n_Rows and n_Cols is accurate. \n for sheet: ', sheet_name))}
+  # user written metadata (sample names, inducer conc etc.) is next to the first grid (usually OD)         
+  user_metadata.row_index <- measurement.grid_info$row_index[1]  
   
-  if (ncol(data_sheet1) >= 5+3*n_Cols) # extracting the inducer table 
-  {
-    table_Inducer <- data_sheet1[b_gap + 0:n_Rows, 5+2*n_Cols + 0:n_Cols] # exract the Inducer table if it exists
-    if (is_empty(table_Inducer)) inducer_flag <- 1 # flag that there are no inducer values
-  }  else inducer_flag <- 1 # flag that there are no inducer values
+  user_metadata.grid_info <- slice(.df, user_metadata.row_index) %>% # first grid row, 
+    as.vector() %>%  # as vector
+    {which(. == '<>')[-1]} %>% # find the col_index where '<>' occurs; remove first occurence (OD)
+    map_dfr( ~ tibble(label = .df[[user_metadata.row_index-1, .]] %>% # get label from the row above
+                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), # translate to minimal standardized names
+                      row_index = user_metadata.row_index, 
+                      col_index = .)) # get the column index of each '<>' match
+  rm(user_metadata.row_index) # remove temporary variable
   
-  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- '0'; warning(str_c('No inducer values provided, assumed to be zero. in sheet: ', sheet_name))} # if inducer table is empty or absent, make it zero (same size as samples) and throw a warning
   
-  table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
-  table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
+  # Retrieve grid data ----
   
-  tables_list <- list(table_Samples,table_OD,table_GFP,table_RFP,table_Inducer)
-  names_vector <- c('Samples','OD','GFP','RFP','Inducer')
+  # join measurement and user_metadata grid identifiers and get grids
+  measured_and_metadata.grids <- bind_rows(measurement.grid_info, 
+                                           user_metadata.grid_info) %>% 
+    # mutate(grp_index = 1:n()) %>% # add a new group index for each grid
+    nest(grid_info = -label) %>% # create a nested data frame, indexed by grp_index
+    
+    # testing in progress
+    mutate(grid_data = map(grid_info,  # identify the non empty grid size and read it
+                           ~ find_plate_read_grid(.df, .$row_index, .$col_index)) )
   
-  merged_all.grids.in.sheet <- map2_dfc(tables_list, names_vector, read_plate_to_column) %>%  # convert plate tables into columns and merge all four data types into 1 table
-    mutate(across(any_of(c('OD','GFP','RFP')), as.numeric)) # convert to numeric (they are loaded as characters by default)
+  
+  
+  # Merge grids ----
+  
+  # convert plate tables into columns and merge all measurements and metadata into 1 table
+  merged_all.grids <- map2_dfc(measured_and_metadata.grids$grid_data, 
+                               measured_and_metadata.grids$label, 
+                               read_plate_to_column) %>%  
+    
+    # convert to numeric (they are loaded as characters by default)
+    mutate(across(any_of(c('OD', 'GFP', 'RFP', 'Inducer')), as.numeric)) 
+  
+  
+  # Baseline subtraction ----
   
   # set baseline for empty cells or empty vector
-  empty_cells_baseline <- merged_all.grids.in.sheet %>% 
+  empty_cells_baseline <- merged_all.grids %>% 
     filter(str_detect(Samples, baseline_sample_to_subtract)) %>% # select samples that are the baseline cells
     group_by(Samples) %>% 
     summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) %>%  # avg of MG1655/other controls fluor values in plate
-  
-  # if there is no data for baseline, make it zero
+    
+    # if there is no data for baseline, make it zero
     {if(plyr::empty(.)) 
       (add_row(., Samples = 'none') %>%  # add a dummy row
          mutate(across(where(is.numeric), ~0 )) # make the number entries 0 
-  ) else .}
+      ) else .} %>% 
+    
+    # if there are more than one unique baseline samples detected, ask user to choose one
+    { if(length(.$Samples) > 1) { 
+      print(.) # show the baseline data
+      which_baseline_sample <- menu(.$Samples, # ask user to choose of them them
+                                      title = 'Multiple potential baseline values detected, please indicate which one should be used?')
+      empty_cells_baseline %<>% .[which_baseline_sample,] # select the chosen baseline
+        
+    } else .}
   
   # baseline subtraction
-  # Bug: this is not generalized to work when GFP or RFP is missing .. do we make them 0??
-  baseline.subtracted_all.grids <- merged_all.grids.in.sheet %>% 
-    mutate(GFP_bs = pmax(GFP - empty_cells_baseline$GFP,0), 
-           RFP_bs = pmax(RFP - empty_cells_baseline$RFP,0), # Subtract baseline fluor
-           
-           # and calculate ratios 
-           'GFP/RFP_bs' = GFP_bs/RFP_bs,
-           'GFP/OD_bs' = GFP_bs/OD,
-           'RFP/OD_bs' = RFP_bs/OD)
-}
-
-
-
-extract_from_given_sheet <- function(sheet_name, n_Rows, n_Cols, partial_plate)
-{ # extracts sheet from file, data from sheet and gives clean output - mean and var of GFP/RFP : Vectorizable over multiple sheets
-  if(str_detect(sheet_name, 'default')) sheet_name <- names(fl)[1] # if default, read the first sheet
+  baseline.subtracted_all.grids <- merged_all.grids %>% 
+    
+    mutate(across(matches('.FP'), # for GFP and RFP data, subtract the baseline fluorescence
+                  ~ pmax(. - empty_cells_baseline[[1, cur_column()]], 0) )) %>%  # replace 0 for negative values
+# Thoughts: retaining negative values causes hill fitting to fail, and does not have physical meaning
+  # but large negative values imply anomalies in the sample and need to be looked at
+  # can throw a warning -- how large is large? depends on the gain stuff and LB vs PBS measurements?
+        
+  # and calculate ratios 
+  mutate(across(matches('.FP'),
+                ~ ./OD,
+                .names = "{.col}/OD"))
   
-  data_sheet1 <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
+  # Clean up ----
+
+  # 1. removes NA and undesirable samples
+  # 2. Arranges the values in order of plate columns
+  # 3. Adds a column for Replicate # useful for collecting samples, before calculating mean
   
-  device_name <- data_sheet1[1:3, 1] %>% str_match('Device: (.*)') %>% pluck(2) # exract the plate reader device name  
+  sample_specific_variables <<- user_metadata.grid_info$label # use c('Samples', 'Inducer') to hardcode
   
-  merged_processed_all.grids <- read_all_plates_in_sheet(device_name, data_sheet1, n_Rows, n_Cols, partial_plate, sheet_name)
-  cleaned.data_all.grids <- clean_and_arrange(merged_processed_all.grids) # removes empty wells or unlabelled cells; arranges by sample alphabetical order and inducer, makes replicates
+  processed.data <- baseline.subtracted_all.grids %>% 
+    filter(!str_detect(Samples, "NA")) %>%  # remove NA samples (empty wells)
+    
+    arrange(across(any_of(sample_specific_variables)) ) %>% # re-arrange values
+    mutate(Samples = fct_inorder(Samples)) %>% # freeze the order of Samples
+    
+    group_by(across(any_of(sample_specific_variables))) %>%  
+    
+    # Add replicate numbering
+    mutate('Replicate #' = row_number()) %>%  
+    
+    # calculate means
+    mutate(across(where(is.numeric), # calculate mean of all number columns
+                  list( mean = ~ mean(.x, na.rm = T)) )) %>%  
+  
+    ungroup()
   
 }
