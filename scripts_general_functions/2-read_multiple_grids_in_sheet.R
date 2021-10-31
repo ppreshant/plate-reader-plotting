@@ -61,7 +61,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     # iterating functions on each group,  
     mutate(label = map_chr(data, # bring out the label of the data, with minimal standardized names
                            ~ str_replace_all(.$label[1], 
-                                             regex(measurement.labels_translation, ignore_case = TRUE) )), 
+                                             regex(measurement.labels_translation, ignore_case = TRUE) )), # replace labels of fluorophores with standardized : GFP and RFP
            row_index = map_int(data, ~ .$index[2]), # bring out the index of '<>' 
            col_index = 1) %>%  # all measurement grid '<>' are in the first column
     
@@ -78,7 +78,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     as.vector() %>%  # as vector
     {which(. == '<>')[-1]} %>% # find the col_index where '<>' occurs; remove first occurence (OD)
     map_dfr( ~ tibble(label = .df[[user_metadata.row_index-1, .]] %>% # get label from the row above
-                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), # translate to minimal standardized names
+                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), # translate to minimal standardized names for fluorophores: like GFP and RFP
                       row_index = user_metadata.row_index, 
                       col_index = .)) # get the column index of each '<>' match
   rm(user_metadata.row_index) # remove temporary variable
@@ -170,5 +170,8 @@ read_multiple_grids_in_sheet <- function(sheet_name)
                   list( mean = ~ mean(.x, na.rm = T)) )) %>%  
   
     ungroup()
+  
+  # return the processed data and baseline data
+  return(list(processed.data, empty_cells_baseline))
   
 }
