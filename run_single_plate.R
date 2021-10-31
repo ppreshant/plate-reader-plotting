@@ -19,12 +19,12 @@ baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline c
 
 # Prelims ----
 
-source('./general_functions_plate_reading.R') # source the file that contains all the functions
+source('general_functions_plate_reading.R') # source the file that contains all the functions
 
 
 # Input data ----
 
-flpath <- str_c('../plate reader data/',flnm,'.xlsx')
+flpath <- str_c('plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 
 # Get all measurements and metadata (sample names, ..) into a data frame
@@ -49,12 +49,12 @@ empty_cells_baseline <- processed_and_baseline_list[[2]]
 # plotting ----
 
 # calling r markdown file for plotting in a nice format html file
-rmarkdown::render('plate_reader_plotting_and_html.Rmd', output_file = str_c('./html files/', title_name, '.html'))
+rmarkdown::render('plate_reader_plotting_and_html.Rmd', output_file = str_c('plate reader analysis/html files/', title_name, '.html'))
 
 
 # Save data ----
 
 # save data in the 'processed' folder
 write.csv(processed.data, 
-          str_c('../plate reader data/processed/', flnm, '-processed.csv', 
+          str_c('plate reader data/processed/', flnm, '-processed.csv', 
                 na = ''))
