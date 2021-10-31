@@ -62,7 +62,8 @@ plt_GFP <- ggplot(data = gfp_order_processed.data,
 plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
 
 ```
-### all fluorescence
+
+### all fluorescence (normalized)
 
 ```{r allfluor}
 long_fluor.normalized_processed <- processed.data %>% 
@@ -103,11 +104,13 @@ print()
 
 ## Data tables
 
-Showing data here
+Baseline fluorescence that was subtracted before plotting 
 
 ``` {r datadisplay}
 # kable(processed.data, caption = 'full data') # format with colours etc for good visualization
 
-empty_cells_baseline
+kable(empty_cells_baseline) # show baseline data
 
 ```
+
+check for processed data as a csv file in the `/plate reader data/processed` folder
