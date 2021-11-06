@@ -3,16 +3,13 @@
 # User inputs ----
 
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- 'example-S032_Mfdpir_pPK66,sPK14,15_mScarlet_leak_check'
-# Note: The script only works for SPARK files where OD, GFP and RFP are read, 
-  # if you leave out anything b_gap needs to be changed accordingly
+flnm <- 'OD_serial dils'
+
+# Note: The script only works for SPARK files where OD, metadata next to it, and any fluorescence below it are read
+
 sheet_name <- 'default'
 
 title_name <- flnm # appears on the html file name and header of selected plots, change as required
-
-n_Rows <- 2; 
-n_Cols <- 9;
-partial_plate = T; # enter FALSE (F) here when the plate is 8 x 12 but non rectangular
 
 baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline cell name(s) here
 # Fluorescence from samples matching this name will be subtracted from all values (baseline)
@@ -39,6 +36,8 @@ processed_and_baseline_list <- read_multiple_grids_in_sheet(sheet_name)
 # unpack the processed data and baseline
 processed.data <- processed_and_baseline_list[[1]]
 empty_cells_baseline <- processed_and_baseline_list[[2]]
+
+rm(processed_and_baseline_list) # remove list after unpacking
 
 # Processing ----
 # location for optional processing - custom written code
