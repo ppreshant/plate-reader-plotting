@@ -117,20 +117,23 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     group_by(Samples) %>% 
     summarize(across(where(is.numeric), ~ mean(.x, na.rm = T ))) %>%  # avg of MG1655/other controls fluor values in plate
     
+    
+    # if there are more than one unique baseline samples detected, ask user to choose one or none
+    { if(length(.$Samples) > 1) { 
+      print(.) # show the baseline data
+      which_baseline_sample <- menu(c(.$Samples, 'none of the samples'), # ask user to choose of them them
+                                    title = 'Multiple potential baseline values detected, please indicate which one should be used?')
+      
+      slice(., which_baseline_sample) # depending on the user selection
+      # empty_cells_baseline %<>% .[which_baseline_sample,] # select the chosen baseline
+    } else .} %>% 
+
+    
     # if there is no data for baseline, make it zero
     {if(plyr::empty(.)) 
       (add_row(., Samples = 'none') %>%  # add a dummy row
          mutate(across(where(is.numeric), ~0 )) # make the number entries 0 
-      ) else .} %>% 
-    
-    # if there are more than one unique baseline samples detected, ask user to choose one
-    { if(length(.$Samples) > 1) { 
-      print(.) # show the baseline data
-      which_baseline_sample <- menu(.$Samples, # ask user to choose of them them
-                                      title = 'Multiple potential baseline values detected, please indicate which one should be used?')
-      empty_cells_baseline %<>% .[which_baseline_sample,] # select the chosen baseline
-        
-    } else .}
+      ) else .}
   
   # baseline subtraction
   baseline.subtracted_all.grids <- merged_all.grids %>% 
