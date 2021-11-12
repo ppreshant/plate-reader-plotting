@@ -48,11 +48,20 @@ proc.dat = fl %>%
          across(c(value, `Time [s]`), as.numeric)) %>% 
   rename(OD600 = value) %>% 
   group_by(Sample_name) %>% 
-  mutate(replicate = row_number())
+  mutate(replicate = row_number()) %>% 
+  mutate('Time (hr)' = `Time [s]`/(60 * 60)) %>% # convert to hours
+
+  
+  group_by(Sample_name, `Time (hr)`) %>% 
+  mutate(across(OD600,
+                lst(mean = ~ mean(.x, na.rm = T),
+                    stdev = ~ sd(.x, na.rm = T) )
+                )
+        )
 
 # plotting ----
 
-ggplot(proc.dat, 
+plt.raw <- ggplot(proc.dat, 
        aes(x = `Time [s]`, y = OD600,
            colour = Sample_name,
            group = Well)) +
@@ -61,5 +70,22 @@ ggplot(proc.dat,
     
   ggtitle('Raw data of growth curves')
 
+plt.summary <- {ggplot(proc.dat, 
+                       aes(x = `Time (hr)`, y = OD600_mean,
+                           colour = Sample_name, fill = Sample_name,
+                           group = Well)) +
+    geom_point(alpha = 0.4, size = .5) +
+    geom_line(alpha = 0.1) +
+    geom_ribbon(aes(ymin = OD600_mean - OD600_stdev, 
+                    ymax = OD600_mean + OD600_stdev),
+                alpha = 0.01,
+                show.legend = FALSE,
+                linetype = 0) +
+    
+    ggtitle('Summary of growth curves : Run 2', 
+            subtitle = 'Mean shown as the line, and standard deviation as ribbon') } %>% 
+  print()
 
-ggsave(str_c('plots and data/archive/', flnm, '-lines.png'), width = 7, height = 4)
+
+ggsave(str_c('plate reader analysis/plots and data/archive/', flnm, '-lines.png'), plot = plt.raw, width = 7, height = 4)
+ggsave(str_c('plate reader analysis/plots and data/archive/', flnm, '-summary.png'), plot = plt.summary, width = 7, height = 4)
