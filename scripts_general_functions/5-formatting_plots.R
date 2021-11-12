@@ -14,7 +14,7 @@ bang_wong_palette <- c('000000', 'E69F00', '56B4E9', '009E73',
    
 # Set theme universally : format as classic, colours = Set1
 theme_set(theme_classic()) # theme
-scale_colour_discrete <- function(...) { # palette
+scale_colour_discrete <- function(...) { # colour palette
   
   scale_colour_brewer(..., palette="Dark2") # choose Dark2 if there are > 4 categories to avoid light yellow
   
@@ -22,6 +22,10 @@ scale_colour_discrete <- function(...) { # palette
   # scale_colour_manual(values = bang_wong_palette) # some colours don't work
 }
 
+scale_fill_discrete <- function(...) { # fill palette
+  scale_fill_brewer(..., palette="Dark2") # choose Dark2 if there are > 4 categories to avoid light yellow
+  
+  }
 
 
 
