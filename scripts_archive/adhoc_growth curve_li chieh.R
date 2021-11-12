@@ -7,7 +7,7 @@ source('./general_functions_plate_reading.R') # source the file that contains al
 # User inputs ----
 
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- '37C_growth_20210926_134953'
+flnm <- '2021_11_01_merged'
 
 # Note: The script only works for SPARK files where OD, GFP and RFP are read, 
 # if you leave out anything b_gap needs to be changed accordingly
@@ -26,13 +26,19 @@ well.to.names_translation <- c('^(A|H).*' = 'media only',
 
 # Input data ----
 
-flpath <- str_c('../plate reader data/',flnm,'.xlsx')
-fl <- readxl::read_excel(path = flpath, col_names = F, skip = 49,range = 'A50:JY148') %>%  # load the results sheet
-  
-  # transpose the data and clean a little
-  pivot_longer(-`...1`) %>% 
-  pivot_wider(names_from = `...1`, values_from = value) %>% 
-  select(-name, -`Temp. [°C]`) # remove useless columns
+flpath <- str_c('../plate reader data/',flnm,'.csv')
+
+## this is sleight of hand
+fl <- merged_outliers.removed %>%  # grabbing data from the other file
+  select(-`Temp. [°C]`)
+
+# fl <- read_csv(path = flpath) and transpose etc like below
+# old stuff --- fl <- readxl::read_excel(path = flpath, col_names = F, skip = 49,range = 'A50:JY148') %>%  # load the results sheet
+  # 
+  # # transpose the data and clean a little
+  # pivot_longer(-`...1`) %>% 
+  # pivot_wider(names_from = `...1`, values_from = value) %>% 
+  # select(-name, -`Temp. [°C]`) # remove useless columns
 
 # Processing ----
 
