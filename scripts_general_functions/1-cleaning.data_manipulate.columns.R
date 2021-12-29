@@ -91,3 +91,13 @@ regex_switch<-function(.v,...)
   i <- min(which(str_detect(.v,names(e))))
   eval(e[[i]],parent.frame())
 }
+
+# Tidyeval helpers ----
+
+# Add a prefix and suffix to an unevaluated expression -- used for plotting mean of stuff with mean_xx
+add_prefix.suffix_expr <- function(prefix, .expr, suffix, separator = '_')
+{
+  deparse(enexpr(.expr)) %>% 
+    {rlang::parse_expr(str_c(prefix, ., suffix, sep = separator))}
+}
+

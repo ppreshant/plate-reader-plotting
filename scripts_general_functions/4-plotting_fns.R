@@ -1,5 +1,63 @@
 # 4-Plotting_fns.R
 
+# Timeseries plots ----
+
+
+# plot the timeseries of each replicate well 
+
+plot_kinetic_raw <- function(.dataframe = proc.dat, 
+                             y_variable = OD,
+                             colour_variable = Samples)
+{
+  plt.raw <- {ggplot(proc.dat, 
+                     aes(x = `Time (hr)`, y = {{y_variable}},
+                         colour = {{colour_variable}},
+                         group = well)) +
+      geom_point(alpha = 0.4, size = .5) + # make plot with points and lines
+      geom_line(alpha = 0.4) +
+      
+      ggtitle(title_name,
+              subtitle = 'Each line shows a single biological replicate')} %>% 
+    
+    print()
+  
+}
+
+
+# plot the mean of replicates and a light ribbon for standard deviation
+
+plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat, 
+                                y_variable = OD,
+                                colour_variable = Samples)
+  {
+     y_w_mean <- add_prefix.suffix_expr(prefix = NULL, 
+                                     .expr = !!enexpr(y_variable),
+                                     suffix = 'mean')
+  y_w_stdev <- add_prefix.suffix_expr(NULL, !!enexpr(y_variable), 'stdev')
+  
+    plt.summary <- ggplot(proc.dat, 
+                           aes(x = `Time (hr)`, y = {{y_w_mean}},
+                               colour = {{colour_variable}}, fill = {{colour_variable}},
+                               group = well)) +
+        geom_point(alpha = 0.4, size = .5) +
+        geom_line(alpha = 0.1) +
+        geom_ribbon(aes(ymin = {{y_w_mean}} - {{y_w_stdev}}, 
+                        ymax = {{y_w_mean}} + {{y_w_stdev}}),
+                    alpha = 0.01,
+                    show.legend = FALSE,
+                    linetype = 0) +
+        
+        
+        ggtitle(str_c('Summary of growth curves: ', title_name), 
+                subtitle = 'Mean shown as the line, and standard deviation as ribbon')
+    
+  }
+
+# General plots ----
+
+
+# old funtions, not used here as the functions were re-written with specific features. 
+# These will come in handy when generalizing stuff in the future
 
 # plotting function : to reduce redundancy, common elements are captured here
 plot_mean_facetted <- function(sel_tablex)
