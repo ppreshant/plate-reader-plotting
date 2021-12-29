@@ -64,4 +64,23 @@ plt.summary.directlabels
 
 ```
 
+
+`r if(gfpplots) {"### GFP timeseries"}`
+
+```{r gfpplotting}
+
+plt.gfp.raw <- plot_kinetic_raw(y_variable = GFP)
+
+plt.gfp.summary <- plot_kinetic_ribbon.summary(y_variable = GFP) 
+
+ 
+directlabels::direct.label(plt.gfp.summary) %>% 
+  print()
+
+plotly::ggplotly(plt.gfp.summary) %>% 
+  plotly::style(textposition = 'top right')
+
+```
+
+
 check for processed data as a csv file in the `/plate reader data/processed` folder

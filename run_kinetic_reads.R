@@ -57,9 +57,9 @@ proc.dat = fl %>%
   
   group_by(Samples) %>% 
   mutate(replicate = row_number()) %>% 
-  mutate('Time (hr)' = round(Time/(60 * 60), 2) ) %>% # convert to hours, round to 2 decimals
+  mutate('Time (h)' = round(Time/(60 * 60), 2) ) %>% # convert to hours, round to 2 decimals
   
-  group_by(Samples, `Time (hr)`) %>% 
+  group_by(Samples, `Time (h)`) %>% 
   mutate(across(any_of(data_columns),
                 lst(mean = ~ mean(.x, na.rm = T),
                     stdev = ~ sd(.x, na.rm = T) )
@@ -70,8 +70,9 @@ proc.dat = fl %>%
 
 # plotting ----
 
+# plot the timeseries of each replicate well
 plt.raw <- {ggplot(proc.dat, 
-                  aes(x = `Time (hr)`, y = OD,
+                  aes(x = `Time (h)`, y = OD,
                       colour = Samples,
                       group = well)) +
   geom_point(alpha = 0.4, size = .5) + # make plot with points and lines
@@ -82,8 +83,9 @@ plt.raw <- {ggplot(proc.dat,
   
   print()
 
+# plot the mean of replicates and a light ribbon for standard deviation
 plt.summary <- {ggplot(proc.dat, 
-                       aes(x = `Time (hr)`, y = OD_mean,
+                       aes(x = `Time (h)`, y = OD_mean,
                            colour = Samples, fill = Samples,
                            group = well)) +
     geom_point(alpha = 0.4, size = .5) +
@@ -98,6 +100,11 @@ plt.summary <- {ggplot(proc.dat,
     ggtitle(str_c('Summary of growth curves: ', title_name), 
             subtitle = 'Mean shown as the line, and standard deviation as ribbon') } %>% 
   print()
+
+
+# switch for plotting for other fluorescence data
+if('GFP' %in% colnames(proc.dat)) gfpplots <- TRUE else gfpplots <- FALSE
+
 
 # add direct labels to the plot for easy visualization
 plt.summary.directlabels <- directlabels::direct.label(plt.summary) %>% print()

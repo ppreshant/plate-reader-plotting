@@ -15,13 +15,33 @@ library(magrittr) # for complex pipes not included in tidyverse (ex: %<>% )
 # or test data for testing simple functions 
 
 # dummy test tibble
-a <- tibble(a1 = 1:6, a2 = 6:1, a3 = rep(c('a', 'b'),3), a4 = a2 ^2)
+a <- tibble(a1 = 1:6, a2 = 6:1, a3 = rep(c('a', 'b'),3), a4 = a2 ^2, 
+            mean_a1 = mean(a1), mean_a4 = mean(a4))
 
 # expression to test on plotting
 y_namr_test <- list( 'a2' = expression(paste('this is a ', mu, 'L')),
                      'a4' = expression(paste('super large ', sigma, 'L')))
 
-# test ggplot
+# test ggplot in function
+check_plot <- function(.dataframe = a, variable = a1, prefix = 'mean')
+{
+  y_expr <- add_prefix.suffix_expr('mean', !!enexpr(variable), NULL)
+  
+  
+  ggplot(.dataframe,
+         aes(x = a1, y = {{y_expr}})) +
+    geom_point() + geom_line()
+  
+}
+
+
+compound_expr <- function(a, b)
+{ 
+  ytp <- deparse(enexpr(a))
+  
+}
+
+
 a_plt <- ggplot(a, aes(a1, a2, colour = a3)) + 
   geom_point() + 
   geom_line() + 
