@@ -5,7 +5,7 @@
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
 flnm <- 'OD_serial dils'
 
-# Note: The script only works for SPARK files where OD, metadata next to it, and any fluorescence below it are read
+# Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
 sheet_name <- 'default'
 
@@ -48,7 +48,7 @@ rm(processed_and_baseline_list) # remove list after unpacking
 # plotting ----
 
 # calling r markdown file for plotting in a nice format html file
-rmarkdown::render('plate_reader_plotting_and_html.Rmd', output_file = str_c('plate reader analysis/html files/', title_name, '.html'))
+rmarkdown::render('static_plate_reader_plotting_and_html.Rmd', output_file = str_c('plate reader analysis/html files/', title_name, '.html'))
 
 
 # Save data ----
