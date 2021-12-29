@@ -1,9 +1,12 @@
 # plate-reader-plotting/basic_plots
-Automated analysis, plotting of fluorescences/OD from **single-read/static** plate reader excel files.
+Automated analysis, plotting of fluorescences/OD from **single-read/static** and **kinetic** plate reader excel **.xlsx** files.
 
-_Tested on Tecan Spark and Infinite M1000 plate readers, other files would need minor code modifications_
+_Static read tested on excel files output by Tecan Spark and Infinite M1000 plate readers only, other files would need minor code modifications_
+_Kinetic read tested on Tecan Spark only_
 
-## Processing workflow
+
+
+## Processing workflow : Static reads
 
 1. Takes plate reader output excel file (`.xlsx`)
    - The excel file should be annotated with **sample names** and any other parameters such as **inducer concentrations** (if any) next to the OD data table (see example excel files). See below for other kinds of data plots
@@ -20,6 +23,21 @@ _Tested on Tecan Spark and Infinite M1000 plate readers, other files would need 
 
 5. A couple of interactive plots are also saved into the HTML for exploratory data analysis. 
    - Interactivity using *plotly* is quite powerful with features of zoom, showing subsets of data etc. You are always welcome to add more features using more advanced plotly functions by building the plot from scratch in plotly instead of ggplot2  
+
+
+## Processing workflow : Kinetic reads
+
+1. Takes plate reader output excel file (`.xlsx`)
+   - The excel file should _include a sheet_ named as `metadata`. This sheet should have a grid with **sample names** and any other parameters such as **inducer concentrations** (if any) one below another 
+   (see example excel file : `example kinetic-E01.4-Vmax Ribo fluor kinetic_28-11-20`). 
+   
+   - _other parameters are read into the data file but not plotted, you can easily customize the plotting functions in `run_kinetic_reads.R` file to add colours/shapes/facets based on the extra metadata you provide_
+   - Can also plot GFP/OD and other kinds of data transformations pretty easily 
+
+2. Program reads the OD and any other fluorescence data
+   - *Please label the measurements with OD and the name of the fluorophores in the Tecan/Infinite plate reader protocol file before acquiring the data, these labels will enable the script to read the data properly and will appear in the plots* 
+3. Raw values and ribbon plots showing mean of replicates, and shadow for standard deviation are plotting into the `.html` file. Interative plots also included
+
 
 ## Git organization
 1. There are different master branches for each of the major kinds of experiments. These are older scripts and will be merged into the current branch eventually -
