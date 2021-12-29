@@ -92,7 +92,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     # mutate(grp_index = 1:n()) %>% # add a new group index for each grid
     nest(grid_info = -label) %>% # create a nested data frame, indexed by grp_index
     
-    # testing in progress
+    # read the data of the grids starting with the row and column index
     mutate(grid_data = map(grid_info,  # identify the non empty grid size and read it
                            ~ find_plate_read_grid(.df, .$row_index, .$col_index)) )
   

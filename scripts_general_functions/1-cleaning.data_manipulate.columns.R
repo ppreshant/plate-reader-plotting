@@ -31,7 +31,7 @@ group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD',
 # transforms a plate reader table into a column (named after the top left cell, unless mentioned)
 # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
 
-read_plate_to_column <- function(data_tibble, val_name)
+read_plate_to_column <- function(data_tibble, val_name, retain_well_id = FALSE)
 { 
   # Check if the tibble is empty
   if(drop_na(data_tibble) %>% plyr::empty()) return(NULL)  # return NULL if tibble is empty
@@ -43,7 +43,14 @@ read_plate_to_column <- function(data_tibble, val_name)
                 '\n Could be improperly formatted; check if n_Rows and n_Cols is accurate.'))}
   
   colnames(data_tibble) <- data_tibble[1,] # set column names as the first row
-  data_tibble[-(1),] %>% pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% rename(row_num = `<>`) %>% select(all_of(val_name))
+  
+  # pivot the table into wider (columns
+  data_tibble[-(1),] %>% 
+    pivot_longer(names_to = 'col_num', values_to = val_name, cols = -`<>`) %>% 
+    rename(row_num = `<>`) %>% # letters go into row_num
+    unite(col = 'well', c(row_num, col_num), sep = '') %>% # merge letters with numbers
+    
+    {if(!retain_well_id) select(., all_of(val_name)) else .}
 }
 
 
