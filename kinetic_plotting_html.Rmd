@@ -1,0 +1,67 @@
+---
+author: "Prashant Kalvapalle"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
+---
+  
+---
+title: `r title_name`
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width = 7, fig.height = 4)
+
+```
+
+## Plotting
+
+### Raw growth curves
+
+Interactive plot
+_Try to Zoom, Select desired subcategories etc._
+
+```{r plotrawinteract}
+
+plotly::ggplotly(plt.raw) %>% 
+  plotly::style(textposition = 'top right')
+
+```
+
+Static plot
+
+```{r plotraw}
+
+plt.raw
+
+```
+
+
+### Summary growth curves
+
+
+Interactive plot
+_Points showing the mean of independent replicates, line connecting the means; Light curves showing the upper and lower standard deviations_
+
+```{r summinteract}
+
+plotly::ggplotly(plt.summary) %>% 
+  plotly::style(textposition = 'top right')
+
+```
+
+Static plot
+_Points showing the mean of independent replicates, line connecting the means and shaded region showing standard deviations_
+
+
+```{r summ}
+
+plt.summary.directlabels
+
+```
+
+check for processed data as a csv file in the `/plate reader data/processed` folder

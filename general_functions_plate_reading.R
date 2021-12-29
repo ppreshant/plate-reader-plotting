@@ -36,7 +36,9 @@ list_of_general_functions <- c("0-read_plate.reader.files.R",
                                "2-read_multiple_grids_in_sheet.R",
                                "3-mathematical.functions.R",
                                "4-plotting_fns.R",
-                               "5-formatting_plots.R")
+                               "5-formatting_plots.R",
+                               '6-parse_continuous_growth.R',
+                               '7-read_merge_metadata_grids.R')
 
 # bash command to make this file list
 # ls -Q | sed 's/$/,/g' > flnm.txt
