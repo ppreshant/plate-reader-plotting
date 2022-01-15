@@ -60,18 +60,37 @@ plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat,
 # These will come in handy when generalizing stuff in the future
 
 # plotting function : to reduce redundancy, common elements are captured here
-plot_mean_facetted <- function(sel_tablex)
+plot_mean_facetted <- function(.data)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
-  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
+  plt1 <- ggplot(.data, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
 }
 
-# plotting dose response (mean vs Inducer)
-plot_dose_response <- function(sel_tablex, y_axis_label = 'GFP/OD (a.u.)', plot_title = 'Flipping vs inducer dose' )
-{ # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by Samples, colour by sample and title
-  plt1 <- ggplot(sel_tablex, aes(Inducer, mean, colour = Reporter)) + 
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + 
-    geom_point(size = 2) + 
-    facet_grid(~ category, scales = 'free_x', space = 'free_x') +
+
+
+# plotting dose response (y_axis_variable vs Inducer)
+# Plots the raw data vs Inducer points and the mean too. facet by Samples, colour by sample and title
+
+plot_dose_response <- function(.data, 
+                               
+                               y_var = `GFP/OD_bs`,
+                               
+                               y_axis_label = 'GFP/OD (a.u.)', 
+                               plot_title = 'Response vs inducer dose')
+{ 
+  
+  y_var.w.mean <- sym(rlang::as_string(ensym(y_var)) %>% str_c('_mean')) # create an expression for 'y_var'*_mean*
+  
+  
+  plt1 <- ggplot(.data, aes(Inducer, {{y_var}}, colour = Reporter)) + 
+    
+    geom_jitter(height = 0) + # points for individual replicates
+    
+    geom_point(aes(y = !!y_var.w.mean), # plots mean as a line
+                data = . %>% select(ends_with('mean') %>% unique),
+               shape = '-', size = 5,
+               show.legend = FALSE) +
+  
+    facet_grid(~ Samples, scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) 
   
   plt1 %>% format_logscale_x # output a classic formatted plot with logscale x

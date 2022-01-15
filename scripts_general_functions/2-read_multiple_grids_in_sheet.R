@@ -99,7 +99,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   
   
   # Merge grids ----
-  
+
   # convert plate tables into columns and merge all measurements and metadata into 1 table
   merged_all.grids <- map2_dfc(measured_and_metadata.grids$grid_data, 
                                measured_and_metadata.grids$label, 
@@ -173,7 +173,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
                   list( mean = ~ mean(.x, na.rm = T)) )) %>%  
   
     ungroup()
-  
+
   # return the processed data and baseline data
   return(list(processed.data, empty_cells_baseline))
   

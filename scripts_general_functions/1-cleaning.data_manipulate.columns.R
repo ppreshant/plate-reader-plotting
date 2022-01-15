@@ -101,3 +101,16 @@ add_prefix.suffix_expr <- function(prefix, .expr, suffix, separator = '_')
     {rlang::parse_expr(str_c(prefix, ., suffix, sep = separator))}
 }
 
+
+
+# Other column manipulation ----
+
+# Extra function : convert a column into a plate layout
+column_to_plate <- function(.data, column_of_interest)
+{
+  grid.outpyt <- .data %>% 
+    mutate(colid = 0:(n()-1)%/% 8 + 1, 
+           rowid = 0:(n()-1) %% 8 + 1) %>% # create column and row IDs; 8 wells per column
+    select(rowid, colid, {{column_of_interest}}) %>% # select only relevant column
+    pivot_wider(names_from = colid, values_from = {{column_of_interest}}) # creates the grid
+}
