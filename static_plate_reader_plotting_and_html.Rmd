@@ -102,6 +102,12 @@ print()
 
 ```
 
+``` {r child = if(inducer.present) 'dose_response.Rmd'}
+# child document format inspired from : https://bookdown.org/yihui/rmarkdown-cookbook/child-document.html
+# `r if(inducer.present {"## Dose-response plots"})`
+```
+
+
 ## Data tables
 
 Baseline fluorescence that was subtracted before plotting 

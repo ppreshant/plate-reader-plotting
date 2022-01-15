@@ -3,7 +3,7 @@
 # User inputs ----
 
 # User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- 'OD_serial dils'
+flnm <- 'pSS071_0.1-2 mcherry2_15-1-21'
 
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
@@ -44,6 +44,8 @@ rm(processed_and_baseline_list) # remove list after unpacking
 
 # processed.data %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 # processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
+
+inducer_present <- 'Inducer' %in% colnames(processed.data)
 
 # plotting ----
 
