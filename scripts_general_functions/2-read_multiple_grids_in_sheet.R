@@ -155,7 +155,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   # 2. Arranges the values in order of plate columns
   # 3. Adds a column for Replicate # useful for collecting samples, before calculating mean
   
-  sample_specific_variables <<- user_metadata.grid_info$label # use c('Samples', 'Inducer') to hardcode
+  sample_specific_variables <<- user_metadata.grid_info$label # global variable with all the metadata headers
   
   processed.data <- baseline.subtracted_all.grids %>% 
     filter(!str_detect(Samples, "NA")) %>%  # remove NA samples (empty wells)
