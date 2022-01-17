@@ -2,7 +2,10 @@
 
 # User inputs ----
 
-# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
+# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 
+# 3. number of rows and columns in plate reader data 4. Title for plots 
+# Note:  (file name starts in the previous directory of this Rproject)
+
 flnm <- 'pSS071_0.1-2 mcherry2_15-1-21'
 
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
@@ -42,10 +45,30 @@ rm(processed_and_baseline_list) # remove list after unpacking
 # Processing ----
 # location for optional processing - custom written code
 
+# collect all measurements in 1 column : Long format data
+long_fluor_processed <- processed.data %>% 
+  select(!matches('Replicate')) %>%  # choose OD, x/OD and _bs and _mean additions
+  mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
+  
+  rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
+  
+  pivot_longer(cols = -c(sample_specific_variables, index), # pull measurement types and summary type (mean vs 'raw' value) into two cols
+               names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
+  
+  pivot_wider(names_from = type_of_summary, values_from = value) # bring values and means into two separate cols
+
+# Long formatted for only normalized data
+long_fluor.normalized_processed <- 
+  long_fluor_processed %>% 
+  filter(str_detect(Measurement,'/OD')) # choose OD, x/OD and _bs and _mean additions
+
+long_unique.normalized_processed <- select(long_fluor.normalized_processed, -c(value, index)) %>% unique()
+
+
 # processed.data %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 # processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
 
-inducer_present <- 'Inducer' %in% colnames(processed.data)
+inducer.present <- 'Inducer' %in% colnames(processed.data)
 
 # plotting ----
 
