@@ -48,6 +48,19 @@ a_plt <- ggplot(a, aes(a1, a2, colour = a3)) +
   ylab(y_namr_test[['a4']])
 
 
+# dummy function to test quosure/meta-programming stuff
+metafn <- function(.var)
+{
+  # make a string to use mean_{{y_var}} in regular functions
+  mean_y_var <- rlang::parse_expr(str_c('mean_', rlang::expr_text(enexpr(.var)) ) )
+  # .vexpr <- enexpr(.var) 
+  
+  rlang::parse_expr(.var)
+  
+  # select(a, {{mean_y_var}})
+  
+}
+
 
 # calling more funs ----
 
@@ -58,7 +71,8 @@ list_of_general_functions <- c("0-read_plate.reader.files.R",
                                "4-plotting_fns.R",
                                "5-formatting_plots.R",
                                '6-parse_continuous_growth.R',
-                               '7-read_merge_metadata_grids.R')
+                               '7-read_merge_metadata_grids.R',
+                               '8-MEFL_normalization.R')
 
 # bash command to make this file list
 # ls -Q | sed 's/$/,/g' > flnm.txt
