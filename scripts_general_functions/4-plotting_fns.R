@@ -10,7 +10,7 @@ plot_kinetic_raw <- function(.dataframe = proc.dat,
                              colour_variable = Samples)
 {
   plt.raw <- {ggplot(proc.dat, 
-                     aes(x = `Time (hr)`, y = {{y_variable}},
+                     aes(x = `Time (h)`, y = {{y_variable}},
                          colour = {{colour_variable}},
                          group = well)) +
       geom_point(alpha = 0.4, size = .5) + # make plot with points and lines
@@ -36,14 +36,14 @@ plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat,
   y_w_stdev <- add_prefix.suffix_expr(NULL, !!enexpr(y_variable), 'stdev')
   
     plt.summary <- ggplot(proc.dat, 
-                           aes(x = `Time (hr)`, y = {{y_w_mean}},
+                           aes(x = `Time (h)`, y = {{y_w_mean}},
                                colour = {{colour_variable}}, fill = {{colour_variable}},
                                group = well)) +
         geom_point(alpha = 0.4, size = .5) +
         geom_line(alpha = 0.1) +
         geom_ribbon(aes(ymin = {{y_w_mean}} - {{y_w_stdev}}, 
                         ymax = {{y_w_mean}} + {{y_w_stdev}}),
-                    alpha = 0.01,
+                    alpha = 0.05,
                     show.legend = FALSE,
                     linetype = 0) +
         
@@ -60,21 +60,48 @@ plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat,
 # These will come in handy when generalizing stuff in the future
 
 # plotting function : to reduce redundancy, common elements are captured here
-plot_mean_facetted <- function(sel_tablex)
+plot_mean_facetted <- function(.data)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
-  plt1 <- ggplot(sel_tablex, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
+  plt1 <- ggplot(.data, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
 }
 
-# plotting dose response (mean vs Inducer)
-plot_dose_response <- function(sel_tablex, y_axis_label = 'GFP/OD (a.u.)', plot_title = 'Flipping vs inducer dose' )
-{ # Input the filtered summary table and plot the mean vs Inducer points and errorbars. facet by Samples, colour by sample and title
-  plt1 <- ggplot(sel_tablex, aes(Inducer, mean, colour = Reporter)) + 
-    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.1) + 
-    geom_point(size = 2) + 
-    facet_grid(~ category, scales = 'free_x', space = 'free_x') +
+
+
+# plotting dose response (y_axis_variable vs Inducer)
+# Plots the raw data vs Inducer points and the mean too.
+
+plot_dose_response <- function(.data, 
+                               
+                               y_var = `GFP/OD`,
+                               
+                               y_axis_label = 'GFP/OD (a.u.)', 
+                               plot_title = 'Response vs inducer dose',
+                               
+                               colour_variable = NULL,
+                               facet_variable = Samples)
+{ 
+  
+  y_var.w.mean <- sym(rlang::as_string(ensym(y_var)) %>% str_c('_mean')) # create an expression for 'y_var'*_mean*
+  
+  
+  plt1 <- ggplot(.data, # layout plot features
+                 aes(x = Inducer,
+                     y = {{y_var}}, 
+                     colour = {{colour_variable}})) + 
+    
+    geom_jitter(height = 0) + # points for individual replicates
+    
+    # geom_point(aes(y = !!y_var.w.mean), # plots mean as a short dash (connected by fitted curve ~ hill function)
+    #             data = . %>% select(ends_with('mean') %>% unique),
+    #            shape = '-', size = 5,
+    #            show.legend = FALSE) +
+  
+    facet_grid(cols = vars({{facet_variable}}), scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) 
   
-  plt1 %>% format_logscale_x # output a classic formatted plot with logscale x
+  plt1 %>% 
+    format_logscale_x # output a classic formatted plot with logscale x
+  
 }
 
 

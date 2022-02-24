@@ -92,7 +92,7 @@ plt.summary <- {ggplot(proc.dat,
     geom_line(alpha = 0.1) +
     geom_ribbon(aes(ymin = OD_mean - OD_stdev, 
                     ymax = OD_mean + OD_stdev),
-                alpha = 0.01,
+                alpha = 0.05,
                 show.legend = FALSE,
                 linetype = 0) +
     
