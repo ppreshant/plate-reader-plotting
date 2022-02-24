@@ -6,7 +6,7 @@
 # 3. number of rows and columns in plate reader data 4. Title for plots 
 # Note:  (file name starts in the previous directory of this Rproject)
 
-flnm <- 'pSS071_0.1-2 mcherry2_15-1-21'
+flnm <- 'S038_47+67_23-2-22'
 
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
@@ -52,7 +52,7 @@ long_fluor_processed <- processed.data %>%
   
   rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
   
-  pivot_longer(cols = -c(sample_specific_variables, index), # pull measurement types and summary type (mean vs 'raw' value) into two cols
+  pivot_longer(cols = -all_of(c(sample_specific_variables, 'index')), # pull measurement types and summary type (mean vs 'raw' value) into two cols
                names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
   
   pivot_wider(names_from = type_of_summary, values_from = value) # bring values and means into two separate cols
