@@ -36,9 +36,16 @@ plt_all_fluor <- ggplot(data = long_fluor.normalized_processed,
   geom_bar(data = long_unique.normalized_processed, 
            aes(x = mean, y = Samples), alpha = 0.3, fill = 'gray', stat = 'identity',position = 'dodge') +
   
+  # facets
   facet_grid(~ Measurement, space = 'free', scale = 'free') +
     # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
-  xlab('Value') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
+  
+  # Axis labels
+  xlab('Value') + ylab('') + 
+  
+  # Plot title and subtitle
+  ggtitle(str_c('Fluorescence measurement', if(MEFL_normalization) ' : in MEFL (uM)' ),
+          subtitle = 'Plasmids')
   
   {plt_all_fluor + geom_text(data = long_unique.normalized_processed,  
               mapping = aes(x = mean, label = mean %>% round, 
@@ -53,47 +60,12 @@ print()
 
 ```{r rawgfp}
 
-if('GFP' %in% colnames(processed.data)) # Plots only GFP when present, need to generalize for RFP too..?
-{
-  gfp_order_processed.data <- processed.data %>% 
-    arrange(GFP) %>% 
-    
-    ungroup() %>% 
-    mutate(across(Samples, fct_inorder))
-  
-  gfp_unique_mean <- gfp_order_processed.data %>% 
-    select(Samples, contains('mean')) %>% 
-    unique()
-  
-  # plot a horizontal bar graph, along with individual replicates and mean annotated
-  plt_GFP <- ggplot(data = gfp_order_processed.data,
-                    mapping = aes(y = Samples, x = GFP)) + 
-    geom_jitter(width = 0, height = .3) + # plot individual replicates
-    
-    
-    # Indicate a light grey bar for the mean - to aid the eye
-    geom_bar(data = gfp_unique_mean, 
-             aes(x = GFP_mean, y = Samples), alpha = 0.3, fill = 'gray', stat = 'identity',position = 'dodge') +
-    # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
-    xlab('GFP (a.u)') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
-  
-  {plt_GFP + 
-      
-      # plot mean as a vertical dash (for small point, use size = 0.5)
-      geom_point(data = gfp_unique_mean, 
-                 aes(x = GFP_mean), size = 5, shape = '|') +
-      
-      # add a text label for quick reference of the mean
-      geom_text(data = gfp_unique_mean,  
-                mapping = aes(x = GFP_mean, label = GFP_mean %>% round, 
-                              hjust = if_else(GFP_mean > max(GFP_mean)/2, 1.3, -0.3)))
-    } %>% 
-    print()
-  
-  # ggsave(str_c('./plots and data/', title_name, '.png'), width = 5, height = 4) # save plot if necessary
-  
-  plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
-}
+# Find all the fluoresce channels in the data
+FPs <- colnames(processed.data) %>% str_subset('.FP$') %>% rlang::parse_exprs(.)
+
+
+# Run the raw data plotter on each fluorescence : regular + interactive plot
+map(FPs, plot_raw_static_fluorescence)
 
 ```
 
