@@ -10,7 +10,7 @@ plot_kinetic_raw <- function(.dataframe = proc.dat,
                              colour_variable = Samples)
 {
   plt.raw <- {ggplot(proc.dat, 
-                     aes(x = `Time (hr)`, y = {{y_variable}},
+                     aes(x = `Time (h)`, y = {{y_variable}},
                          colour = {{colour_variable}},
                          group = well)) +
       geom_point(alpha = 0.4, size = .5) + # make plot with points and lines
@@ -36,14 +36,14 @@ plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat,
   y_w_stdev <- add_prefix.suffix_expr(NULL, !!enexpr(y_variable), 'stdev')
   
     plt.summary <- ggplot(proc.dat, 
-                           aes(x = `Time (hr)`, y = {{y_w_mean}},
+                           aes(x = `Time (h)`, y = {{y_w_mean}},
                                colour = {{colour_variable}}, fill = {{colour_variable}},
                                group = well)) +
         geom_point(alpha = 0.4, size = .5) +
         geom_line(alpha = 0.1) +
         geom_ribbon(aes(ymin = {{y_w_mean}} - {{y_w_stdev}}, 
                         ymax = {{y_w_mean}} + {{y_w_stdev}}),
-                    alpha = 0.01,
+                    alpha = 0.05,
                     show.legend = FALSE,
                     linetype = 0) +
         
