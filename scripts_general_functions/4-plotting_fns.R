@@ -68,32 +68,40 @@ plot_mean_facetted <- function(.data)
 
 
 # plotting dose response (y_axis_variable vs Inducer)
-# Plots the raw data vs Inducer points and the mean too. facet by Samples, colour by sample and title
+# Plots the raw data vs Inducer points and the mean too.
 
 plot_dose_response <- function(.data, 
                                
-                               y_var = `GFP/OD_bs`,
+                               y_var = `GFP/OD`,
                                
                                y_axis_label = 'GFP/OD (a.u.)', 
-                               plot_title = 'Response vs inducer dose')
+                               plot_title = 'Response vs inducer dose',
+                               
+                               colour_variable = NULL,
+                               facet_variable = Samples)
 { 
   
   y_var.w.mean <- sym(rlang::as_string(ensym(y_var)) %>% str_c('_mean')) # create an expression for 'y_var'*_mean*
   
   
-  plt1 <- ggplot(.data, aes(Inducer, {{y_var}}, colour = Reporter)) + 
+  plt1 <- ggplot(.data, # layout plot features
+                 aes(x = Inducer,
+                     y = {{y_var}}, 
+                     colour = {{colour_variable}})) + 
     
     geom_jitter(height = 0) + # points for individual replicates
     
-    geom_point(aes(y = !!y_var.w.mean), # plots mean as a line
-                data = . %>% select(ends_with('mean') %>% unique),
-               shape = '-', size = 5,
-               show.legend = FALSE) +
+    # geom_point(aes(y = !!y_var.w.mean), # plots mean as a short dash (connected by fitted curve ~ hill function)
+    #             data = . %>% select(ends_with('mean') %>% unique),
+    #            shape = '-', size = 5,
+    #            show.legend = FALSE) +
   
-    facet_grid(~ Samples, scales = 'free_x', space = 'free_x') +
+    facet_grid(cols = vars({{facet_variable}}), scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) 
   
-  plt1 %>% format_logscale_x # output a classic formatted plot with logscale x
+  plt1 %>% 
+    format_logscale_x # output a classic formatted plot with logscale x
+  
 }
 
 

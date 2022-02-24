@@ -1,47 +1,30 @@
----
-author: "Prashant Kalvapalle"
-date: '`r format(Sys.time(), "%d %B, %Y")`'
-output: 
-  html_document:
-    theme: flatly
-    toc: TRUE
-    toc_float: TRUE
----
-
----
-title: `r title_name`
----
-
-```{r setup, include=FALSE}
-library(knitr)
-knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.width = 5, fig.height = 4)
-
-```
-
-
-
 ## Dose response plots
 
- **Notes**:   
- <!-- - *0 inducer has been plotted as 1e-3 and glucose repression as 5e-4 (for ease on logscale)*   -->
- - *AHL is in uM and Ara is in mM*
+ **Notes**:  
+ - WORK IN progress --
+ <!-- - *AHL is in uM and Ara is in mM* -->
 
 Plotting GFP/OD vs [Inducer]
 
 ```{r plotting_GFPbs_by_OD}
 
-# hill_table1 <- processed.data_w.mean %>% 
-#   ungroup %>% 
-#   group_by(across(any_of(grouping_vars_for_mean[grouping_vars_for_mean != 'Inducer']))) %>% 
-#   rename(L = Inducer, y = `GFP/OD_bs`) %>% 
-#   nest() %>%  # seperate each group into a different data frame for fitting
-#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
-#   unnest(y.fit)
+# Hill fitting - use a self starting function to guarented convergence and move into the plot_dose_response function
 
-plt11 <- plot_dose_response(processed.data_w.mean)  
-  # geom_line(data = hill_table1, aes(x = L, y = .fitted), linetype = 2)
+hill_table.data <- long_fluor_processed %>%
+  ungroup %>%
+  group_by(across(any_of(
+    sample_specific_variables[sample_specific_variables != 'Inducer'])), 
+    Measurement) %>%
+  
+  nest() %>%  # seperate each group into a different data frame for fitting
+  
+  mutate (fit = map(data, hill_fit.SS), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+  unnest(y.fit)
 
-plt11 %>% format_logscale_x()
+plt11 <- plot_dose_response(processed.data)  %>% print()
+  # geom_line(data = hill_table.data, aes(x = L, y = .fitted), linetype = 2)
+
+plt11 %>% format_logscale_x() %>% print()
 
 
 # old code S022 : 
@@ -60,45 +43,3 @@ plt11 %>% format_logscale_x()
   
 # sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
 ```
-
-
-
-
-
-## Plotting --OLD/basic_plot
-
-
-```{r plot1}
-gfp_order_merged2 <- merged2 %>% 
-  arrange(GFP) %>% 
-  ungroup() %>% 
-  mutate(across(Samples, fct_inorder))
-
-gfp_unique_mean <- gfp_order_merged2 %>% 
-  select(Samples, contains('mean')) %>% 
-  unique()
-
-# plot a horizontal bar graph, along with individual replicates and mean annotated
-plt_GFP <- ggplot(data = gfp_order_merged2,
-                  mapping = aes(y = Samples, x = GFP)) + 
-  geom_jitter(width = 0, height = .3) + # plot individual replicates
-  geom_point(data = gfp_unique_mean, # plot mean as a vertical dash (for small point, use size = 0.5)
-             aes(x = GFP_mean), size = 5, shape = '|') + 
-  geom_bar(data = gfp_unique_mean, 
-           aes(x = GFP_mean, y = Samples), alpha = 0.3, fill = 'gray', stat = 'identity',position = 'dodge') +
-    # geom_segment(aes(x = GFP_mean, xend = 0, yend = Samples), alpha = 0.1, colour = 'red') + 
-  xlab('GFP (a.u)') + ylab('') + ggtitle('Fluorescence measurement', subtitle = 'Plasmids')
-  
-  {plt_GFP + geom_text(data = merged2 %>% select(ends_with('mean')) %>% unique(),  
-              mapping = aes(x = GFP_mean, label = GFP_mean %>% round, 
-              hjust = if_else(GFP_mean > max(GFP_mean)/2, 1.3, -0.3)))
-  } %>% 
-print()
-
-# ggsave(str_c('./plots and data/', title_name, '.png'), width = 5, height = 4) # save plot if necessary
-
-plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
-
-```
-
-

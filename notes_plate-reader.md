@@ -21,4 +21,7 @@ Short steps
 - `hill_fit.SS()` : trying out 2 self starter functions : convergence failed..(with GFP data of SS.. _hmm, GFP has no trend here, look at mCherry_)
 - [ ] Need some way to figure out which data needs to be fit and which ignored due to convergence issues.. _example: negative controls, PBS etc._
 
-# Continuous_growth
+# Continuous_growth_curve
+- Fixed bug for plot_kinetic_raw and ribbon.summary functions `Time (hr)` changed to `Time(h)`
+- Updated readme to have an image. Jiwoo is testing the scripts 😊
+- Pushed changes to `basic_plots` branch
