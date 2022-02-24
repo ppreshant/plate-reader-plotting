@@ -24,7 +24,6 @@ _Kinetic read tested on Tecan Spark only_
 5. A couple of interactive plots are also saved into the HTML for exploratory data analysis. 
    - Interactivity using *plotly* is quite powerful with features of zoom, showing subsets of data etc. You are always welcome to add more features using more advanced plotly functions by building the plot from scratch in plotly instead of ggplot2  
 
-
 ## Processing workflow : Kinetic reads
 
 1. Takes plate reader output excel file (`.xlsx`)
@@ -36,8 +35,31 @@ _Kinetic read tested on Tecan Spark only_
 
 2. Program reads the OD and any other fluorescence data
    - *Please label the measurements with OD and the name of the fluorophores in the Tecan/Infinite plate reader protocol file before acquiring the data, these labels will enable the script to read the data properly and will appear in the plots* 
-3. Raw values and ribbon plots showing mean of replicates, and shadow for standard deviation are plotting into the `.html` file. Interative plots also included
+3. Raw data plots and ribbon plots showing mean of replicates, with a shadow for standard deviation, along with direct labels are plotted into the `.html` file. Interative plots also included. Green fluorescence data is also plotted, if present along with OD. _need to generalize it to red fluor as well_
 
+_example kinetic OD plot_
+
+<img src="https://user-images.githubusercontent.com/14856479/155623351-6cdbaff6-b48b-41c1-aa52-85279b6c786c.png" width="500">
+
+
+4. If you want growth rates, lag-time and other features, you can use the `growthcurver` R package. Tips below
+      
+     ```
+     # grouping each dataset
+     group_by(Samples) %>% 
+     
+     # condensing all TIME; OD into data frames for each sample (nesting)
+     nest (data = c(Time, OD)) %>%
+  
+     # fit to each sample's growth data 
+     mutate(fits = map(data, 
+                      ~ growthcurver::SummarizeGrowth(.x$Time, .x$OD))
+     ) %>% 
+     
+     # Retrieve parameters from the fit
+     mutate(growth_rate = map_dbl(fits, ~ .x$vals$r),
+            error = map_dbl(fits, ~ .x$vals$sigma/2))
+     ```
 
 ## Git organization
 1. There are different master branches for each of the major kinds of experiments. These are older scripts and will be merged into the current branch eventually -
