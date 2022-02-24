@@ -37,6 +37,24 @@ _Kinetic read tested on Tecan Spark only_
 2. Program reads the OD and any other fluorescence data
    - *Please label the measurements with OD and the name of the fluorophores in the Tecan/Infinite plate reader protocol file before acquiring the data, these labels will enable the script to read the data properly and will appear in the plots* 
 3. Raw values and ribbon plots showing mean of replicates, and shadow for standard deviation are plotting into the `.html` file. Interative plots also included
+Example plot here: 
+
+4. If you want growth rates, lag-time and other features, you can use the `growthcurver` R package. Tips below
+      
+     # grouping each dataset
+     group_by(Samples) %>% 
+     
+     # condensing all TIME; OD into data frames for each sample (nesting)
+     nest (data = c(Time, OD)) %>%
+  
+     # fit to each sample's growth data 
+     mutate(fits = map(data, 
+                      ~ growthcurver::SummarizeGrowth(.x$Time, .x$OD))
+     ) %>% 
+     
+     # Retrieve parameters from the fit
+     mutate(growth_rate = map_dbl(fits, ~ .x$vals$r),
+            error = map_dbl(fits, ~ .x$vals$sigma/2))
 
 
 ## Git organization
