@@ -109,6 +109,9 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     mutate(across(any_of(c('OD', 'GFP', 'RFP', 'Inducer')), as.numeric)) 
   
   
+  # find out if the small-molecule fluorophores for calibration are present
+  MEFL_normalization <<- c('SULFO', 'FITC') %in% merged_all.grids$Samples %>% any()
+  
   # Baseline subtraction ----
   
   # set baseline for empty cells or empty vector
@@ -143,7 +146,14 @@ read_multiple_grids_in_sheet <- function(sheet_name)
 # Thoughts: retaining negative values causes hill fitting to fail, and does not have physical meaning
   # but large negative values imply anomalies in the sample and need to be looked at
   # can throw a warning -- how large is large? depends on the gain stuff and LB vs PBS measurements?
-        
+  
+    
+  # MEFL calculation ----
+  {if(MEFL_normalization) normalize_molecules_equivalent(.) else .} %>%
+  
+  
+  # Divide by OD ----
+  
   # and calculate ratios 
   mutate(across(matches('.FP'),
                 ~ ./OD,

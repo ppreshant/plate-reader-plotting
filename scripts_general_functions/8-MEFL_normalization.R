@@ -8,31 +8,34 @@ find_molecular_normalizers <- function(.df)
   concentrations <- tibble(GFP = 100,
                            RFP = 50)
   
-  subseted <- 
-    
-    # filter the molecular fluorophores 
-    filter(.df,
+  # filter the molecular fluorophores 
+  filter(.df,
          str_detect(Samples, 'FITC|SULFO|SULPHO')) %>% 
     
-    # retain only raw fluor columns
-    select(any_of (c('Samples', 'GFP', 'RFP'))) %>% 
-    group_by(Samples) %>% 
-    
-    # Find mean of replicates
-    summarise(across(any_of(c('GFP', 'RFP')),
-                     mean)) %>% 
-    group_by(.) %>% 
-    
-    # retain only the right values
-    summarise(across(any_of(c('GFP', 'RFP')),
-                     max)) %>% 
-    # This step can be improved for when one of the fluorophores is missing --
-    # -- but both fluor are measured (rare case)
+    # proceed only if data is present
+    {if(!plyr::empty(.)) 
+      
+    {
+      # retain only raw fluor columns
+      select(., any_of (c('Samples', 'GFP', 'RFP'))) %>% 
+        group_by(Samples) %>% 
+        
+        # Find mean of replicates
+        summarise(across(any_of(c('GFP', 'RFP')),
+                         mean)) %>% 
+        group_by(.) %>% 
+        
+        # retain only the right values
+        summarise(across(any_of(c('GFP', 'RFP')),
+                         max)) %>% 
+        # This step can be improved for when one of the fluorophores is missing --
+        # -- but both fluor are measured (rare case)
+        
+        # correction for concentration (per micro molar)
+        mutate(across(any_of(c('GFP', 'RFP')),
+                      ~ ./concentrations[[cur_column()]]))
   
-    # correction for concentration (per micro molar)
-    mutate(across(any_of(c('GFP', 'RFP')),
-                  ~ ./concentrations[[cur_column()]]))
-  
+    } else .}
 }
 
 # Normalize the data to the fluorophores (per micro molar fluorophore equivalent fluor.)
