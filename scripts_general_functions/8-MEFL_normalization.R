@@ -46,6 +46,9 @@ normalize_molecules_equivalent <- function(.df)
   
   .df %>% 
     mutate(across(any_of(c('GFP', 'RFP')),
-                  ~ ./.normalizer[[cur_column()]] ))
+                  ~ ./.normalizer[[cur_column()]] )) %>% 
+    
+    # remove the molecular fluorophore samples from the dataset before returning
+    filter(!str_detect(Samples, 'FITC|SULFO|SULPHO'))
   
 }
