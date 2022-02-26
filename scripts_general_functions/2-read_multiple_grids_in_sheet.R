@@ -110,7 +110,9 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   
   
   # find out if the small-molecule fluorophores for calibration are present
-  MEFL_normalization <<- c('SULFO', 'FITC') %in% merged_all.grids$Samples %>% any()
+  MEFL_normalization <<- 
+    do_MEFL_normalization && # runs unless user turned it off (FALSE)
+    c('SULFO', 'FITC') %in% merged_all.grids$Samples %>% any()
   
   # Baseline subtraction ----
   

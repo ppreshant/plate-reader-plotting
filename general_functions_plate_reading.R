@@ -72,7 +72,8 @@ list_of_general_functions <- c("0-read_plate.reader.files.R",
                                "5-formatting_plots.R",
                                '6-parse_continuous_growth.R',
                                '7-read_merge_metadata_grids.R',
-                               '8-MEFL_normalization.R')
+                               '8-MEFL_normalization.R',
+                               '9-plot_raw_static_fluorescence.R')
 
 # bash command to make this file list
 # ls -Q | sed 's/$/,/g' > flnm.txt
@@ -82,4 +83,13 @@ map(str_c('./scripts_general_functions/', list_of_general_functions),
     source)
 
 
+# Convenience wrappers ----
+
+# generates a path with the default plot saving directory and .png suffix
+plot_as <- function(plt_name)  
+{
+  str_c('plate reader analysis/plots and data/archive/', 
+       plt_name, 
+       '.png')
+}
 

@@ -68,7 +68,7 @@ plot_raw_static_fluorescence <- function(.fluor_variable)
   
   # interactive plot ---- 
   
-  plotly::ggplotly(plt_GFP) %>% plotly::style(textposition = 'top right')
+  plotly::ggplotly(plt_fluor) %>% plotly::style(textposition = 'top right')
   
   
   
