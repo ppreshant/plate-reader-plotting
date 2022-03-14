@@ -47,11 +47,14 @@ plt_all_fluor <- ggplot(data = long_fluor.normalized_processed,
   ggtitle(str_c('Fluorescence measurement', if(MEFL_normalization) ' : in MEFL (uM)' ),
           subtitle = 'Plasmids')
   
-  {plt_all_fluor + geom_text(data = long_unique.normalized_processed,  
+  plt_all_fluor_annotated <- {plt_all_fluor + geom_text(data = long_unique.normalized_processed,  
               mapping = aes(x = mean, label = mean %>% round, 
               hjust = if_else(mean > max(mean)/2, 1.3, -0.3)))
   } %>% 
 print()
+
+# showing GFP/OD and RFP/OD with equal width
+plt_all_fluor_annotated +  facet_grid(~ Measurement, scale = 'free')
 
 ```
 

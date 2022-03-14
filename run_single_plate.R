@@ -6,7 +6,7 @@
 # 3. number of rows and columns in plate reader data 4. Title for plots 
 # Note:  (file name starts in the previous directory of this Rproject)
 
-flnm <- 'S038-2_48 + 67_24-2-22'
+flnm <- 'S040_genomic cymr_9-3-22'
 
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
@@ -18,7 +18,7 @@ baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline c
 # Fluorescence from samples matching this name will be subtracted from all values (baseline)
 
 # should I divide the signal by molecular equivalent fluorophores? 
-do_MEFL_normalization <- FALSE # TRUE by default, unless you want to turn off
+do_MEFL_normalization <- TRUE # TRUE by default, unless you want to turn off
 
 # Prelims ----
 
