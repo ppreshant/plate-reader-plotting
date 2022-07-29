@@ -39,16 +39,19 @@ find_molecular_normalizers <- function(.df)
 }
 
 # Normalize the data to the fluorophores (per micro molar fluorophore equivalent fluor.)
-normalize_molecules_equivalent <- function(.df)
+normalize_molecules_equivalent <- function(.df, .normalizer = NULL)
   
 {
-  .normalizer <- find_molecular_normalizers(.df)
+  if(is.null(.normalizer)) .normalizer <- find_molecular_normalizers(.df) # find the molecular equivalent, user input will override
   
   .df %>% 
-    mutate(across(any_of(c('GFP', 'RFP')),
-                  ~ ./.normalizer[[cur_column()]] )) %>% 
+    mutate(across(matches('GFP|RFP'), # for all colums that match GFP or RFP
+                  ~ ./.normalizer[[ str_extract(cur_column(), 'GFP|RFP')]] )) %>% 
+             # divide by the appropriate *FP column (so GFP/OD is divided by GFP mefl)
     
     # remove the molecular fluorophore samples from the dataset before returning
-    filter(!str_detect(Samples, 'FITC|SULFO|SULPHO'))
+    filter(!str_detect(Samples, 'FITC|SULFO|SULPHO')) %>% 
+    
+    mutate(fluorescence_units = 'MEFL (uM)') # add a column mentioning the units of the fluorescence
   
 }

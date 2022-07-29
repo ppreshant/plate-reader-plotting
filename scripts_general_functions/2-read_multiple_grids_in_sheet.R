@@ -151,7 +151,10 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   
     
   # MEFL calculation ----
-  {if(MEFL_normalization) normalize_molecules_equivalent(.) else .} %>%
+  {if(MEFL_normalization) normalize_molecules_equivalent(.) else # else say that the units are arbitrary units
+    mutate(fluorescence_units = '(a.u.)') # add a column mentioning the units of the fluorescence
+    
+    } %>%
   
   
   # Divide by OD ----

@@ -44,7 +44,7 @@ plt_all_fluor <- ggplot(data = long_fluor.normalized_processed,
   xlab('Value') + ylab('') + 
   
   # Plot title and subtitle
-  ggtitle(str_c('Fluorescence measurement', if(MEFL_normalization) ' : in MEFL (uM)' ),
+  ggtitle(str_c('Fluorescence measurement', if(MEFL_normalization) ' : in MEFL (uM)' else '(a.u.)' ),
           subtitle = 'Plasmids')
   
   plt_all_fluor_annotated <- {plt_all_fluor + geom_text(data = long_unique.normalized_processed,  
