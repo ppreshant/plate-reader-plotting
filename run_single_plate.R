@@ -6,7 +6,7 @@
 # 3. number of rows and columns in plate reader data 4. Title for plots 
 # Note:  (file name starts in the previous directory of this Rproject)
 
-flnm <- 'S040_genomic cymr_9-3-22'
+flnm <- 'S044_new fusions_8-4-22'
 
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 

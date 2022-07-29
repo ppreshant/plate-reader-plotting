@@ -93,3 +93,15 @@ plot_as <- function(plt_name)
        '.png')
 }
 
+
+#' Read a bunch of processed data sheets and join them, including the Sxx as run_ID
+#' @param .flnms vector of strings with name of file, without the '-processed.csv' 
+get_processed_datasets <- function(.flnms)
+{
+  .df <- map_dfr(.flnms, 
+                 ~ read_csv(str_c('plate reader data/processed/', .x, '-processed.csv')) %>%  # read processed csv file from R
+                   mutate(run_ID = str_extract(.x, 'S[:alnum:]*')) # add the run_ID from the filename
+  )
+  
+  
+}
