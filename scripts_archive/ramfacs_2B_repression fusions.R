@@ -47,7 +47,8 @@ sample_category_sorter <- c('.* \\+ .*' = 'Repressed', # special symbol needs to
 
 mfl.dat <- get_processed_datasets('S038_47+67_23-2-22')
 mfl_find <- find_molecular_normalizers(mfl.dat) %>%  # use function to find the mefls
-  add_column(gain = 100)
+  add_column(gain = 100) %>% add_column(dataset = 'S038_47+67_23-2-22')
+# write.csv(mfl_find, 'plate reader data/processed/MEFL_references.csv') # save for future use
 
 S37_dat <- get_processed_datasets('S037-2_48,51_repression red_9-2-22') %>% 
   normalize_molecules_equivalent(.normalizer = mfl_find)
@@ -105,7 +106,7 @@ plt_red <- ggplot(data = presentation.dat,
   
   theme(legend.position = 'top', legend.title= element_blank()) # stylistic editing of legend 
 
-plt_red_annotated <- {plt_red + geom_text(data = presentation_mean.dat,  
+plt_red_annotated <- {plt_red + ggrepel::geom_text_repel(data = presentation_mean.dat,  
                                                       mapping = aes(label = `RFP/OD` %>% round, 
                                                                     hjust = if_else(`RFP/OD` > max(`RFP/OD`)/2, 1.3, -0.3)),
                                           show.legend = FALSE)
@@ -115,3 +116,4 @@ plt_red_annotated <- {plt_red + geom_text(data = presentation_mean.dat,
 
 # Save plot
 ggsave(plot_as('all fusions, U64-red'), width = 5, height = 3)
+# ggsave('all fusions, U64-red.pdf', width = 5, height = 3) # save as pdf to fix overlapping labels manually

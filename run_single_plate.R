@@ -33,7 +33,7 @@ rm(processed_and_baseline_list) # remove list after unpacking
 
 # collect all measurements in 1 column : Long format data
 long_fluor_processed <- processed.data %>% 
-  select(!matches('Replicate')) %>%  # choose OD, x/OD and _bs and _mean additions
+  select(!matches('Replicate|units')) %>%  # choose OD, x/OD and _bs and _mean additions
   mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
   
   rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
