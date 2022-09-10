@@ -1,27 +1,10 @@
 # Pulls a file output from plate readers () and plots GFP, GFP/OD, RFP/OD etc. in both linear and logscales
-
-# User inputs ----
-
-# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 
-# 3. number of rows and columns in plate reader data 4. Title for plots 
-# Note:  (file name starts in the previous directory of this Rproject)
-
-flnm <- 'S044_new fusions_8-4-22'
-
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
-
-sheet_name <- 'default' # 'default' reads the first sheet
-
-title_name <- flnm # appears on the html file name and header of selected plots, change as required
-
-baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline cell name(s) here
-# Fluorescence from samples matching this name will be subtracted from all values (baseline)
-
-# should I divide the signal by molecular equivalent fluorophores? 
-do_MEFL_normalization <- TRUE # TRUE by default, unless you want to turn off
+# Look at example file inside the 'plate reader data/' folder for inspiration
 
 # Prelims ----
 
+source('0.5-user_inputs.R') # get user inputs
 source('general_functions_plate_reading.R') # source the file that contains all the functions
 
 
