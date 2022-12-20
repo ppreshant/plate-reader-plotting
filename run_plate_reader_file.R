@@ -26,7 +26,7 @@ source('./general_functions_plate_reading.R') # source the file that contains al
 
 ## Import data ----
 
-flpath <- str_c('../plate reader data/',flnm,'.xlsx') # path for the plate reader file 
+flpath <- str_c('plate reader data/',flnm,'.xlsx') # path for the plate reader file 
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 
 sheet_names <- names(fl) %>% .[!str_detect(., sheets_to_exclude)] # get the list of sheets, other than excluded ones 
@@ -74,4 +74,4 @@ all_days_gathered <- all_days_table %>%
 # plotting ----
 
 # calling r markdown file for plotting in a nice format html file
-rmarkdown::render('plate reader plotting.Rmd', output_file = str_c('./html files/', title_name, '.html'))
+rmarkdown::render('plate reader plotting.Rmd', output_file = str_c('plate reader analysis/html files/', title_name, '.html'))

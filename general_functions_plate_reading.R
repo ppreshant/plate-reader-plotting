@@ -3,7 +3,8 @@
 # read in excel file (.xls or .xlsx) exported from tecan plate reader (Silberg Lab)
 
 # calling libraries ; make sure they are installed (install.packages)
-library(readxl); library(magrittr); library(tidyverse); library(ggrepel); library(rlist); library(plotly); library(minpack.lm)   
+library(readxl); library(magrittr); library(tidyverse); library(rlist); library(plotly); library(minpack.lm)   
+# library(ggrepel); 
 
 # reading files and manipulating columns ----
 
