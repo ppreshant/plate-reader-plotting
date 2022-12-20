@@ -70,8 +70,8 @@ paste_plate_to_column <- function(val_name = '0')
 # Naming interchanges ----
 
 measurement.labels_translation <- c('OD600|^od$' = 'OD', # labels in file = new labels for rest of code
-                       'sfgfp|mgl|.*greenlantern|gfp' = 'GFP',
-                       'mcherry.*|mscarlet.*|rfp' = 'RFP',
+                       'sfgfp|mgl|.*greenlantern|.*gfp.*' = 'GFP',
+                       'mcherry.*|mscarlet.*|.*rfp.*' = 'RFP',
                        '^Sample.*' = 'Samples',
                        'inducer' = 'Inducer',
                        'time' = 'Time')
