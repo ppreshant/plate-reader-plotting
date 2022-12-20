@@ -280,6 +280,20 @@ plot_dose_response(sel_table13) + geom_line() + aes(colour = factor(Time))
 
 ```
 
+
+Plotting dose response d1, 2 (joined points)
+
+```{r plotting13b}
+sel_table13b <- all_days_table %>% group_and_summarize_at('GFP/OD') %>% filter(str_detect(Samples, '7_32')) %>% ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
+   filter(Inducer != -1 & Time > 0 & Time < 3)  # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plot_dose_response(sel_table13b) + geom_line() + aes(colour = factor(Time))
+
+```
+
+
 Plotting dose response by day (Controls)
 
 ```{r plotting14}
