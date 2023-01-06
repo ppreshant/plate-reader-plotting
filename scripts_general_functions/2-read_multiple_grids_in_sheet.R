@@ -83,6 +83,9 @@ read_multiple_grids_in_sheet <- function(sheet_name)
                       col_index = .)) # get the column index of each '<>' match
   rm(user_metadata.row_index) # remove temporary variable
   
+  # Missing label : "Samples" check
+  if(! ('Samples' %in% user_metadata.grid_info$label)) stop(str_c(
+    'Missing sample names, code cannot run. Please check the documentation. Sheet name = ', sheet_name))
   
   # Retrieve grid data ----
   

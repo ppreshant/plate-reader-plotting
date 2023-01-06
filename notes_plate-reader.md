@@ -4,7 +4,7 @@ tags : #notes
 # General
 
 ## Features
-- [ ] Need to include the units of the fluorescence data (a.u or MEFL) in the csv file that is saved
+- [x] Need to include the units of the fluorescence data (a.u or MEFL) in the csv file that is saved
 
 ### Generalization of markdown plots 
 _Need to incorporate the inducer column in the basic_plots pipeline_
@@ -12,6 +12,7 @@ _Need to incorporate the inducer column in the basic_plots pipeline_
 - [ ] Run the regular basic_plots script (in a separate child `.Rmd` file as the else clause) : Will do once the above is settled
 
 ### Analysis
+- [ ] Implement a neat shortcut to get categories that are same for the whole row/column with keyword 'extrapolate'
 - [ ] Implement a OD subtraction of baseline PBS/LB. Check if this keeps the linearity.. Actually **need to analyze the serial dilution for OD linearity first.**. _Noticed that the OD of culture and 5x concentrated PBS slurry is comparable OD, this is concerning :: `S037 data`_
 - [x] Incorporate the MEFL normalizations if found and update legend accordingly
 
