@@ -62,6 +62,11 @@ Put an example plot here:
             error = map_dbl(fits, ~ .x$vals$sigma/2))
       ```
 
+
+## Modifications for other plate reader machines
+The code (in script : `2-read_multiple_grids_in_sheet.R`) will recognize that your machine isn't matching the known ones : _Tecan Spark, Tecan Infinite M1000._ It will ask you to enter the word that your output `.xlsx` file is using to designate a measurement's name/ID and entering that might enable the script to work. Caveat: More changes might be necessary, and I _will update the code and README as I find/discover more stuff on instrument compatibility_. Please post an issue on github along with your `.xlsx` file and I can look into making the script work for your file. 
+
+
 ## Git organization
 1. There are different master branches for each of the major kinds of experiments. These are older scripts and will be merged into the current branch eventually -
    - Time_series_master (ex: S015c) : reads multiple sheets in the same .xlsx file for fluorescence measured on multiple days and plots time-series

@@ -62,6 +62,13 @@ metafn <- function(.var)
 }
 
 
+# Make a full plate layout. Not useful but just in case..
+full_96_plate <- tibble(row_num = rep(LETTERS[1:8], each = 12), 
+                        col_num = rep(1:12, 8)) %>% 
+  
+  mutate(across(.fns = ~ .x, .names = "final_{.col}")) # duplicate vectors for final row and col names
+
+
 # calling more funs ----
 
 list_of_general_functions <- c("0-read_plate.reader.files.R",
