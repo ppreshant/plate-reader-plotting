@@ -93,10 +93,10 @@ map(str_c('./scripts_general_functions/', list_of_general_functions),
 # Convenience wrappers ----
 
 # generates a path with the default plot saving directory and .png suffix
-plot_as <- function(plt_name)  
+plot_as <- function(plt_name, ...)  
 {
   str_c('plate reader analysis/plots and data/archive/', 
-       plt_name, 
+       plt_name, ...,
        '.png')
 }
 
