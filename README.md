@@ -11,6 +11,8 @@ _Kinetic read tested on Tecan Spark only_
 1. Takes plate reader output excel file (`.xlsx`)
    - The excel file should be annotated with **sample names** and any other parameters such as **inducer concentrations** (if any) next to the OD data table (see example excel files). See below for other kinds of data plots
    - <img src="https://user-images.githubusercontent.com/14856479/139570241-ba36b10d-04cf-4e8b-b659-6ae84f04dffd.png" width="500">
+   - You could also shorten a table using wildcards : "**all**" for all rows/columns or "**[x-y]**" for ranges (ex: [1-3] or [C-F])  <img src="https://user-images.githubusercontent.com/14856479/211264019-91bf699f-8a2f-4e39-8cb4-663a4045573d.png" width = 200>
+
   
    - _other parameters are read into the data file but not plotted, you can easily customize the plotting functions in `plate_reader_plotting_and_html.Rmd` file to add colours/shapes/facets based on the extra metadata you provide_
    - Processing multiple sheets in .xlsx is possible, for example a multi-day experiment. Check the branch `Time_series_master` for this feature. 
