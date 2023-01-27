@@ -96,6 +96,8 @@ plot_dose_response <- function(.data,
     #            shape = '-', size = 5,
     #            show.legend = FALSE) +
   
+    # TODO : add dashed line for the hill fit `.fitted` variable
+    
     facet_grid(cols = vars({{facet_variable}}), scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) 
   

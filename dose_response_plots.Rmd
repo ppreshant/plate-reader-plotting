@@ -24,10 +24,10 @@ hill_table.data <- long_fluor_processed %>%
   
   nest() %>%  # seperate each group into a different data frame for fitting
   
-  # Exclude problematic data for hill fitting : Singleton inducer controls and negative inducer values
+  # Exclude problematic data for hill fitting : Singleton inducers (controls), negative inducer values and NA values for measurement
   filter(map_dbl(data, ~ pull(.x, Inducer) %>% unique %>% length) > 1) %>% # retain if > 1 unique inducer value 
   
-  mutate(data = map(data, ~ filter(.x, Inducer >= 0))) %>% # retain all inducer values >= 0
+  mutate(data = map(data, ~ filter(.x, Inducer >= 0, !is.na(value)))) %>% # retain all inducer values >= 0 ; finite value of measurement
   
   
   # Hill fitting --
