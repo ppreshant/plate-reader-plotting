@@ -55,7 +55,10 @@ long_unique.normalized_processed <- select(long_fluor.normalized_processed, -c(v
 # processed.data %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 # processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
 
-inducer.present <- 'Inducer' %in% colnames(processed.data)
+
+# Check if inducer is present and dose response needs to be plotted (> 3 inducer values?)
+inducer.present <- 'Inducer' %in% colnames(processed.data) &&
+  (processed.data$Inducer %>% unique() %>% length()) > 3
 
 # plotting ----
 
