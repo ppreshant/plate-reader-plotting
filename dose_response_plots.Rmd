@@ -1,7 +1,13 @@
 ## Dose response plots
 
- **Notes**:  
+**Notes**:  
  - WORK IN progress --
+ 
+ Before hill fit, need to exclude
+ - Controls : which have only 1 value of Inducer (done). This causes error : `contrasts can be applied only to factors with 2 or more levels`
+ - Remove negative Inducer values - does not make sense to log transform these (done)
+ - Retain only the relevant fluorophore which has a trend : how to generalize this? `else drc::drm() convergence fails`
+ 
  <!-- - *AHL is in uM and Ara is in mM* -->
 
 Plotting GFP/OD vs [Inducer]
@@ -18,7 +24,18 @@ hill_table.data <- long_fluor_processed %>%
   
   nest() %>%  # seperate each group into a different data frame for fitting
   
-  mutate (fit = map(data, hill_fit.SS), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+  # Exclude problematic data for hill fitting : Singleton inducer controls and negative inducer values
+  filter(map_dbl(data, ~ pull(.x, Inducer) %>% unique %>% length) > 1) %>% # retain if > 1 unique inducer value 
+  
+  mutate(data = map(data, ~ filter(.x, Inducer >= 0))) %>% # retain all inducer values >= 0
+  
+  
+  # Hill fitting --
+  
+  mutate(fit = map(data, hill_fit.SS), 
+         y.fit = map2(fit, data, ~ broom::augment(.x, data = .y))) %>% # call hill fitting function on a single time point data 
+  # BUG : need to use a try-catch thing to prevent error groups from holding up the fitting // purr::safely/possibly()
+  
   unnest(y.fit)
 
 plt11 <- plot_dose_response(processed.data)  %>% print()
