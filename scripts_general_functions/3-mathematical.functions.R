@@ -1,6 +1,29 @@
 # 3-mathematical.functions.R
 
+
+# Self starter hill function ----
+
+hill_fit.SS <- function(.data)
+{ #' this self starting hill function does not require initial parameters, hence more likely to converge
+  
+  # Resource : https://www.statforbiology.com/nonlinearregression/usefulequations#logistic_curve
+  
+  # Unpack data
+  L  <- .data$Inducer # x axis = independent variable ; L short for ligand
+  y  <- .data$value # dependent variable
+  
+  # fitting Hill equation
+  y.nls <- drc::drm(y ~ L, fct = drc::LL.4(names = c('n', 'y0,', 'ymax', 'Kd')),
+               data = .data)
+  
+  # y.nls <- nls(y ~ SSfpl(L, y0, ymax, Kd, n),
+  #              data = .data)
+  
+}
+
+
 # Hill function ----
+
 hill_fit <- function(results_array)
 { # Fittiing Hill equation (typically useful for dose reponse curves)
   
@@ -8,8 +31,8 @@ hill_fit <- function(results_array)
   # Itoshi NIKAIDO <dritoshi@gmail.com>
   
   # Unpack data
-  L  <- results_array$L # x axis = independent variable
-  y  <- results_array$y # dependant variable
+  L  <- results_array$Inducer # x axis = independent variable ; L short for ligand
+  y  <- results_array$value # dependent variable
   
   # # conf
   # output <- "results/hill.pdf"
@@ -29,4 +52,27 @@ hill_fit <- function(results_array)
   # y.nls.Kd      <- y.nls.summary$param[2]
   # y.nls.predict <- predict(y.nls)
   # results <- cbind(y, y.nls.predict)
+}
+
+
+# linear regression equation ----
+
+# Extract linear regression equation and parameters from the fit by lm
+# Source: https://stackoverflow.com/a/7549819/9049673
+# copied from COVID-qPCR repo/g.5
+
+lm_eqn <- function(m, trig = 0){
+  # use trig = 'coeff' to output data frame of the fitting coefficients 
+  # trig = 0 for output of equation (for pasting on the plot)
+  
+  # format the equation "y = mx + c, R^2 = Rsquare value" as text to put on plot
+  eq <- substitute(italic(y) == b %.% italic(x)+ a*","~~italic(r)^2~":"~r2, 
+                   list(a = format(unname(coef(m)[1]), digits = 4), 
+                        b = format(unname(coef(m)[2]), digits = 3), 
+                        r2 = format(summary(m)$r.squared, digits = 3)))
+  
+  # output a table with slope, y_intercept and r_square rounded off
+  if(trig == 'coeff') tibble(slope = round(coef(m)[2], 2), y_intercept = round(coef(m)[1], 2), r_square = round(summary(m)$r.squared, 3))
+  
+  else as.character(as.expression(eq)); 
 }

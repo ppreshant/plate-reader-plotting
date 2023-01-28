@@ -1,6 +1,7 @@
 # 7-read_merge_metadata_grids.R
 
 # return a merged well- metadata table read from tables one below another in the .xlsx file
+# for use with kinetic read analysis ; put the samples names and other metadata in a separate sheet
 read_merge_metadata_grids <- function(.dataframe)
   
 {

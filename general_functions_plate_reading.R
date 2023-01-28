@@ -48,6 +48,26 @@ a_plt <- ggplot(a, aes(a1, a2, colour = a3)) +
   ylab(y_namr_test[['a4']])
 
 
+# dummy function to test quosure/meta-programming stuff
+metafn <- function(.var)
+{
+  # make a string to use mean_{{y_var}} in regular functions
+  mean_y_var <- rlang::parse_expr(str_c('mean_', rlang::expr_text(enexpr(.var)) ) )
+  # .vexpr <- enexpr(.var) 
+  
+  rlang::parse_expr(.var)
+  
+  # select(a, {{mean_y_var}})
+  
+}
+
+
+# Make a full plate layout. Not useful but just in case..
+full_96_plate <- tibble(row_num = rep(LETTERS[1:8], each = 12), 
+                        col_num = rep(1:12, 8)) %>% 
+  
+  mutate(across(.fns = ~ .x, .names = "final_{.col}")) # duplicate vectors for final row and col names
+
 
 # calling more funs ----
 
@@ -58,7 +78,9 @@ list_of_general_functions <- c("0-read_plate.reader.files.R",
                                "4-plotting_fns.R",
                                "5-formatting_plots.R",
                                '6-parse_continuous_growth.R',
-                               '7-read_merge_metadata_grids.R')
+                               '7-read_merge_metadata_grids.R',
+                               '8-MEFL_normalization.R',
+                               '9-plot_raw_static_fluorescence.R')
 
 # bash command to make this file list
 # ls -Q | sed 's/$/,/g' > flnm.txt
@@ -68,4 +90,25 @@ map(str_c('./scripts_general_functions/', list_of_general_functions),
     source)
 
 
+# Convenience wrappers ----
 
+# generates a path with the default plot saving directory and .png suffix
+plot_as <- function(plt_name, ...)  
+{
+  str_c('plate reader analysis/plots and data/archive/', 
+       plt_name, ...,
+       '.png')
+}
+
+
+#' Read a bunch of processed data sheets and join them, including the Sxx as run_ID
+#' @param .flnms vector of strings with name of file, without the '-processed.csv' 
+get_processed_datasets <- function(.flnms)
+{
+  .df <- map_dfr(.flnms, 
+                 ~ read_csv(str_c('plate reader data/processed/', .x, '-processed.csv')) %>%  # read processed csv file from R
+                   mutate(run_ID = str_extract(.x, 'S[:alnum:]*')) # add the run_ID from the filename
+  )
+  
+  
+}

@@ -1,21 +1,10 @@
 # Pulls a file output from plate readers () and plots GFP, GFP/OD, RFP/OD etc. in both linear and logscales
-
-# User inputs ----
-
-# User inputs: 1. Enter name of the excel file, 2. Name of the data sheet(S) 3. number of rows and columns in plate reader data 4. Title for plots #comment (file name starts in the previous directory of this Rproject)
-flnm <- 'OD_serial dils'
-
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
-
-sheet_name <- 'default'
-
-title_name <- flnm # appears on the html file name and header of selected plots, change as required
-
-baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline cell name(s) here
-# Fluorescence from samples matching this name will be subtracted from all values (baseline)
+# Look at example file inside the 'plate reader data/' folder for inspiration
 
 # Prelims ----
 
+source('0.5-user_inputs.R') # get user inputs
 source('general_functions_plate_reading.R') # source the file that contains all the functions
 
 
@@ -42,8 +31,34 @@ rm(processed_and_baseline_list) # remove list after unpacking
 # Processing ----
 # location for optional processing - custom written code
 
+# collect all measurements in 1 column : Long format data
+long_fluor_processed <- processed.data %>% 
+  select(!matches('Replicate|units')) %>%  # choose OD, x/OD and _bs and _mean additions
+  mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
+  
+  rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
+  
+  pivot_longer(cols = -all_of(c(sample_specific_variables, 'index')), # pull measurement types and summary type (mean vs 'raw' value) into two cols
+               names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
+  
+  pivot_wider(names_from = type_of_summary, values_from = value) # bring values and means into two separate cols
+
+# Long formatted for only normalized data
+long_fluor.normalized_processed <- 
+  long_fluor_processed %>% 
+  filter(str_detect(Measurement,'/OD')) # choose OD, x/OD and _bs and _mean additions
+
+# retain only the mean values -- for plotting the line and bars
+long_unique.normalized_processed <- select(long_fluor.normalized_processed, -c(value, index)) %>% unique()
+
+
 # processed.data %<>% mutate(Samples = as_factor(Samples), Inducer = as_factor(Inducer)) # freeze order of samples as in the plate - columnwise - for easy plotting
 # processed.data$Inducer %<>% str_c(.,' uM') %>% as_factor() # This will make inducer a text, remove this line to retain inducer as numeric
+
+
+# Check if inducer is present and dose response needs to be plotted (> 3 inducer values?)
+inducer.present <- 'Inducer' %in% colnames(processed.data) &&
+  (processed.data$Inducer %>% unique() %>% length()) > 3
 
 # plotting ----
 

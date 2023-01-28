@@ -19,6 +19,14 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   # load data form the given sheet
   .df <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
+  
+  # error check : for wrong sheet name
+  if(is.null(.df)) 
+    stop(str_c('No sheet with the name : "',
+               sheet_name,
+               '", was found in the file. You might have entered the wrong "sheet_name", check "0.5-user_inputs.R"'))
+  
+  
   # extract the plate reader device name  
   device_name <- .df[1:3, 1] %>% as.character %>% str_match('Device: (.*)') %>% pluck(2)
   
@@ -48,7 +56,10 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   measurement.grid_info <- map_in_sheet(.df, str_c('^', measurement_identifier.text, '|<>'), 1) %>% # find occurrences of labels and '<>'
     
     # clean up into two columns
-    separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+    
+    # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+    separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  
+    
     mutate(label = coalesce(neighbour, regex_part)) %>%  # if match is NA, takes the value from label (accounts for Spark and Infinite M1000)
     select(-neighbour, -regex_part) %>%  # remove the individual columns since coalesced column contains this data
     filter(!is.na(label)) %>%  # remove the dummy first occurrence of 'Name' in Spark data, where 2nd column is empty
@@ -60,8 +71,8 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     
     # iterating functions on each group,  
     mutate(label = map_chr(data, # bring out the label of the data, with minimal standardized names
-                           ~ str_replace_all(.$label[1], 
-                                             regex(measurement.labels_translation, ignore_case = TRUE) )), # replace labels of fluorophores with standardized : GFP and RFP
+                           ~ str_replace_all(.$label[1], # replace labels of fluorophores with standardized : GFP and RFP
+                                             regex(measurement.labels_translation, ignore_case = TRUE) )), 
            row_index = map_int(data, ~ .$index[2]), # bring out the index of '<>' 
            col_index = 1) %>%  # all measurement grid '<>' are in the first column
     
@@ -78,11 +89,16 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     as.vector() %>%  # as vector
     {which(. == '<>')[-1]} %>% # find the col_index where '<>' occurs; remove first occurence (OD)
     map_dfr( ~ tibble(label = .df[[user_metadata.row_index-1, .]] %>% # get label from the row above
-                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), # translate to minimal standardized names for fluorophores: like GFP and RFP
+                        
+                        # translate to minimal standardized names for fluorophores: like GFP and RFP
+                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), 
                       row_index = user_metadata.row_index, 
                       col_index = .)) # get the column index of each '<>' match
   rm(user_metadata.row_index) # remove temporary variable
   
+  # Missing label : "Samples" check
+  if(! ('Samples' %in% user_metadata.grid_info$label)) stop(str_c(
+    'Missing sample names, code cannot run. Please check the documentation. Sheet name = ', sheet_name))
   
   # Retrieve grid data ----
   
@@ -99,7 +115,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   
   
   # Merge grids ----
-  
+
   # convert plate tables into columns and merge all measurements and metadata into 1 table
   merged_all.grids <- map2_dfc(measured_and_metadata.grids$grid_data, 
                                measured_and_metadata.grids$label, 
@@ -108,6 +124,11 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     # convert to numeric (they are loaded as characters by default)
     mutate(across(any_of(c('OD', 'GFP', 'RFP', 'Inducer')), as.numeric)) 
   
+  
+  # find out if the small-molecule fluorophores for calibration are present
+  MEFL_normalization <<- 
+    do_MEFL_normalization && # runs unless user turned it off (FALSE)
+    c('SULFO', 'FITC') %in% merged_all.grids$Samples %>% any()
   
   # Baseline subtraction ----
   
@@ -143,7 +164,17 @@ read_multiple_grids_in_sheet <- function(sheet_name)
 # Thoughts: retaining negative values causes hill fitting to fail, and does not have physical meaning
   # but large negative values imply anomalies in the sample and need to be looked at
   # can throw a warning -- how large is large? depends on the gain stuff and LB vs PBS measurements?
-        
+  
+    
+  # MEFL calculation ----
+  {if(MEFL_normalization) normalize_molecules_equivalent(.) else # else say that the units are arbitrary units
+    mutate(., fluorescence_units = '(a.u.)') # add a column mentioning the units of the fluorescence
+    
+    } %>%
+  
+  
+  # Divide by OD ----
+  
   # and calculate ratios 
   mutate(across(matches('.FP'),
                 ~ ./OD,
@@ -155,7 +186,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   # 2. Arranges the values in order of plate columns
   # 3. Adds a column for Replicate # useful for collecting samples, before calculating mean
   
-  sample_specific_variables <<- user_metadata.grid_info$label # use c('Samples', 'Inducer') to hardcode
+  sample_specific_variables <<- user_metadata.grid_info$label # global variable with all the metadata headers
   
   processed.data <- baseline.subtracted_all.grids %>% 
     filter(!str_detect(Samples, "NA")) %>%  # remove NA samples (empty wells)
@@ -173,7 +204,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
                   list( mean = ~ mean(.x, na.rm = T)) )) %>%  
   
     ungroup()
-  
+
   # return the processed data and baseline data
   return(list(processed.data, empty_cells_baseline))
   

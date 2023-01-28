@@ -11,18 +11,24 @@ _Kinetic read tested on Tecan Spark only_
 1. Takes plate reader output excel file (`.xlsx`)
    - The excel file should be annotated with **sample names** and any other parameters such as **inducer concentrations** (if any) next to the OD data table (see example excel files). See below for other kinds of data plots
    - <img src="https://user-images.githubusercontent.com/14856479/139570241-ba36b10d-04cf-4e8b-b659-6ae84f04dffd.png" width="500">
+   - You could also shorten a table using wildcards : "**all**" for all rows/columns or "**[x-y]**" for ranges (ex: [1-3] or [C-F])  <img src="https://user-images.githubusercontent.com/14856479/211264019-91bf699f-8a2f-4e39-8cb4-663a4045573d.png" width = 200>
+
   
    - _other parameters are read into the data file but not plotted, you can easily customize the plotting functions in `plate_reader_plotting_and_html.Rmd` file to add colours/shapes/facets based on the extra metadata you provide_
    - Processing multiple sheets in .xlsx is possible, for example a multi-day experiment. Check the branch `Time_series_master` for this feature. 
 2. Program reads the OD, GFP and RFP. OD should always be first and any fluorescences in any order after the OD. 
    - *Please label the measurements with OD and the name of the fluorophores in the Tecan/Infinite plate reader protocol file before acquiring the data, these will appear in the plots* 
-3. Data is processed: Autofluorescence is subtracted, Fluorescence/OD ratio is calculated for each fluorophore.
+3. Data is processed: Autofluorescence is subtracted, Fluorescence/OD ratio is calculated for each fluorophore and MEFL (_molecules of equivalent fluorophores_) normalization is done if samples include small molecule fluorophores (FITC = 100 uM, SULFOrhodamine = 50 uM : _Ask @prashant if you are using different fluorophores/concentrationa and the code can be generalized to include those)._
    - Sample named by common E.coli strains, 'MG1655', 'DH10B' or 'PBS' is assumed to be the background. Edit the variable `X`, if your base strain is different.
-4. Two pre-formatted plots are made and saved into a HTML file (for easy access and presentation) for GFP only and GFP/OD, RFP/OD. _Plots show each replicate data as points and the mean using lines and a light grey bar to aid the eye._
+   - Code works for these fluorophores: GFP, mGreenlantern, mCherry, mScarlet. If you are measuring any other fluorophores, make sure to name them to translate to a **x**FP (CFP, YFP, RFP..)  in variable `measurement.labels_translation` in `1-cleaning.data_manipulate_columns.R`
+4. Pre-formatted plots are made and saved into a HTML file (for easy access and presentation) for GFP/OD, RFP/OD and raw data of GFP, RFP. _Plots show each replicate data as points and the mean using lines and a light grey bar to aid the eye._
    - <img src="https://user-images.githubusercontent.com/14856479/139571344-f2f0c1c9-9b5b-40ba-8e9d-49997b1b35fb.png" width="500">
 
 5. A couple of interactive plots are also saved into the HTML for exploratory data analysis. 
    - Interactivity using *plotly* is quite powerful with features of zoom, showing subsets of data etc. You are always welcome to add more features using more advanced plotly functions by building the plot from scratch in plotly instead of ggplot2  
+
+6. Finally the data points of the basestrain (MG1655, DH10B etc.) that was subtracted for the fluorescences is shown in the _Data tables_ section
+
 
 ## Processing workflow : Kinetic reads
 
@@ -40,6 +46,31 @@ _Kinetic read tested on Tecan Spark only_
 _example kinetic OD plot_
 
 <img src="https://user-images.githubusercontent.com/14856479/155623351-6cdbaff6-b48b-41c1-aa52-85279b6c786c.png" width="500">
+
+Put an example plot here: 
+
+4. If you want growth rates, lag-time and other features, you can use the `growthcurver` R package. Tips below
+     
+     ``` 
+     # grouping each dataset
+     group_by(Samples) %>% 
+     
+     # condensing all TIME; OD into data frames for each sample (nesting)
+     nest (data = c(Time, OD)) %>%
+  
+     # fit to each sample's growth data 
+     mutate(fits = map(data, 
+                      ~ growthcurver::SummarizeGrowth(.x$Time, .x$OD))
+     ) %>% 
+     
+     # Retrieve parameters from the fit
+     mutate(growth_rate = map_dbl(fits, ~ .x$vals$r),
+            error = map_dbl(fits, ~ .x$vals$sigma/2))
+      ```
+
+
+## Modifications for other plate reader machines
+The code (in script : `2-read_multiple_grids_in_sheet.R`) will recognize that your machine isn't matching the known ones : _Tecan Spark, Tecan Infinite M1000._ It will ask you to enter the word that your output `.xlsx` file is using to designate a measurement's name/ID and entering that might enable the script to work. Caveat: More changes might be necessary, and I _will update the code and README as I find/discover more stuff on instrument compatibility_. Please post an issue on github along with your `.xlsx` file and I can look into making the script work for your file. 
 
 
 4. If you want growth rates, lag-time and other features, you can use the `growthcurver` R package. Tips below

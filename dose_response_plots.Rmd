@@ -1,0 +1,63 @@
+## Dose response plots
+
+**Notes**:  
+ - WORK IN progress --
+ 
+ Before hill fit, need to exclude
+ - Controls : which have only 1 value of Inducer (done). This causes error : `contrasts can be applied only to factors with 2 or more levels`
+ - Remove negative Inducer values - does not make sense to log transform these (done)
+ - Retain only the relevant fluorophore which has a trend : how to generalize this? `else drc::drm() convergence fails`
+ 
+ <!-- - *AHL is in uM and Ara is in mM* -->
+
+Plotting GFP/OD vs [Inducer]
+
+```{r plotting_GFPbs_by_OD}
+
+# Hill fitting: using a self starting function - ~guaranteed convergence // move into the plot_dose_response function
+
+hill_table.data <- long_fluor_processed %>%
+  ungroup %>%
+  group_by(across(any_of(
+    sample_specific_variables[sample_specific_variables != 'Inducer'])), # group by groupers but inducer
+    Measurement) %>%
+  
+  nest() %>%  # separate each group into a different data frame for fitting
+  
+  # Exclude problematic data for hill fitting : Singleton inducers (controls), negative inducer values and NA values for measurement
+  filter(map_dbl(data, ~ pull(.x, Inducer) %>% unique %>% length) > 1) %>% # retain if > 1 unique inducer value 
+  
+  mutate(data = map(data, ~ filter(.x, Inducer >= 0, !is.na(value)))) %>% # retain all inducer values >= 0 ; finite value of measurement
+  
+  
+  # Hill fitting --
+  
+  mutate(fit = map(data, hill_fit.SS), 
+         y.fit = map2(fit, data, ~ broom::augment(.x, data = .y))) %>% # call hill fitting function on a single time point data 
+  # BUG/TODO : need to use a try-catch thing to prevent error groups from holding up the fitting // purr::safely/possibly()
+  
+  # select(-data) %>% # remove redundant data - already present in the augmented y.fit : make conditional if hill works
+  unnest(y.fit)
+
+plt11 <- plot_dose_response(processed.data)  %>% print()
+  # geom_line(data = hill_table.data, aes(x = L, y = .fitted), linetype = 2)
+
+plt11 %>% format_logscale_x() %>% print()
+
+
+# old code S022 : 
+
+# sel_table11 <- processed_all.sheets %>% 
+#   # group_and_summarize_at('GFP/OD') %>% 
+#   filter(str_detect(Samples, 'pRV|pInt')) %>% 
+#   ungroup() %>% 
+#   mutate(Inducer = as.numeric(Inducer)) %>% 
+#   filter(Time == 1 & Inducer != -1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+#   
+# hill_table11 <- sel_table11 %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
+#   nest() %>%  # seperate each group into a different data frame for fitting
+#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+#   unnest(y.fit)
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+```

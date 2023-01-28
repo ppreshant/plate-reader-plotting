@@ -62,7 +62,17 @@ plot_kinetic_ribbon.summary <- function(.dataframe = proc.dat,
 # plotting function : to reduce redundancy, common elements are captured here
 plot_mean_facetted <- function(.data)
 { # Input the filtered summary table and plot the mean vs sample points with facetting and title
-  plt1 <- ggplot(.data, aes(Samples, mean, colour = Time, shape = Inducer)) + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + geom_point(size = 2, fill = 'white') + facet_grid(~ category, scales = 'free_x', space = 'free_x') + scale_shape_manual(values = c(21,19)) + ggtitle('RBS mutants selected')
+
+  plt1 <- 
+    ggplot(.data, aes(Samples, mean, colour = Time, shape = Inducer)) + 
+    
+    geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.25) + 
+    geom_point(size = 2, fill = 'white') + 
+    
+    facet_grid(~ category, scales = 'free_x', space = 'free_x') + 
+    scale_shape_manual(values = c(21,19)) + 
+    
+    ggtitle('RBS mutants selected')
 }
 
 
@@ -72,32 +82,38 @@ plot_mean_facetted <- function(.data)
 
 plot_dose_response <- function(.data, 
                                
-                               y_var = `GFP/OD`,
+                               filter_measurement = 'GFP/OD', # use strings to filter one or more measurements
                                
-                               y_axis_label = 'GFP/OD (a.u.)', 
+                               y_var = value,
+                               
+                               y_axis_label = 'GFP/OD (a.u.)', # need to generalize.. 
                                plot_title = 'Response vs inducer dose',
                                
-                               colour_variable = NULL,
+                               colour_variable = NULL, # can use measurement here? 
                                facet_variable = Samples)
 { 
-  
-  y_var.w.mean <- sym(rlang::as_string(ensym(y_var)) %>% str_c('_mean')) # create an expression for 'y_var'*_mean*
-  
-  
-  plt1 <- ggplot(.data, # layout plot features
-                 aes(x = Inducer,
+
+  plt1 <- filter(.data, Measurement == filter_measurement) %>% # filter the relevant measurements
+    
+    ggplot(aes(x = Inducer, # layout plot features
                      y = {{y_var}}, 
                      colour = {{colour_variable}})) + 
     
-    geom_jitter(height = 0) + # points for individual replicates
+    geom_jitter(height = 0, width = 0.1) + # points for individual replicates
     
-    # geom_point(aes(y = !!y_var.w.mean), # plots mean as a short dash (connected by fitted curve ~ hill function)
+    geom_line(aes(y = .fitted), linetype = 2) + # to be tested ...
+    
+    # TODO : add conditional light line when hill fit fails for 'mean'
+    # geom_point(aes(y = mean), # plots mean as a short dash (connected by fitted curve ~ hill function)
     #             data = . %>% select(ends_with('mean') %>% unique),
     #            shape = '-', size = 5,
     #            show.legend = FALSE) +
-  
+    
+    
     facet_grid(cols = vars({{facet_variable}}), scales = 'free_x', space = 'free_x') +
     ylab(y_axis_label) + ggtitle(plot_title) 
+  
+  # TODO : show hill coefficients on plot : .data$fit[[1]]$coefficients gives a named vector!
   
   plt1 %>% 
     format_logscale_x # output a classic formatted plot with logscale x
