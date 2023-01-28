@@ -14,15 +14,15 @@ Plotting GFP/OD vs [Inducer]
 
 ```{r plotting_GFPbs_by_OD}
 
-# Hill fitting - use a self starting function to guarented convergence and move into the plot_dose_response function
+# Hill fitting: using a self starting function - ~guaranteed convergence // move into the plot_dose_response function
 
 hill_table.data <- long_fluor_processed %>%
   ungroup %>%
   group_by(across(any_of(
-    sample_specific_variables[sample_specific_variables != 'Inducer'])), 
+    sample_specific_variables[sample_specific_variables != 'Inducer'])), # group by groupers but inducer
     Measurement) %>%
   
-  nest() %>%  # seperate each group into a different data frame for fitting
+  nest() %>%  # separate each group into a different data frame for fitting
   
   # Exclude problematic data for hill fitting : Singleton inducers (controls), negative inducer values and NA values for measurement
   filter(map_dbl(data, ~ pull(.x, Inducer) %>% unique %>% length) > 1) %>% # retain if > 1 unique inducer value 
@@ -34,8 +34,9 @@ hill_table.data <- long_fluor_processed %>%
   
   mutate(fit = map(data, hill_fit.SS), 
          y.fit = map2(fit, data, ~ broom::augment(.x, data = .y))) %>% # call hill fitting function on a single time point data 
-  # BUG : need to use a try-catch thing to prevent error groups from holding up the fitting // purr::safely/possibly()
+  # BUG/TODO : need to use a try-catch thing to prevent error groups from holding up the fitting // purr::safely/possibly()
   
+  # select(-data) %>% # remove redundant data - already present in the augmented y.fit : make conditional if hill works
   unnest(y.fit)
 
 plt11 <- plot_dose_response(processed.data)  %>% print()
