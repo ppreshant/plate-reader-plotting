@@ -1,6 +1,29 @@
 # 3-mathematical.functions.R
 
+
+# Self starter hill function ----
+
+hill_fit.SS <- function(.data)
+{ #' this self starting hill function does not require initial parameters, hence more likely to converge
+  
+  # Resource : https://www.statforbiology.com/nonlinearregression/usefulequations#logistic_curve
+  
+  # Unpack data
+  L  <- .data$Inducer # x axis = independent variable ; L short for ligand
+  y  <- .data$value # dependent variable
+  
+  # fitting Hill equation
+  y.nls <- drc::drm(y ~ L, fct = drc::LL.4(names = c('n', 'y0,', 'ymax', 'Kd')),
+               data = .data)
+  
+  # y.nls <- nls(y ~ SSfpl(L, y0, ymax, Kd, n),
+  #              data = .data)
+  
+}
+
+
 # Hill function ----
+
 hill_fit <- function(results_array)
 { # Fittiing Hill equation (typically useful for dose reponse curves)
   
@@ -29,26 +52,6 @@ hill_fit <- function(results_array)
   # y.nls.Kd      <- y.nls.summary$param[2]
   # y.nls.predict <- predict(y.nls)
   # results <- cbind(y, y.nls.predict)
-}
-
-
-# Self starter hill function ----
-
-hill_fit.SS <- function(.data)
-{
-  # Resource : https://www.statforbiology.com/nonlinearregression/usefulequations#logistic_curve
-  
-  # Unpack data
-  L  <- .data$Inducer # x axis = independent variable ; L short for ligand
-  y  <- .data$value # dependent variable
-  
-  # fitting Hill equation
-  y.nls <- drc::drm(y ~ L, fct = drc::LL.4(names = c('n', 'y0,', 'ymax', 'Kd')),
-               data = .data)
-  
-  # y.nls <- nls(y ~ SSfpl(L, y0, ymax, Kd, n),
-  #              data = .data)
-  
 }
 
 
