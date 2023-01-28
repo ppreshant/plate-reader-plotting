@@ -19,6 +19,14 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   # load data form the given sheet
   .df <- fl[[sheet_name]] # extract the sheet of interest (sheet2 is by default the first non-empty sheet unless it was renamed)
   
+  
+  # error check : for wrong sheet name
+  if(is.null(.df)) 
+    stop(str_c('No sheet with the name : "',
+               sheet_name,
+               '", was found in the file. You might have entered the wrong "sheet_name", check "0.5-user_inputs.R"'))
+  
+  
   # extract the plate reader device name  
   device_name <- .df[1:3, 1] %>% as.character %>% str_match('Device: (.*)') %>% pluck(2)
   
@@ -48,7 +56,10 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   measurement.grid_info <- map_in_sheet(.df, str_c('^', measurement_identifier.text, '|<>'), 1) %>% # find occurrences of labels and '<>'
     
     # clean up into two columns
-    separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+    
+    # find the occurrence and index of "Label" word in the sheet; retain the text after 'label: '
+    separate(identifier, c('identifier','regex_part'), sep = ': ') %>%  
+    
     mutate(label = coalesce(neighbour, regex_part)) %>%  # if match is NA, takes the value from label (accounts for Spark and Infinite M1000)
     select(-neighbour, -regex_part) %>%  # remove the individual columns since coalesced column contains this data
     filter(!is.na(label)) %>%  # remove the dummy first occurrence of 'Name' in Spark data, where 2nd column is empty
@@ -60,8 +71,8 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     
     # iterating functions on each group,  
     mutate(label = map_chr(data, # bring out the label of the data, with minimal standardized names
-                           ~ str_replace_all(.$label[1], 
-                                             regex(measurement.labels_translation, ignore_case = TRUE) )), # replace labels of fluorophores with standardized : GFP and RFP
+                           ~ str_replace_all(.$label[1], # replace labels of fluorophores with standardized : GFP and RFP
+                                             regex(measurement.labels_translation, ignore_case = TRUE) )), 
            row_index = map_int(data, ~ .$index[2]), # bring out the index of '<>' 
            col_index = 1) %>%  # all measurement grid '<>' are in the first column
     
@@ -78,7 +89,9 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     as.vector() %>%  # as vector
     {which(. == '<>')[-1]} %>% # find the col_index where '<>' occurs; remove first occurence (OD)
     map_dfr( ~ tibble(label = .df[[user_metadata.row_index-1, .]] %>% # get label from the row above
-                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), # translate to minimal standardized names for fluorophores: like GFP and RFP
+                        
+                        # translate to minimal standardized names for fluorophores: like GFP and RFP
+                        str_replace_all( regex(measurement.labels_translation, ignore_case = TRUE)), 
                       row_index = user_metadata.row_index, 
                       col_index = .)) # get the column index of each '<>' match
   rm(user_metadata.row_index) # remove temporary variable

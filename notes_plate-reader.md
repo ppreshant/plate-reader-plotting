@@ -6,6 +6,7 @@ tags : #notes
 ## Features
 - [x] Need to include the units of the fluorescence data (a.u or MEFL) in the csv file that is saved
 - [ ] (_later_) Might be a good idea to include the row and column indices in the `processed.data` for cross-checking/data provenance?
+- [ ] Extrapolation of regex in metadata : mixing some regex with some letters separated by spaces doesn't work, since the spaces are just skipped :(
 
 ## Dose_reponse plots
 Work on this is going on in branch : `incorporate_dose_response`
@@ -35,6 +36,7 @@ _Need to incorporate the inducer column in the basic_plots pipeline_
 
 
 ## Bugs
+- [ ] Extrapolation of regex in metadata : There is a silent bug that is missing a few links from sample name to inducer and links the wrong.
 
 
 17/1/22
