@@ -36,7 +36,8 @@ long_fluor_processed <- processed.data %>%
   select(!matches('Replicate|units')) %>%  # choose OD, x/OD and _bs and _mean additions
   mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
   
-  rename_with(.cols = !matches('_mean|Samples|Inducer|index'), .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean columns
+  rename_with(.cols = !matches( str_c(c('_mean', sample_specific_variables, 'index'), collapse = '|')), 
+              .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean, non metadata columns
   
   pivot_longer(cols = -all_of(c(sample_specific_variables, 'index')), # pull measurement types and summary type (mean vs 'raw' value) into two cols
                names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
