@@ -22,4 +22,4 @@ baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline c
 # Fluorescence from samples matching this name will be subtracted from all values (baseline)
 
 # should I divide the signal by molecular equivalent fluorophores? 
-do_MEFL_normalization <- TRUE # TRUE by default, unless you want to turn off
+do_MEFL_normalization <- F # TRUE by default, unless you want to turn off
