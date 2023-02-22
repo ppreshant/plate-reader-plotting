@@ -20,7 +20,7 @@ User inputs for multiple sheets
 
 flnm <- 'S015c_AHL flip timecourse_3-7-19'
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- c("0 hr","6 hr","24 hr", "48 hr") # list the sheets to be loaded
 n_Rows <- 8; 
@@ -164,4 +164,38 @@ sel_table1c <- sel_table1 %>% filter(str_detect(Samples, "pRV|Controls")) # filt
 plt9c <- ggplot(sel_table1c, aes(Time, mean, shape = Inducer, colour = Reporter)) + annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 1) + facet_wrap(~ Samples, ncol = 2) + geom_line() + geom_point(size = 2, fill = 'white') + scale_shape_manual(values = c(21,19)) +  scale_x_continuous(breaks = c(0,6,24,48)) + ylab('GFP/OD (a.u.)') + xlab('Time (h)') + ggtitle('AHL flipping with time') + labs(colour = 'Reporter', shape = '[AHL]')
 plt10c <- plt9c %>% format_classic() 
 plt10c
+```
+
+Plotting GFP/OD for pRV01, pSH001 for fig 1C (individual replicates)
+
+```{r plotting7}
+metadata_columns <- c('Samples', 'Reporter', 'Time', 'Inducer', 'Replicate #')
+
+sel_table7 <- all_days_table %>% select(all_of(metadata_columns), `GFP/OD`) %>% 
+  filter(str_detect(Samples, "pRV") | str_detect(Reporter, 'pSH'), !str_detect(Inducer, '^s')) %>% 
+  # filter necessary samples ; remove stationary phase induced stuff 
+  
+  mutate(across(Samples, ~ str_replace_all(.x, c('pRV.*' = 'Memory sensor', 
+                                           'Controls' = 'Real-time sensor'))))
+
+plt7 <-
+  {ggplot(sel_table7, aes(Time, `GFP/OD`, 
+                          shape = Inducer, 
+                          group = interaction(Inducer, `Replicate #`))) + 
+      geom_line() + geom_point(size = 2) + 
+      scale_shape_manual(values = c(1,19)) +
+      facet_wrap(~Samples, scales = 'free_y', ncol = 1) +  
+      scale_x_continuous(breaks = c(0,6,24,48)) + 
+      annotate('rect', xmin = 0, ymin = 0, xmax = 6, ymax = Inf, alpha = .2) +
+      
+      ylab('Fluorescence/OD (a.u.)') + ggtitle('Proof of Concept : Memory')} %>% 
+  
+  format_classic() %>% print () # %>% format_logscale()
+
+ggsave('plate reader analysis/plots and data/Fig 1c_S015c.pdf', plt7, height = 3, width = 4)
+
+
+# plt7b #+ scale_colour_manual(values = c('#4daf4a' ,'#e41a1c'))
+# ggsave('plots and data/S015_linear.png', plt1)
+# ggsave('plots and data/test.png', width = 14/3, height = 11.34/3)
 ```
