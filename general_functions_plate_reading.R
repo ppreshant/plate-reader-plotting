@@ -80,7 +80,7 @@ list_of_general_functions <- c("0-read_plate.reader.files.R",
                                '6-parse_continuous_growth.R',
                                '7-read_merge_metadata_grids.R',
                                '8-MEFL_normalization.R',
-                               '9-plot_raw_static_fluorescence.R')
+                               '9-plot_static_fluorescence.R')
 
 # bash command to make this file list
 # ls -Q | sed 's/$/,/g' > flnm.txt
