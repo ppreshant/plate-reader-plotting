@@ -40,6 +40,7 @@ plot_condensed <-
        aes(x = day, y = `RFP/OD`, colour = organism, shape = AHL_uM)) + 
   geom_point() + geom_line(aes(group = interaction(AHL_uM, organism))) +
   scale_shape_manual(values = c(1, 16)) + 
+  annotate(geom = 'rect', xmin = 1, xmax = 2, ymin = -Inf, ymax = Inf, alpha = 0.2) + # show induction, day is factor
   
   ggtitle(title_name) + 
   # theme(legend.position = 'top') + 
@@ -47,4 +48,4 @@ plot_condensed <-
 
 
 # save plot 
-ggsave(plot_as(title_name, '-condensed'), plot_condensed, width = 4, height = 4)
+ggsave(plot_as('S058_memory in wild', '-condensed'), plot_condensed, width = 4, height = 4)
