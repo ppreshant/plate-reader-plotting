@@ -36,6 +36,7 @@ _Need to incorporate the inducer column in the basic_plots pipeline_
 
 
 ## Bugs
+- [ ] Fix the geom_text layer in the interactive plot (RFP_mean - remove label/shorten, Round decimals? / Samples = 0.9 -- what is this?). This works fine in regular plot, only poor in ggplotly. Example : ![[Pasted image 20230318160713.png]]
 - [ ] Extrapolation of regex in metadata : There is a silent bug that is missing a few links from sample name to inducer and links the wrong.
 
 

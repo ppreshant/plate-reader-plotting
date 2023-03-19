@@ -70,6 +70,6 @@ rmarkdown::render('static_plate_reader_plotting_and_html.Rmd', output_file = str
 # Save data ----
 
 # save data in the 'processed' folder
-write.csv(processed.data, 
+write_csv(processed.data, 
           str_c('plate reader data/processed/', flnm, '-processed.csv', 
                 na = ''))
