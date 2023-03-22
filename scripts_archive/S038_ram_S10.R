@@ -1,4 +1,4 @@
-# S038_ram_S11.R
+# S038_ram_S10.R
 
 # Data : S038_47+67_23-2-22
 # Prelims ----
@@ -43,7 +43,7 @@ reddnorm_log <- pltred_norm %>% format_logscale_x() %>% print()
 # save plot (in writing folder)
 ggsave('data_S10.pdf', reddnorm_log,
        path = output_path, 
-       height = 3, width = 4)
+       height = 3, width = 4) # remove bar after export, no bars on logscale remember?
 
 # data export
 write_csv(selected_data, file = str_c(output_path, '/S10.csv'))
