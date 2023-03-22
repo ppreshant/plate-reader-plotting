@@ -72,7 +72,7 @@ full_96_plate <- tibble(row_num = rep(LETTERS[1:8], each = 12),
 # calling more funs ----
 
 list_of_general_functions <- c("0-read_plate.reader.files.R",
-                               "1-cleaning.data_manipulate.columns.R",
+                               "1-cleaning.data_manipulate.columns_wrappers.R",
                                "2-read_multiple_grids_in_sheet.R",
                                "3-mathematical.functions.R",
                                "4-plotting_fns.R",
