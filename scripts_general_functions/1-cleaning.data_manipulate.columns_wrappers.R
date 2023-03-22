@@ -170,3 +170,15 @@ column_to_plate <- function(.data, column_of_interest)
     select(rowid, colid, {{column_of_interest}}) %>% # select only relevant column
     pivot_wider(names_from = colid, values_from = {{column_of_interest}}) # creates the grid
 }
+
+
+# Wrappers ----
+
+
+#' wrapper for reading processed csv data
+#' @param flnm : string, name of file to read / omit the '-processed' suffix
+
+read_processed_data <- function(.flnm)
+{
+  read_csv(str_c('plate reader data/processed/', .flnm, '-processed.csv'))
+}
