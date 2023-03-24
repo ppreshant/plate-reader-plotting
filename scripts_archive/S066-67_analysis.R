@@ -107,33 +107,61 @@ ggsave(plot_as(title_name), width = 5, height = 4)
 # Prelims ----
 source('general_functions_plate_reading.R') # source the file that contains all the functions
 
-# Load data b1 ----
+# Load data b1, b2 ----
 
-flnm <- 'S067b1_143 memory ww d-1-d2_24-3-23'
-processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-processed.csv'))
+flnms <- c('S067b1_143 memory ww d-1-d2_24-3-23', 'S067b2_79 memory ww d-1-d2_24-3-23')
 
+processed.data <- 
 
-# Load data b2 ----
-
-flnm <- 'S067b2_79 memory ww d-1-d2_24-3-23'
-processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-processed.csv'))
-
-# processing 
-S67b2 <- processed.data %>% 
-  
+  map_dfr(flnms, 
+          ~ read_csv(str_c('plate reader data/processed/', .x, '-processed.csv'))) %>% 
   # Create distinction for memory vs direct
   mutate(category = if_else(str_detect(Samples, '143'),
                             'Direct', 'Memory')) %>% 
   
-  mutate(across(Samples, ~ str_remove(., '^79/|^143'))) # remove plasmid names
+  mutate(across(Samples, ~ str_remove(., '^79/|^143'))) %>%  # remove plasmid names
+  
+  mutate(across(c(`AHL (uM)`, Day), as_factor)) # make inducer and days factor for ease of plotting colours
+
+sample_specific_variables <- c('Samples', 'Day', 'AHL (uM)')
+
+
+# Analysis 79/b2 ----
+
+title_name <- 'S067b2_79 memory ww d-1-d2'
+
+# processing ----
+
+S67b2 <- filter(processed.data, category == 'Memory') # select only 79 ones
+
+# arrangement in ascending order
+sample_order <-  
+  select(S67b2,
+         Samples, `RFP/OD`) %>% # select only required columns
+  group_by(Samples) %>% # group
+  
+  mutate(maxsignal = max(`RFP/OD`)) %>% # make a column for max in each Sample (across days, inducers)
+  
+  # filter(S67b2, `AHL (uM)` == 10) %>% # select required samples
+  
+  arrange(desc(maxsignal)) %>% # arrange in descending order
+  ungroup() %>% 
+  mutate(across(Samples, fct_inorder)) %>% # remove groups to make a factor
+  
+  pull(Samples) %>% levels() %>% rev # grab unique samples and make ascending order
+  
+S67b2_order <- mutate(S67b2, across(Samples, ~ fct_relevel(., sample_order)))
+
+# TODO : arrange data in a nice order
 
 # plot ----
 
-ggplot(S67b2,
-       aes(`RFP/OD`, Samples, colour = `AHL (uM)`)) + 
+ggplot(S67b2_order,
+       aes(`RFP/OD`, Samples, colour = Day, shape = `AHL (uM)`)) + 
   
   geom_point(size = 2) +
-  scale_colour_brewer(palette = 'Dark2', direction = -1) + # change the values - orange for uninduced/0
+  # scale_colour_brewer(palette = 'Dark2', direction = -1) + # change the values - orange for uninduced/0
+  scale_shape_manual(values = c(1, 16)) + # shape : open and closed circles
   
   # line like a dumbell plot
   geom_line(aes(group = Samples), colour = 'black', alpha = 0.3) + 
@@ -144,4 +172,4 @@ ggplot(S67b2,
   # labels
   ggtitle('Memory in wastewater', subtitle = title_name)
 
-ggsave(plot_as(title_name), width = 5, height = 4)
+ggsave(plot_as(title_name), width = 4, height = 6)
