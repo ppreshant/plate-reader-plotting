@@ -117,9 +117,11 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   # Merge grids ----
 
   # convert plate tables into columns and merge all measurements and metadata into 1 table
-  merged_all.grids <- map2_dfc(measured_and_metadata.grids$grid_data, 
+  merged_all.grids <- map2(measured_and_metadata.grids$grid_data, 
                                measured_and_metadata.grids$label, 
-                               read_plate_to_column) %>%  
+                               read_plate_to_column) %>%
+    
+    reduce(~ full_join(.x, .y, by = 'well')) %>% # join elements by well
     
     # convert to numeric (they are loaded as characters by default)
     mutate(across(any_of(c('OD', 'GFP', 'RFP', 'Inducer')), as.numeric)) 
