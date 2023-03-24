@@ -99,3 +99,49 @@ ggplot(S67_dat,
   ggtitle('Memory in wastewater', subtitle = title_name)
 
 ggsave(plot_as(title_name), width = 5, height = 4)
+
+
+# S067b analysis ----
+# This is from different datasets
+
+# Prelims ----
+source('general_functions_plate_reading.R') # source the file that contains all the functions
+
+# Load data b1 ----
+
+flnm <- 'S067b1_143 memory ww d-1-d2_24-3-23'
+processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-processed.csv'))
+
+
+# Load data b2 ----
+
+flnm <- 'S067b2_79 memory ww d-1-d2_24-3-23'
+processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-processed.csv'))
+
+# processing 
+S67b2 <- processed.data %>% 
+  
+  # Create distinction for memory vs direct
+  mutate(category = if_else(str_detect(Samples, '143'),
+                            'Direct', 'Memory')) %>% 
+  
+  mutate(across(Samples, ~ str_remove(., '^79/|^143'))) # remove plasmid names
+
+# plot ----
+
+ggplot(S67b2,
+       aes(`RFP/OD`, Samples, colour = `AHL (uM)`)) + 
+  
+  geom_point(size = 2) +
+  scale_colour_brewer(palette = 'Dark2', direction = -1) + # change the values - orange for uninduced/0
+  
+  # line like a dumbell plot
+  geom_line(aes(group = Samples), colour = 'black', alpha = 0.3) + 
+  
+  # facet_grid(vars(category), scale = 'free_y', space = 'free_y') +
+  theme(legend.position = 'top') +
+  
+  # labels
+  ggtitle('Memory in wastewater', subtitle = title_name)
+
+ggsave(plot_as(title_name), width = 5, height = 4)

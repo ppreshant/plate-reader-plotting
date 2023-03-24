@@ -9,7 +9,7 @@
 # Note:  (file name starts in the previous directory of this Rproject)
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
-flnm <- 'S067b1_143 memory ww d-1-d2_24-3-23'
+flnm <- 'S067b2_79 memory ww d-1-d2_24-3-23'
 
 sheet_name <- 'default' # 'default' reads the first sheet (for single plate runs only)
 
