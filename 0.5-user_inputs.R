@@ -9,7 +9,7 @@
 # Note:  (file name starts in the previous directory of this Rproject)
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
-flnm <- 'S066-67_Ara-d0_memory WW-d0_18-3-23'
+flnm <- 'S067b1_143 memory ww d-1-d2_24-3-23'
 
 sheet_name <- 'default' # 'default' reads the first sheet (for single plate runs only)
 
@@ -27,4 +27,4 @@ do_MEFL_normalization <- F # TRUE by default, unless you want to turn off
 date_regex <- '[:digit:]*-[:digit:]*-[:digit:]*' # Date regex
 
 # title_name : appears on the html file name and header of selected plots, change as required
-title_name <- str_remove(flnm, str_c("_", date_regex)) 
+title_name <- stringr::str_remove(flnm, stringr::str_c("_", date_regex)) 
