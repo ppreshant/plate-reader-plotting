@@ -31,7 +31,7 @@ group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD',
 # transforms a plate reader table into a column (named after the top left cell, unless mentioned)
 # eliminates plate row,column numbering ; Select 1 row above the plate (even if it doesn't contain a label)
 
-read_plate_to_column <- function(data_tibble, val_name, retain_well_id = FALSE)
+read_plate_to_column <- function(data_tibble, val_name, retain_well_id = TRUE)
 { 
   # Check if the tibble is empty
   if(drop_na(data_tibble) %>% plyr::empty()) return(NULL)  # return NULL if tibble is empty
@@ -98,7 +98,8 @@ extrapolate_96_well_plate <- function(.data_tibble)
   processed_tibble <- .data_tibble %>% 
     
     # replace "all" with the regular expression '.*' ; clean up the [..] regex to ^[..]$
-    mutate(across(col_num, ~ str_replace_all(.x, translate_regex)))  
+    mutate(across(c(row_num, col_num), 
+                  ~ str_replace_all(.x, translate_regex)))  
   
   
   # Make tibbles of full row and columns, for extrapolation
