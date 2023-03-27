@@ -5,6 +5,7 @@
 source('0.5-user_inputs.R') # get user inputs
 source('general_functions_plate_reading.R') # source the file that contains all the functions
 
+flnm <- 'S066-67_Ara-d0_memory WW-d0_18-3-23'
 
 # Load data ----
 
@@ -59,10 +60,11 @@ ara_plt <-
       
       } %>% 
   
-  format_logscale_x() %>% format_logscale_y() %>%
+  format_logscale_x() %>% # format_logscale_y() %>%
   print()
 
-ggsave(plot_as(title_name), width = 6, height = 5)
+
+ggsave(plot_as(title_name, '-linear'), width = 6, height = 5)
 # ggsave(str_c('plate reader analysis/plots and data/archive/', title_name, '.pdf'))
 
 
@@ -119,7 +121,7 @@ processed.data <-
   mutate(category = if_else(str_detect(Samples, '143'),
                             'Direct', 'Memory')) %>% 
   
-  mutate(across(Samples, ~ str_remove(., '^79/|^143'))) %>%  # remove plasmid names
+  mutate(across(Samples, ~ str_remove(., '^79/|^143/'))) %>%  # remove plasmid names
   
   mutate(across(c(`AHL (uM)`, Day), as_factor)) # make inducer and days factor for ease of plotting colours
 
@@ -149,13 +151,13 @@ sample_order <-
   mutate(across(Samples, fct_inorder)) %>% # remove groups to make a factor
   
   pull(Samples) %>% levels() %>% rev # grab unique samples and make ascending order
-  
+
 S67b2_order <- mutate(S67b2, across(Samples, ~ fct_relevel(., sample_order)))
 
-# TODO : arrange data in a nice order
 
-# plot ----
+# plot b ----
 
+# Samples vs signal: plot of S067b2
 ggplot(S67b2_order,
        aes(`RFP/OD`, Samples, colour = Day, shape = `AHL (uM)`)) + 
   
@@ -173,3 +175,31 @@ ggplot(S67b2_order,
   ggtitle('Memory in wastewater', subtitle = title_name)
 
 ggsave(plot_as(title_name), width = 4, height = 6)
+
+
+# timeseries plot ----
+
+
+# Small multiples-timeseries plot
+processed.data %<>% mutate(across(Samples, ~ fct_relevel(., rev(sample_order)))) # order in desc of max
+
+title_name <- 'S067b wastewater memory II'
+
+filter(processed.data, category == 'Memory') %>% 
+  
+  ggplot(aes(Day, `RFP/OD`, colour = category, shape = `AHL (uM)`)) + 
+  
+  geom_point(size = 2) +
+  # scale_colour_brewer(palette = 'Dark2', direction = -1) + # change the values - orange for uninduced/0
+  scale_shape_manual(values = c(1, 16)) + # shape : open and closed circles
+  
+  # line like a dumbell plot
+  geom_line(aes(group = interaction(`AHL (uM)`, category)), colour = 'black', alpha = 0.3) +  
+  
+  facet_wrap(vars(Samples), scale = 'free_y') +
+  theme(legend.position = 'top') +
+  
+  # labels
+  ggtitle('Memory in wastewater', subtitle = title_name)
+
+ggsave(plot_as(title_name, '-timeseries-memory'), width = 5, height = 5)
