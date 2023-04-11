@@ -47,3 +47,9 @@ ggsave('data_S10.pdf', reddnorm_log,
 
 # data export
 write_csv(selected_data, file = str_c(output_path, '/S10.csv'))
+
+
+# Statistics ----
+
+t.test(`RFP/OD normalized` ~ Samples, selected_data, 
+       alternative = 'greater') # => Sample 47 > 67 + 47
