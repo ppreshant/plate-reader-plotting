@@ -101,3 +101,22 @@ The code (in script : `2-read_multiple_grids_in_sheet.R`) will recognize that yo
 Please note that documentation for the branches other than `basic_plots` is not complete, please don't hesitate to ask me for guidance
 2. Any experiments with analysis or plots needing significant tweaks is saved into an independent branch named after the experiment. (ex. S015c)
    - In the future specific plotting codes will be saved in the default branch (basic_plots) in `scripts_archive`
+
+# Copyleft : GPL-3.0-or-later license
+```
+Scripts for automated processing and plotting of plate reader fluorescence and OD including timecourse data
+Copyright (C) 2023  Prashant Kalvapalle
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
