@@ -10,8 +10,9 @@ tags : #notes
 - [ ] (_ignore, can't understand_) Extrapolation of regex in metadata : mixing some regex with some letters separated by spaces doesn't work, since the spaces are just skipped :( _:( Not enough context to recall what this was about)_
 
 ## Dose_reponse plots
-Work on this is going on in branch : `incorporate_dose_response`
+Work on this is going on in branch : `incorporate_dose_response` -- need to merge basic plots with this before adding any work : 18-April-24
 
+- [ ] Build safety into the hill fit using `purrr::safely()` as in [qPCR RAM stability](https://github.com/ppreshant/qPCR-analysis/blob/main/adhoc%20scripts/S8_RAM_stability.R)
 - [ ] show hill coeficients on plot in `plot_dose_response()` in 4-plotting_fns.R : `.data$fit[[1]]$coefficients` gives a named vector!
 - [ ] Do a `try..catch` workflow to choose between hill fits and just connecting the mean points with a line? _note from commit:_ `fb96971`
 - [ ] Use insurance for hill fitting failure. Can use functions ` purrr::safely() or possibly()`. Issues explained below -

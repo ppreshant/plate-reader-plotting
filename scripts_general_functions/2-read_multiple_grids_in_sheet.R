@@ -186,7 +186,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
 
   # 1. removes NA and undesirable samples
   # 2. Arranges the values in order of plate columns
-  # 3. Adds a column for Replicate # useful for collecting samples, before calculating mean
+  # 3. Adds a column for replicate numbering useful for collecting samples, before calculating mean
   
   sample_specific_variables <<- user_metadata.grid_info$label # global variable with all the metadata headers
   
@@ -199,7 +199,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
     group_by(across(any_of(sample_specific_variables))) %>%  
     
     # Add replicate numbering
-    mutate('Replicate #' = row_number()) %>%  
+    mutate('replicate' = row_number()) %>%  
     
     # calculate means
     mutate(across(where(is.numeric), # calculate mean of all number columns
