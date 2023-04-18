@@ -13,7 +13,7 @@ processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-process
   
 
 # S066 analysis ----
-# updated analysis for dose response at `dose_response_custom_analysis.R`
+# updated analysis for dose response at `S070_Ara_dose_response.R` -- for S070
 
 # plan : make controls as a sample type, facet by it, and add text labels below the points for controls!
 

@@ -5,11 +5,11 @@
 # dose_response + controls plotter ----
 
 # dose_response plot / flipped
-plot_dose_response_and_controls <- function(.data = forplotting_cq.dat, # use ratio_data for fractions
-                                            .target_to_filter = 'flipped', # ignore if plotting fractions
-                                            .yvar = 40 - CT, # 40 - CT or flipped_fraction
+plot_dose_response_and_controls <- function(.data = relevant.data, # use ratio_data for fractions
+                                            .target_to_filter = 'flipped', # ignore if plotting other datasets
+                                            .yvar = `GFP/OD`, # 40 - CT or flipped_fraction
                                             .xvar_dose = Arabinose, .xlabel = 'Arabinose (uM)',
-                                            .xvar_control = assay_variable) # assay_variable/qPCR ; Samples/plate reader
+                                            .xvar_control = Samples) # assay_variable/qPCR ; Samples/plate reader
   
 {
   
@@ -30,12 +30,12 @@ plot_dose_response_and_controls <- function(.data = forplotting_cq.dat, # use ra
   ara_plt <- 
     {ggplot(filter(data_subset, sample_type == 'Induction'),
             
-            aes({{.xvar_dose}}, {{.yvar}}, label = biological_replicates, 
-                label2 = `Well Position`)) + # for interactive troubleshooting
+            aes({{.xvar_dose}}, {{.yvar}}, label = replicate, 
+                label2 = well)) + # for interactive troubleshooting
         
         geom_point() + 
         
-        geom_line(aes(group = biological_replicates), alpha = 0.2) +
+        geom_line(aes(group = replicate), alpha = 0.2) +
         
         theme(legend.position = 'top') + 
         
@@ -53,8 +53,8 @@ plot_dose_response_and_controls <- function(.data = forplotting_cq.dat, # use ra
   control_plt <- 
     ggplot(filter(data_subset, sample_type == 'Controls'),
            
-           aes({{.xvar_control}}, {{.yvar}}, label = biological_replicates, 
-               label2 = `Well Position`)) + # for interactive troubleshooting
+           aes({{.xvar_control}}, {{.yvar}}, label = replicate, 
+               label2 = well)) + # for interactive troubleshooting
     
     ylim(c(ymin, ymax)) + # set consistant yaxis ranges
     geom_point(position = position_jitter(width = 0.2, height = 0)) + 
