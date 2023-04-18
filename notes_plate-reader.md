@@ -5,8 +5,9 @@ tags : #notes
 
 ## Features
 - [x] Need to include the units of the fluorescence data (a.u or MEFL) in the csv file that is saved
-- [ ] (_later_) Might be a good idea to include the row and column indices in the `processed.data` for cross-checking/data provenance?
-- [ ] Extrapolation of regex in metadata : mixing some regex with some letters separated by spaces doesn't work, since the spaces are just skipped :(
+- [ ] MEFL automation : get old calibrants from file in `processed/..csv?`. _Stand-in values since we're using fixed gain of 90 for most readings now a days ; ideally add fresh calibrants if data is important.._ 
+- [x] (_later_) Might be a good idea to include the row and column indices in the `processed.data` for cross-checking/data provenance?
+- [ ] (_ignore, can't understand_) Extrapolation of regex in metadata : mixing some regex with some letters separated by spaces doesn't work, since the spaces are just skipped :( _:( Not enough context to recall what this was about)_
 
 ## Dose_reponse plots
 Work on this is going on in branch : `incorporate_dose_response`
