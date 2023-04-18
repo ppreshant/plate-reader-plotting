@@ -58,7 +58,9 @@ long_unique.normalized_processed <- select(long_fluor.normalized_processed, -c(v
 
 
 # Check if inducer is present and dose response needs to be plotted (> 3 inducer values?)
-inducer.present <- 'Inducer' %in% colnames(processed.data) &&
+run_dose_response_pipeline <- 
+  run_dose_response_pipeline && 
+  'Inducer' %in% colnames(processed.data) &&
   (processed.data$Inducer %>% unique() %>% length()) > 3
 
 # plotting ----

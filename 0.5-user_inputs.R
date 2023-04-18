@@ -9,7 +9,7 @@
 # Note:  (file name starts in the previous directory of this Rproject)
 # Note: The script only works for SPARK files where OD, metadata next to it, and optionally any fluorescence below it are read
 
-flnm <- 'S067b2_79 memory ww d-1-d2_24-3-23'
+flnm <- 'S070_S071_d0_13-April-23'
 
 sheet_name <- 'default' # 'default' reads the first sheet (for single plate runs only)
 
@@ -21,6 +21,8 @@ baseline_sample_to_subtract <- 'MG1655|DH10B|MFDpir|NEB10b|PBS' # Add baseline c
 # should I divide the signal by molecular equivalent fluorophores? 
 do_MEFL_normalization <- F # TRUE by default, unless you want to turn off
 
+# should I run the dose response pipeline (only works if `Inducer` column is present)
+run_dose_response_pipeline <- F # FALSE by default ; the pipeline is work in progress
 
 # Calculation ----
 

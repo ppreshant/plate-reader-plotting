@@ -75,9 +75,9 @@ map(FPs, plot_static_fluorescence)
 ```
 
 
-``` {r child = if(inducer.present) 'dose_response_plots.Rmd'}
+``` {r child = if(run_dose_response_pipeline) 'dose_response_plots.Rmd'}
 # child document format inspired from : https://bookdown.org/yihui/rmarkdown-cookbook/child-document.html
-# `r if(inducer.present {"## Dose-response plots"})`
+# `r if(run_dose_response_pipeline {"## Dose-response plots"})`
 ```
 
 
