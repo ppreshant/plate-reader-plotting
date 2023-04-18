@@ -13,6 +13,7 @@ processed.data <- read_csv(str_c('plate reader data/processed/', flnm, '-process
   
 
 # S066 analysis ----
+# updated analysis for dose response at `dose_response_custom_analysis.R`
 
 # plan : make controls as a sample type, facet by it, and add text labels below the points for controls!
 
@@ -43,11 +44,7 @@ ara_plt <-
       facet_grid(cols = vars(sample_type), 
                  scales = 'free_x', space = 'free_x') +
       
-      # Custom changing scale per facet : https://teunbrand.github.io/ggh4x/reference/facetted_pos_scales.html 
-      # ggh4x::facetted_pos_scales(
-      #   x = list(sample_type == 'Control' ~ 
-      #              scale_x_continuous(limits = c(1e-3, 1e3), breaks = 1))
-      #   ) +
+      
       
       # theme(panel.background = element_blank()) + # hide background to show text better
       

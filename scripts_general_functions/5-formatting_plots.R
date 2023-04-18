@@ -72,3 +72,12 @@ format_logscale_x <- function(plt)
       # depreceated : labels = scales::trans_format("log10", scales::math_format(10^.x) )
     )
 }
+
+
+# extra code ----
+
+# Custom changing scale per facet : https://teunbrand.github.io/ggh4x/reference/facetted_pos_scales.html 
+# ggh4x::facetted_pos_scales(
+#   x = list(sample_type == 'Control' ~ 
+#              scale_x_continuous(limits = c(1e-3, 1e3), breaks = 1))
+#   ) + # probably didn't work? S066-67 adhoc code
