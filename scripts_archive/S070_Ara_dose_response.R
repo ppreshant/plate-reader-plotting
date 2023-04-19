@@ -29,10 +29,11 @@ relevant.data <- filter(processed.data, str_detect(Samples, 'd0')) %>% # select 
 # plotting ----
 
 source('scripts_general_functions/11-plot_dose_response_and_controls.R') # source the script
-plt_dosec <- plot_dose_response_and_controls() %>% print
+plt_dosec <- plot_dose_response_and_controls(output_all_plots = T)
+plt_dosec[[1]]
 
 ggsave(plot_as(title_name), width = 6, height = 4)
-# ggplotly(plt_dosec) # interactive : controls panel only :(
+ggplotly(plt_dosec[[2]]) # interactive
 
 # calculations ----
 

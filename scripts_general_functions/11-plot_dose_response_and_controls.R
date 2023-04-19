@@ -9,7 +9,8 @@ plot_dose_response_and_controls <- function(.data = relevant.data, # use ratio_d
                                             .target_to_filter = 'flipped', # ignore if plotting other datasets
                                             .yvar = `GFP/OD`, # 40 - CT or flipped_fraction
                                             .xvar_dose = Arabinose, .xlabel = 'Arabinose (uM)',
-                                            .xvar_control = Samples) # assay_variable/qPCR ; Samples/plate reader
+                                            .xvar_control = Samples, # assay_variable/qPCR ; Samples/plate reader
+                                            output_all_plots = FALSE) # enable if individual plots needed for plotly
   
 {
   
@@ -65,7 +66,11 @@ plot_dose_response_and_controls <- function(.data = relevant.data, # use ratio_d
   library(patchwork)
   
   # attach panels [dose response x 4 + controls x 1 widths]
-  ara_plt + control_plt + 
+  combined_plt <-
+    ara_plt + control_plt + 
     plot_layout(widths = c(4, 1))
+  
+  # output a list of plots if user input asks
+  if(output_all_plots) list(combined_plt, ara_plt, control_plt) else combined_plt
   
 }
