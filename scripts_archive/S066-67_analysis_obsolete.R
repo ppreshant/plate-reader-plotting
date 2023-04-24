@@ -1,5 +1,9 @@
 # S066-67_analysis.R
 
+# Obsolete notes
+# S066 : dose response : updated analysis for dose response at `S070_Ara_dose_response.R` -- for S070
+# S067 : timeseries : updated analysis at `S071_memory_timeseries.R`
+
 # Prelims ----
 
 source('0.5-user_inputs.R') # get user inputs
