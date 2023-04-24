@@ -6,6 +6,8 @@ tags : #notes
 ## Features
 - [x] Need to include the units of the fluorescence data (a.u or MEFL) in the csv file that is saved
 - [ ] MEFL automation : get old calibrants from file in `processed/..csv?`. _Stand-in values since we're using fixed gain of 90 for most readings now a days ; ideally add fresh calibrants if data is important.._ 
+	- Change switch to not check for native calibrants / add another switch for getting calibrants: in `2-read_multiple_Grids..R` : `MEFL_normalization <<- ..`
+	- (_future implement_) : Look for `Gain` in the first col of `fl$sheet` and read the 6th col of this .. need for all fluor; it's laborious
 - [x] (_later_) Might be a good idea to include the row and column indices in the `processed.data` for cross-checking/data provenance?
 - [ ] (_ignore, can't understand_) Extrapolation of regex in metadata : mixing some regex with some letters separated by spaces doesn't work, since the spaces are just skipped :( _:( Not enough context to recall what this was about)_
 
