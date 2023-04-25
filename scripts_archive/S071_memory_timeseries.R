@@ -45,11 +45,11 @@ processed_data <-
 
 # timeseries plot ----
 
-plot_timeseries <- function(.data = processed_data)
+plot_timeseries <- function(.data = processed_data, .yvar = `RFP/OD`)
 {
   # filter(processed.data, plasmid == 'Memory') %>% 
   ggplot(.data,
-         aes(Day, `RFP/OD`, colour = plasmid, shape = `AHL (uM)`)) + 
+         aes(Day, {{.yvar}}, colour = plasmid, shape = `AHL (uM)`)) + 
     
     geom_point(size = 2) +
     # scale_colour_brewer(palette = 'Dark2', direction = -1) + # change the values - orange for uninduced/0
@@ -74,3 +74,13 @@ ggsave(plot_as(title_name), width = 5, height = 5)
 # plot only uninduced : check for leak
 processed_data %>% filter(`AHL (uM)` == 0) %>% plot_timeseries()
 ggsave(plot_as(title_name, '-no induction'), width = 5, height = 5)
+
+# plot OD 
+processed_data %>% #filter(`AHL (uM)` == 0) %>% 
+  plot_timeseries(.yvar = OD)
+ggsave(plot_as(title_name, '-OD'), width = 5, height = 5)
+
+# plot RFP 
+processed_data %>% #filter(`AHL (uM)` == 0) %>% 
+  plot_timeseries(.yvar = RFP)
+# ggsave(plot_as(title_name, '-RFP'), width = 5, height = 5)
