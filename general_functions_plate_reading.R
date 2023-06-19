@@ -87,7 +87,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
     if (is_empty(table_Inducer)) inducer_flag <- 1 # flag that there are no inducer values
   }  else inducer_flag <- 1 # flag that there are no inducer values
   
-  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- 0} # if inducer table is empty or absent, make it zero (same size as samples)
+  if(inducer_flag) {table_Inducer <- table_Samples; table_Inducer[-1,-1] <- '0'} # if inducer table is empty or absent, make it zero (same size as samples)
   
   table_GFP <- data_sheet1[(b_gap + a_gap - 1 +n_Rows) + 0:n_Rows, 1 + 0:n_Cols] # exract the GFP values
   table_RFP <- data_sheet1[(b_gap + 2*a_gap - 2 +2*n_Rows) + 0:n_Rows,  1 + 0:n_Cols] # exract the RFP values
@@ -98,7 +98,7 @@ read_all_plates_in_sheet <- function(data_sheet1, n_Rows, n_Cols, device_name, s
   merged1 <- map2_dfc(tables_list, names_vector, read_plate_to_column) # convert plate tables into columns and merge all four data types into 1 table
   merged1 %<>% mutate_at(c('OD','GFP','RFP'),as.numeric) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # convert the OD, GFP and RFP into numbers (they are loaded as characters) and calculate GFP/RFP ratio
   
-  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(funs(mean)) # avg of MG1655 fluor values in plate
+  MG1655_baseline <- merged1 %>% filter(str_detect(Samples, 'MG1655')) %>% summarize_all(.funs = mean) # avg of MG1655 fluor values in plate
   
   merged2 <- merged1 %>% mutate(GFP = pmax(GFP - MG1655_baseline$GFP,0), RFP = pmax(RFP - MG1655_baseline$RFP,0)) %>% mutate('GFP/RFP' = GFP/RFP) %>% mutate('GFP/OD' = GFP/OD) %>% mutate('RFP/OD' = RFP/OD) # Subtract baseline fluor and calculate ratios
   
@@ -119,7 +119,7 @@ clean_and_arrange <- function(merged1)
 
 group_and_summarize_at <- function(merged2, feature_name = 'GFP/OD')
 { # calculates mean and SD of a given column / feature  ex: GFP/RFP
-  merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time) %>%  summarize_at(vars(feature_name), funs(mean, sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
+  merged3 <- merged2 %>% group_by(Samples, Reporter, Inducer, Time) %>%  summarize_at(all_of(feature_name), list(mean = mean, sd = sd)) # calculate mean and SD of the GFP/RFP for each Sample and inducer value
   # merged3 <- merged2 %>% gather(Reading, Value, OD, GFP, RFP) # gather all the reading into 1 column - to plot multiple
   # merged4 <- merged3 %>% arrange(mean) %>% ungroup() %>% mutate(Samples = fct_inorder(Samples)) # freeze samples in ascending order of uninduced
   # merged4

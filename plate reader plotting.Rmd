@@ -29,7 +29,7 @@ n_Cols <- 12;
 
 plotting_order <- c("pRV01", "pInt8", "pPK7/8", "pPK7/17","Controls") # order of plotting for samples
 
-flpath <- str_c('../',flnm,'.xlsx')
+flpath <- str_c('plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- names(fl) %>% .[!str_detect(., sheets_to_exclude)] # get the list of sheets unless excluded
 # sheet_names <- c("0 h","6 h","24 h", "48 h", "72 h", "96 h") # list the sheets to be loaded manually
@@ -251,8 +251,12 @@ Plotting only WT pRV01: GFP/OD : linear scale
 ```{r plotting7}
 sel_table1_pRV <- sel_table1 %>% filter(str_detect(Samples, "pRV") & str_detect(Reporter, 'pSH01|rGFP')) %>% filter(!str_detect(Inducer, "s")) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
 
-plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F)
+plt7 <- plot_time_series(sel_table1_pRV, x_breaks = sheet_time_x_axis) + scale_colour_manual(values = 'black') + guides(colour = F, shape = F) + 
+  annotate('rect', xmin = 8, ymin = 0, xmax = 9, ymax = Inf, alpha = .2) + 
+  ggtitle(NULL)
 plt7
+
+ggsave('plate reader analysis/plots and data/S019_pRV01_2nd pulse.pdf', width = 2, height = 2)
 ```
 
 Plotting controls, Arabinose induction pInt8 and AHL induction WT pRV01 : important reporters only: GFP/OD
