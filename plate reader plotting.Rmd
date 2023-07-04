@@ -225,6 +225,9 @@ plt10 <- plot_time_series(sel_table10, x_breaks = sheet_times)
 plt10 %>% ggplotly()
 ```
 
+
+### Dose response plots
+
 Plotting dose response by day: day 1
 
 ```{r plotting11}
@@ -343,6 +346,64 @@ plt15 <- plot_dose_response(sel_table15) + geom_line() + aes(colour = factor(Tim
 plt15 %>% ggplotly(dynamicTicks = T)
 
 ```
+
+
+Dose response day 1 : Realtime vs memory
+
+```{r plotting16}
+sel_table16 <- all_days_table %>% #group_and_summarize_at('GFP/OD') %>% 
+  filter(str_detect(Samples, 'pRV|Controls')) %>% filter(str_detect(Reporter, 'rGFP|pSH')) %>% 
+  ungroup() %>%  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Time == 1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+  
+
+# hill_table16 <- sel_table16 %>% group_by(Samples) %>% rename(L = Inducer, y = mean) %>% 
+#   nest() %>%  # seperate each group into a different data frame for fitting
+#   mutate (fit = map(data, hill_fit), y.fit = map(fit, broom::augment)) %>% # call hill fitting function on a single time point data
+#   unnest(y.fit)
+
+  
+# sel_table11.fit  <- sel_table11 %>% mutate(y.fit = hill_table11$y.fit) # take the fit curve for plotting
+
+plt16 <- {ggplot(sel_table16,
+                 aes(Inducer, `GFP/OD`, colour = Samples, label = `Replicate #`)) + 
+    geom_point() + 
+    geom_line(aes(group = interaction(Samples, `Replicate #`)), alpha = 0.2) + 
+    
+    ylab('GFP/OD (a.u.)') + xlab('C12-AHL (nM)') +
+    scale_x_log10(labels =  fancy_scientific)
+  
+} %>% {format_classic(.) + theme(legend.position = 'top')} %>% 
+  print
+
+ggsave('plate reader analysis/plots and data/S022_doseresponse_AHL.pdf', plt16, width = 4, height = 3)
+
+```
+
+
+Dose response day 1 : all plasmids
+
+```{r plotting17}
+sel_table17 <- all_days_table %>% #group_and_summarize_at('GFP/OD') %>% 
+  # filter(str_detect(Samples, 'pRV|Controls')) %>% filter(str_detect(Reporter, 'rGFP|pSH')) %>% 
+  ungroup() %>%  
+  mutate(Inducer = as.numeric(Inducer)) %>% 
+  filter(Time == 1) # filter neccesary samples for plotting ; by default mean and variance of GFP/RFP column
+
+plt17 <- {ggplot(sel_table17,
+                 aes(Inducer, `GFP/OD`, colour = Samples, label = `Replicate #`)) + 
+    geom_point() + 
+    geom_line(aes(group = interaction(Samples, `Replicate #`)), alpha = 0.2) + 
+    
+    theme(legend.position = 'top') + 
+    ylab('GFP/OD (a.u.)') +
+    scale_x_log10(labels =  fancy_scientific)
+  
+} %>% format_classic %>% 
+  print
+
+```
+
 
 <!-- ## Specific plots for presentations -->
 
