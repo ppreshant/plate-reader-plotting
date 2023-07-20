@@ -244,7 +244,7 @@ t.test(`Relative Fluorescence` ~ Inducer, # Memory significantly higher ; is obv
        
        data = filter(sel_table8, Time == 48, str_detect(Samples, 'Memory')))
 
-t.test(`Relative Fluorescence` ~ Inducer, # No difference in realtime at 48 h
+t.test(`Relative Fluorescence` ~ Inducer, # No difference in realtime at 48 h (0.84) ; 24 is still different (0.04)
        paired = T,
        # alternative = 'less', 
        
