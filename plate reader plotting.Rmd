@@ -20,7 +20,7 @@ User inputs for multiple sheets
 
 flnm <- 'S018_pPK6-7 selected 14_18-7-19'
 
-flpath <- str_c('../plate reader data/',flnm,'.xlsx')
+flpath <- str_c('plate reader data/',flnm,'.xlsx')
 fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel file into fl - as a list 
 sheet_names <- c( "day1.on","day1.ui","day1.i","day2.ui","day2.i") # list the sheets to be loaded
 n_Rows <- 8; 
@@ -231,23 +231,132 @@ plt4lu <- plt3u %>% format_classic()
 plt4lu + ylim(c(0,500))
 ```
 
+
+
+# Publication plots 
+
+
 Selected GFP/OD - Top 5: only day 2
 
-```{r plotting1s, fig.width = 5, fig.height = 3.5}
+```{r plotting_top5, fig.width = 5, fig.height = 3.5}
+
+# repeating prerequisites steps ; Run plotting2 section first
+sel_table2_1 <- sel_table2 %>% filter(str_detect(Time, '25'))
+
 # determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
 plotting_order_2 <- sel_table2_1 %>% ungroup() %>% filter(str_detect(Inducer,'1')) %>% arrange(desc(mean)) %>%  mutate(Samples = fct_inorder(Samples)) %>% pull(Samples) %>% levels()
 
 sel_table2_1$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
 
+
+# plotting GFP/OD without facetting, includes a reference line for the WT control
+
 # Selecting top 5 data points + controls
 sel_table2_s <- sel_table2_1 %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_inorder(category)) %>% group_by(Samples, Inducer, category, Time) %>%  filter(str_detect(Inducer,'0|1')) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
 
-plt1 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
+plt_top5 <- plot_mean_facetted(sel_table2_s) + ylab('GFP/OD (a.u.)') + geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
 
-plt1a <- plt1 %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
-plt1a + ylim(0, 2500)
-ggsave('plots and data/S018_top5.pdf', plt1a, width = 4, height = 3)
+top5_formatted <- {format_classic(plt_top5) + 
+  scale_colour_manual(values = "black") + guides(colour = F)} %>% 
+  print
+
+top5_formatted + ylim(0, 2500)
+
+ggsave('plots and data/S018_top5.pdf', top5_formatted, width = 4, height = 3)
 ```
+
+
+Selected GFP/OD and fold change - Top 5: only day 2
+
+```{r plotting_top5fold, fig.width = 5, fig.height = 1.5}
+
+# rerunning prerequisites
+replicates_foldchange <- all_days_table %>% 
+  select(Samples, category, Inducer, Time, `Replicate #`, `GFP/OD`) %>% 
+  
+  filter(!str_detect(Time,'0')) %>% # remove samples without induction
+  spread(Inducer, `GFP/OD`) %>% # separate induction into 2 columns
+  mutate(ratio = `1 uM`/`0 uM`, Inducer = 'none') # make fold change (named : ratio)
+
+
+# Selecting top 5 data points + controls
+replicates_top5_t25_foldchange <- replicates_foldchange %>% 
+  
+  filter(str_detect(Time, '25')) %>% 
+  ungroup() %>% 
+  
+  mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>%
+  mutate(category = fct_inorder(category)) %>%  # , Inducer = '1 uM'
+  
+  group_by(Samples, category, Time) %>%  # Inducer, 
+  filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17'))
+
+# translate names into M1-5? -- future if needed; currently doing in Inkscape
+  
+
+# summarize : mean and SD
+summ_top5_foldchange <- replicates_top5_t25_foldchange %>% 
+    
+  group_and_summarize_at('ratio') # spread GFP/OD for induced and uninduced and calculate ratio
+
+
+# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
+
+summ_top5_foldchange$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
+# summ_top5_foldchange$Samples %<>%  fct_relevel(plotting_order)
+
+
+sel_table2fc <- bind_rows(sel_table2_s, summ_top5_foldchange)
+
+plt_top5_foldchange <- plot_mean_facetted(summ_top5_foldchange) + ylab('Fold change') + scale_shape_manual(values = c(19)) #+ geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
+
+formatted_top5_foldchange <- {format_classic(plt_top5_foldchange) + 
+    scale_colour_manual(values = "black") + 
+    guides(colour = F)} %>% 
+  
+  print
+
+ggsave('plots and data/S018_top5_fold change.pdf', formatted_top5_foldchange, width = 4, height = 2.5)
+```
+
+
+# Statistics 
+
+```{r stats}
+
+# t.test : Each Mi vs WT fold change. Alt : Mi > WT (1 tailed). Unpaired samples.
+# steps : get the same top 5 subset ; with individual replicates ; map inside summarize command with custom call t.test(data$.x, data$wt, ..)
+
+mutants_list <- c('7_21', '7_6', '7_28', '7_32', '7_17') # Mi names here..
+
+nested_fc <- replicates_top5_t25_foldchange %>% 
+  group_by(Samples) %>% # only group by samples
+  filter(Samples != 'MG1655') %>% # remove WT -- has NaNs - mess up stats
+  nest #%>% 
+
+stats_fc <- nested_fc %>%     
+  mutate(t_test = 
+           map(data, 
+               ~t.test(x = .x$ratio, y = filter(nested_fc, Samples == 'pRV01 ')$data[[1]]$ratio,
+                       alternative = 'greater', var.equal = F)),
+         p_value = map_dbl(t_test, ~ .x$p.value),
+         significance = p_value <= 0.05
+  ) %>% 
+  
+  # Result : P value for all mutants < 0.038 (round off to 0.04)
+  
+  # check for correct vals being t.tested
+  mutate(x1 = map(data, ~ .x$ratio),
+         y1 = map(data, ~ filter(nested_fc, str_detect(Samples, 'pRV01'))$data[[1]]$ratio))
+  
+
+
+```
+
+
+
+# Other subset plots 
+
 
 WT pRV01 GFP/OD - uninduced : daily progression
 
@@ -261,24 +370,6 @@ plt2a <- plt2 %>% format_classic()
 plt2a# + ylim(0, 2000)
 ```
 
-Selected GFP/OD and fold change - Top 5: only day 2
-
-```{r plotting1sfold, fig.width = 5, fig.height = 1.5}
-# determine plotting order: based on ascending order of GFP/OD values (for single replicate data)
-
-# Selecting top 5 data points + controls
-sel_table6_s <- sel_table6 %>% filter(str_detect(Time, '25')) %>% ungroup() %>% mutate(category = ifelse(str_detect(category, 'pPK'), 'Mutants', as.character(category))) %>% mutate(category = fct_inorder(category), Inducer = '1 uM') %>% group_by(Samples, Inducer, category, Time) %>% filter(str_detect(Samples, 'RV01 $|rG|MG|7_21|7_6|7_28|7_32|7_17')) 
-
-sel_table6_s$Samples %<>% fct_relevel(plotting_order_2) # manually reorder samples for plotting
-
-sel_table2fc <- bind_rows(sel_table2_s, sel_table6_s)
-
-plt1fc <- plot_mean_facetted(sel_table6_s) + ylab('Fold change') + scale_shape_manual(values = c(19)) #+ geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # plot the mean, add y axis label and a baseline indication
-
-plt1fca <- plt1fc %>% format_classic() + scale_colour_manual(values = "black") + guides(colour = F)
-plt1fca
-ggsave('plots and data/S018_top5_fold change.pdf', plt1fca, width = 4, height = 2.5)
-```
 
 Combined plot, by day
 
