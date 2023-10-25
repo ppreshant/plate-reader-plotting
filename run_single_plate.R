@@ -19,6 +19,7 @@ fl <- read_plateReader_file(flpath) # load all non empty sheets of the excel fil
 # 3. Calculate ratios of fluorescence to OD, calculate mean
 # 4. Create a number for replicates (same name, and metadata)
 # 5. also returns the baseline data - to show in the markdown
+# 0. Runs on multiple sheets using recursion 
 
 processed_and_baseline_list <- read_multiple_grids_in_sheet(sheet_name)
 
