@@ -1,7 +1,8 @@
 # 0-read_plate.reader.files_manipulate.columns.R
 # reading files and manipulating columns ----
 
-# read in the excel file (from row 14 onwards)
+#' read all sheets in the excel file into a list
+
 read_plateReader_file <- function(flnm)
 { # reads excel file output by plate reader; outputs a list of non-empty sheets
   fl <- flnm %>%  
