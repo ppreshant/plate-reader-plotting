@@ -1,5 +1,8 @@
 # S018_replot for S6.R
 
+source('general_functions_plate_reading.R') # source the file that contains pre-requisite functions
+library(patchwork) # library for combining plots
+
 # Read in data ----
 processed.data <- # reading in only d2 ui and i data
   str_c('plate reader data/processed/', 'S018_pPK6-7 selected 14_18-7-19', '-processed.csv') %>% 
@@ -36,26 +39,69 @@ rGFP_baseline <- filter(sel.data, str_detect(Samples,'Int')) %>% # find the base
   pull(`GFP/OD_mean`) %>% mean # take mean of induced and uninduced samples (have a slight difference only)
 
 
-# fold changes ----
+# plot signal ----
 
-# plot (copy from S018 branch?)
+plt_sig <- 
+  {ggplot(sel.data, aes(x = Samples, y = `GFP/OD`, shape = as_factor(Inducer))) + 
+      geom_point(position = position_jitter(width = 0.2, height = 0), size = 1) + # jittered points
+      geom_boxplot(aes(y = `GFP/OD_mean`), position = position_identity(), size = 0.1, show.legend = F) + # show means as a line
+      
+      scale_shape_manual(name = 'C12-AHL', values = c(1, 19), labels = c('0', '1 uM')) + # set shape 1 = inducer 0 and 19 = inducer 1 uM ;
+      
+      facet_grid(cols = vars(sample_category), scales = 'free_x') +
+      
+      ylab('GFP/OD (a.u.)') + # add y axis label 
+      
+      
+      geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  # show baseline of WT negative
+      geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5)} %>%  # show baseline of negative samples
+  print
 
-ggplot(sel.data, aes(x = Samples, y = `GFP/OD`, shape = as_factor(Inducer))) + 
-  geom_point() + 
-  scale_shape_manual(name = 'C12-AHL', values = c(1, 19), labels = c('0', '1 uM')) + # set shape 1 = inducer 0 and 19 = inducer 1 uM ;
+ggsave('plate reader analysis/plots and data/S018_top5_replicates.pdf', width = 5, height = 3)
+
+# Zoom into uninduced of mutants
+sig_zoom <- {plt_sig + 
+    
+    ylim(0, 100) + # set axis limit
+    ylab(NULL) + xlab(NULL) + # remove axes labels
+    
+    theme_gray() + 
+    theme(
+      legend.position = 'none', # remove legend
+      
+      strip.background = element_blank(), # remove facets
+      strip.text.x = element_blank(),
+      
+      axis.text.y = element_text(size = 8), # reduce text size
+      axis.text.x = element_text(size = 5)
+      
+    ) } %>% print
+
+
+# create inset plot
+
+plt_sig + inset_element(sig_zoom, 0.5, 0.5, 1, 1)
+
+ggsave('plate reader analysis/plots and data/S018_top5_replicates_inset.pdf', width = 5, height = 3)
+
+# fold change calc ----
+
+
+foldchange <- sel.data %>% 
+  select(Samples, sample_category, Inducer, replicate, `GFP/OD`) %>% 
   
-  facet_grid(cols = vars(sample_category), scales = 'free_x') +
-  
-  ylab('GFP/OD (a.u.)') + # add y axis label 
-  
-  
-  geom_hline(yintercept = WT_baseline, linetype = 2, alpha = .5) +  # show baseline of WT negative
-  geom_hline(yintercept = rGFP_baseline, linetype = 2, alpha = .5) # show baseline of negative samples
-  # ylim(0, 2500)
+  pivot_wider(names_from = Inducer, values_from = `GFP/OD`) %>% # separate induction into 2 columns
+  mutate('Fold change' = `1`/`0`, Inducer = 'none') %>% # make fold change (named : ratio)
+  mutate(fc_mean = mean(`Fold change`), .by = Samples)
 
 
+# plot fold change ----
 
-# top5_formatted <- {format_classic(plt_top5) + 
+plt_fold <- 
+  {ggplot(foldchange, aes(x = Samples, y = `Fold change`)) + 
+      geom_point(position = position_jitter(width = 0.2, height = 0), size = 1) + # jittered points
+      geom_boxplot(aes(y = fc_mean), position = position_identity(), size = 0.1, show.legend = F) + # show means as a line
+      
+      facet_grid(cols = vars(sample_category), scales = 'free_x')} %>% print
 
-
-ggsave('plots and data/S018_top5.pdf', top5_formatted, width = 4, height = 3)
+ggsave('plate reader analysis/plots and data/S018_top5_fold_replicates.pdf', width = 5, height = 3)
