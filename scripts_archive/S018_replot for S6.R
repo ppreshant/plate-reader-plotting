@@ -65,7 +65,7 @@ sig_zoom <- {plt_sig +
     ylim(0, 100) + # set axis limit
     ylab(NULL) + xlab(NULL) + # remove axes labels
     
-    theme_gray() + 
+    theme_bw() +
     theme(
       legend.position = 'none', # remove legend
       
@@ -80,7 +80,7 @@ sig_zoom <- {plt_sig +
 
 # create inset plot
 
-plt_sig + inset_element(sig_zoom, 0.5, 0.5, 1, 1)
+plt_sig + inset_element(sig_zoom, 0.5, 0.5, 1, 0.9)
 
 ggsave('plate reader analysis/plots and data/S018_top5_replicates_inset.pdf', width = 5, height = 3)
 
@@ -104,4 +104,4 @@ plt_fold <-
       
       facet_grid(cols = vars(sample_category), scales = 'free_x')} %>% print
 
-ggsave('plate reader analysis/plots and data/S018_top5_fold_replicates.pdf', width = 5, height = 3)
+ggsave('plate reader analysis/plots and data/S018_top5_fold_replicates.pdf', width = 4, height = 3) # width reduced since no legend
