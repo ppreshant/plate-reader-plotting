@@ -34,8 +34,9 @@ read_multiple_grids_in_sheet <- function(sheet_name)
       )
     
     # merging data from both sheets
-    processed_data <- sheets_df$processed 
-    
+    processed_data <- select(sheets_df, sheet_ID, processed) %>% # select sheet IDs and processed data (data.frame) columns
+      unnest(processed) # unwrap processed into multiple columns
+      
     baseline_data <- select(sheets_df, sheet_ID, baseline) %>% # select only baseline and sheet IDs
       unnest(baseline) %>% # unwrap baseline into multiple columns
       unique # select only unique entries
