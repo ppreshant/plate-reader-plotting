@@ -11,7 +11,8 @@
 
 flnm <- 'S070_S071_d0_13-April-23'
 
-sheet_name <- 'default' # 'default' reads the first sheet (for single plate runs only)
+# Specify the name of the sheet or 'default' (1st sheet) or n (to read the first n sheets)
+sheet_name <- 2 #'default' # 'default' reads the first sheet (for single plate runs only) ; n (no quotes) reads the first n sheets
 
 
 # for single plate runs only (I think, need to check)
