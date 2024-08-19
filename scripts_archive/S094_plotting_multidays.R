@@ -47,8 +47,8 @@ ggplot(fluor_order_data,
   # add a text label for quick reference of the mean
   geom_text(data = ~ filter(.x, sheet_ID == 'd2'),
             mapping = aes(x = `RFP/OD_mean`, label = `RFP/OD_mean` %>% round, 
-                          vjust = if_else(`RFP/OD_mean` > max(`RFP/OD_mean`)/2, 1, 0.5),
-                          hjust = if_else(`RFP/OD_mean` > max(`RFP/OD_mean`)/2, 1.5, -0.3)),
+                          vjust = if_else(`RFP/OD_mean` > max(`RFP/OD_mean`)/2, 2, 0.5),
+                          hjust = if_else(`RFP/OD_mean` > max(`RFP/OD_mean`)/2, 0, -1)),
             show.legend = FALSE,
   ) + 
   
@@ -57,4 +57,4 @@ ggplot(fluor_order_data,
   theme(legend.position = 'top')
 
 
-ggsave(plot_as(flnm), width = 5, height = 4)
+ggsave(plot_as(flnm), width = 6, height = 4)
