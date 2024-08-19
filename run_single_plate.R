@@ -32,15 +32,17 @@ rm(processed_and_baseline_list) # remove list after unpacking
 # Processing ----
 # location for optional processing - custom written code
 
-# collect all measurements in 1 column : Long format data
+# collect all measurements for a given sample in 1 column : Long format data
 long_fluor_processed <- processed.data %>% 
-  select(!matches('Replicate|units|well')) %>%  # choose OD, x/OD and _bs and _mean additions
+  select(!matches('Replicate|units')) %>%  # choose OD, x/OD and _bs and _mean additions
   mutate(index = row_number(), .after = 2) %>% # add a dummy index -- to keep replicates apart
   
-  rename_with(.cols = !matches( str_c(c('_mean', sample_specific_variables, 'index'), collapse = '|')), 
+  # append "_value" to all columns except mean and metadata columns
+  rename_with(.cols = !matches( str_c(c('_mean', sample_specific_variables, 'index', 'well', 'sheet_ID'), collapse = '|')), 
               .fn = ~ str_c(.x, '_value') ) %>%  # suffix 'value' for non mean, non metadata columns
   
-  pivot_longer(cols = -all_of(c(sample_specific_variables, 'index')), # pull measurement types and summary type (mean vs 'raw' value) into two cols
+  # pivot 
+  pivot_longer(cols = -any_of(c(sample_specific_variables, 'well', 'index', 'sheet_ID')), # pull measurement types and summary type (mean vs 'raw' value) into two cols
                names_pattern = '(.*)_(....*)', names_to = c('Measurement', 'type_of_summary')) %>% 
   
   pivot_wider(names_from = type_of_summary, values_from = value) # bring values and means into two separate cols
@@ -64,7 +66,10 @@ run_dose_response_pipeline <-
   'Inducer' %in% colnames(processed.data) &&
   (processed.data$Inducer %>% unique() %>% length()) > 3
 
+
 # plotting ----
+
+# Yet to support multiple sheets. Current plots all data as if it is from the same sheet (but with separate mean values)
 
 # calling r markdown file for plotting in a nice format html file
 rmarkdown::render('static_plate_reader_plotting_and_html.Rmd', output_file = str_c('plate reader analysis/html files/', title_name, '.html'))
