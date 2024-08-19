@@ -65,7 +65,7 @@ plt_all_fluor_annotated +  facet_grid(~ Measurement, scale = 'free')
 
 ```{r rawgfp}
 
-# Find all the fluoresce channels in the data
+# Find all the fluoresce channels in the data (return as expression)
 FPs <- colnames(processed.data) %>% str_subset('.FP$') %>% rlang::parse_exprs(.)
 
 
