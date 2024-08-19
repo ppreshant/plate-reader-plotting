@@ -21,7 +21,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
   
   if(is.numeric(sheet_name)) sheet_name <- names(fl)[1:sheet_name] # load the first n sheet names
   
-  # Recursion for on multiple sheets ----
+  # Recursion for running on multiple sheets ----
   
   if(length(sheet_name) > 1)
   {
@@ -33,7 +33,7 @@ read_multiple_grids_in_sheet <- function(sheet_name)
               .id = 'sheet_ID' # add the sheetnames as another column (needs a named vector for the first argument)
       )
     
-    # merging data from both sheets
+    # merging data from multiple sheets
     processed_data <- select(sheets_df, sheet_ID, processed) %>% # select sheet IDs and processed data (data.frame) columns
       unnest(processed) # unwrap processed into multiple columns
       
