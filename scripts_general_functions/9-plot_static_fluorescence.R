@@ -10,6 +10,8 @@ plot_static_fluorescence <- function(.fluor_variable, .data = processed.data, in
   fluor_w_mean_expr <- rlang::sym(str_c(deparse(enexpr(.fluor_variable)), '_mean'))
   fluor_str <- rlang::expr_text(enexpr(.fluor_variable))
   
+  # remake .fluor_variable as symbol (from string) ; this saves `GFP/OD` style expressions from being `calls`
+  .fluor_variable <- rlang::sym(fluor_str)
   
   # process data ---- 
   

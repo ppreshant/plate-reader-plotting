@@ -61,12 +61,12 @@ plt_all_fluor_annotated +  facet_grid(~ Measurement, scale = 'free')
 ```
 
 
-### Raw fluorescence
+### Ordered: fluorescence and normalized
 
 ```{r rawgfp}
 
 # Find all the fluoresce channels in the data (return as expression)
-FPs <- colnames(processed.data) %>% str_subset('.FP$') %>% rlang::parse_exprs(.)
+FPs <- colnames(processed.data) %>% str_subset('.FP$|OD$') %>% rlang::parse_exprs(.)
 
 
 # Run the raw data plotter on each fluorescence : regular + interactive plot
